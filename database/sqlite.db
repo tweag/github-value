@@ -1,0 +1,3 @@
+The SQLite database file is a binary file and cannot be generated as text. It is typically created and managed by the SQLite library during runtime. 
+
+To create the SQLite database, you can use a script in your backend code to initialize it. If you need help with that, let me know! 😊
