@@ -16,6 +16,7 @@
     "express": "^4.17.1",
     "octokit": "^4.0.2",
     "sequelize": "^6.37.4",
+    "smee-client": "^2.0.3",
     "sqlite3": "^5.0.2"
   },
   "devDependencies": {
