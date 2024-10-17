@@ -18,4 +18,6 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
+        working-directory: ./backend
       - run: npm run build
+        working-directory: ./backend
