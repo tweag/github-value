@@ -1,14 +1,14 @@
-name: Backend
+name: Frontend
 
 on:
   push:
     paths:
-      - 'backend/**/*'
+      - 'frontend/**/*'
     branches:
       - main
   pull_request:
     paths:
-      - 'backend/**/*'
+      - 'frontend/**/*'
     branches:
       - main
 
@@ -22,6 +22,6 @@ jobs:
         with:
           node-version: '20'
       - run: npm ci
-        working-directory: ./backend
+        working-directory: ./frontend
       - run: npm run build
-        working-directory: ./backend
+        working-directory: ./frontend
