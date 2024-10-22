@@ -1,0 +1,12 @@
+{
+  "name": "github-value",
+  "version": "1.0.0",
+  "description": "Welcome to My Fullstack App! 🎉 This project is a full-stack application built with Angular for the frontend and Node.js for the backend, all written in TypeScript. It uses SQLite as the database and is containerized using Docker Compose. 🐳",
+  "main": "index.js",
+  "scripts": {
+    "dev-frontend": "cd ./frontend && npm run start",
+    "dev-backend": "cd ./backend && npm run start"
+  },
+  "author": "",
+  "license": "ISC"
+}

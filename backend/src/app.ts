@@ -1,10 +1,10 @@
+import 'dotenv/config'
 import express from 'express';
 import bodyParser from 'body-parser';
 import apiRoutes from "./routes/index"
 import { createNodeMiddleware } from "octokit";
 import { setupWebhookListeners } from './controllers/webhook.controller';
 import octokit from './services/octokit';
-import 'dotenv/config'
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
