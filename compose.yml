@@ -9,8 +9,7 @@ services:
       - backend
 
   backend:
-    depends_on:
-      - db
+    env_file: ./backend/.env
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -23,6 +22,8 @@ services:
       DB_USER: root
       DB_PASSWORD: octocat
       DB_NAME: value
+    depends_on:
+      - db
     links:
       - db
     volumes:
