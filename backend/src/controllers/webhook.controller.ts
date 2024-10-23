@@ -11,14 +11,21 @@ webhooks.onAny(({ id, name, payload }) => {
   // Process the webhook event here
 });
 
-export const setupWebhookListeners = (octokit: App) => {
-  octokit.webhooks.on("pull_request.opened", ({ octokit, payload }) => {
+export const setupWebhookListeners = (github: App) => {
+  github.webhooks.on("pull_request.opened", ({ octokit, payload }) => {
     console.log("Pull request opened", payload);
+
+    const surveyUrl = new URL(`${webUrl}/surveys/new`);
+    surveyUrl.searchParams.append('url', payload.pull_request.html_url);
+    surveyUrl.searchParams.append('author', payload.pull_request.user.login);
+    
     return octokit.rest.issues.createComment({
       owner: payload.repository.owner.login,
       repo: payload.repository.name,
       issue_number: payload.pull_request.number,
-      body: `Hi @${payload.pull_request.user.login}! Please fill out this [survey](${webUrl}/copilot-survey) to help us understand if you leveraged Copilot in your pull request.`
+      body: `Hi @${payload.pull_request.user.login}! \
+Please fill out this [survey](${surveyUrl.toString()}) \
+to help us understand if you leveraged Copilot in your pull request.`
     });
   });
 }
