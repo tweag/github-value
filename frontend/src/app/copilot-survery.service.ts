@@ -6,7 +6,7 @@ import { Survey } from './models/survey';
 @Injectable({
   providedIn: 'root'
 })
-export class CopilotSurveryService {
+export class CopilotSurveyService {
   private apiUrl = `http://${window.location.hostname}:3000/api`; // Adjust the URL based on your backend setup 🌐
 
   constructor(private http: HttpClient) { }
@@ -15,7 +15,7 @@ export class CopilotSurveryService {
     return this.http.post(`${this.apiUrl}/create-survey`, survey);
   }
 
-  getAllSurveys(): Observable<any[]> {
+  getAllSurveys(): Observable<Survey[]> {
     return this.http.get<any[]>(`${this.apiUrl}/get-survey`);
   }
 

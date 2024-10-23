@@ -3,7 +3,7 @@ export interface Survey {
   daytime: Date;
   userId: number;
   usedCopilot: boolean;
-  pctTimesaved: number;
+  percentTimeSaved: number;
+  reason: string;
   timeUsedFor: string;
-  timeSaved: string;
 }
