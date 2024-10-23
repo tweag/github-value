@@ -1,4 +1,4 @@
-<h1>Copilot Developer Survey</h1>
+<h2>Copilot Developer Survey</h2>
 <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
   <label id="example-radio-group-label">Did you use Copilot for this PR?</label>
   <mat-radio-group formControlName="usedCopilot" aria-labelledby="example-radio-group-label" class="example-radio-group">
@@ -8,14 +8,14 @@
   <label id="example-radio-group-label">How much less time did the actual coding take with Copilot?</label>
   <p>
     <mat-slider class="example-mat-slider" [max]="100" [min]="0" [step]="10" discrete="true" tickInterval="10">
-      <input matSliderThumb formControlName="pctTimesaved">
+      <input matSliderThumb formControlName="percentTimeSaved">
     </mat-slider>
   </p>
   <label id="example-radio-group-label">Describe your thought process for calculating (or estimating) the time
     saved</label>
   <mat-form-field class="example-form-field">
     <mat-label>I chose {{surveyForm.get('timeSavingPercentage')?.value}}% because Copilot enabled me to...</mat-label>
-    <textarea formControlName="timeUsedFor" matInput></textarea>
+    <textarea formControlName="reason" matInput></textarea>
   </mat-form-field>
   <label id="example-radio-group-label">Did you use Copilot for this PR?</label>
   <mat-radio-group formControlName="timeUsedFor" aria-labelledby="example-radio-group-label" class="example-radio-group">

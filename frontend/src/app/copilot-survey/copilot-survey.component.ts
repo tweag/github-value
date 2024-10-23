@@ -1,7 +1,7 @@
 import { Component, forwardRef } from '@angular/core';
 import { AppModule } from '../app.module';
 import { FormBuilder, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CopilotSurveryService } from '../copilot-survery.service';
+import { CopilotSurveyService } from '../copilot-survery.service';
 import { provideHttpClient } from '@angular/common/http';
 
 @Component({
@@ -25,20 +25,19 @@ export class CopilotSurveyComponent {
 
   constructor(
     private fb: FormBuilder,
-    private copilotSurveyService: CopilotSurveryService
+    private copilotSurveyService: CopilotSurveyService
   ) {
     this.surveyForm = this.fb.group({
       usedCopilot: [true],
-      pctTimesaved: [30],
-      timeUsedFor: ['writing code'],
-      timeSaved: ['30 minutes'],
+      percentTimeSaved: [30],
+      reason: [''],
+      timeUsedFor: ['writing code']
     });
   }
 
   onSubmit() {
     console.log(this.surveyForm.value);
     this.copilotSurveyService.createSurvey({
-      id: 0,
       daytime: new Date(),
       userId: 1,
       ...this.surveyForm.value

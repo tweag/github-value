@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { CopilotSurveryService } from './copilot-survery.service';
+import { CopilotSurveyService } from './copilot-survery.service';
 
 describe('CopilotSurveryService', () => {
-  let service: CopilotSurveryService;
+  let service: CopilotSurveyService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(CopilotSurveryService);
+    service = TestBed.inject(CopilotSurveyService);
   });
 
   it('should be created', () => {
