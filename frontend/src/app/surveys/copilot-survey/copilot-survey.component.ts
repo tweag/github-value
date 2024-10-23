@@ -67,8 +67,16 @@ export class CopilotSurveyComponent implements OnInit {
       reason: this.surveyForm.value.reason,
       timeUsedFor: this.surveyForm.value.timeUsedFor
     }).subscribe((res) => {
-      if (this.params['url']) {
-        window.location.href = this.params['url'];
+      const authorizedUrls = [
+        'https://trusted-site.com/page1',
+        'https://trusted-site.com/page2',
+        // Add more authorized URLs here
+      ];
+      const redirectUrl = this.params['url'];
+      if (redirectUrl && authorizedUrls.includes(redirectUrl)) {
+        window.location.href = redirectUrl;
+      } else {
+        console.error('Unauthorized URL:', redirectUrl);
       }
     });
   }
