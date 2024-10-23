@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { CopilotSurveyComponent } from './copilot-survey/copilot-survey.component';
+import { CopilotSurveyComponent } from './surveys/copilot-survey/copilot-survey.component';
 import { CopilotDashboardComponent } from './copilot-dashboard/copilot-dashboard.component';
 import { SurveysComponent } from './surveys/surveys.component';
 

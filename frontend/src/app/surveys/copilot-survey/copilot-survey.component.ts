@@ -1,7 +1,7 @@
 import { Component, forwardRef } from '@angular/core';
-import { AppModule } from '../app.module';
+import { AppModule } from '../../app.module';
 import { FormBuilder, FormGroup, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { CopilotSurveyService } from '../copilot-survery.service';
+import { CopilotSurveyService } from '../../copilot-survery.service';
 import { provideHttpClient } from '@angular/common/http';
 
 @Component({
