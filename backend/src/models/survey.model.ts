@@ -8,6 +8,9 @@ class Survey extends Model {
   public usedCopilot!: boolean;
   public percentTimeSaved!: number;
   public timeUsedFor!: string;
+  public owner!: string;
+  public repo!: string;
+  public prNumber!: number;
 }
 
 Survey.init({
@@ -21,7 +24,7 @@ Survey.init({
     allowNull: false,
   },
   userId: {
-    type: DataTypes.INTEGER,
+    type: DataTypes.STRING,
     allowNull: false,
   },
   usedCopilot: {
@@ -40,7 +43,18 @@ Survey.init({
     type: DataTypes.STRING,
     allowNull: false,
   },
-  
+  owner: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  repo: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
+  prNumber: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+  }
 }, {
   sequelize,
   modelName: 'Survey',

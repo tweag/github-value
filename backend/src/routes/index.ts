@@ -1,15 +1,19 @@
 import { Router } from 'express';
 import SurveyController from '../controllers/survery.controller';
+import metricsController from '../controllers/metrics.controller';
 
 const router = Router();
 
 router.get('/', (req, res) => res.send('🎉 Welcome to the Survey API! 🚀✨'));
 
-router.get('/get-survey', SurveyController.getAllSurveys);
-router.post('/create-survey', SurveyController.createSurvey);
-router.get('/get-survey/:id', SurveyController.getSurveyById);
-router.put('/update-survey/:id', SurveyController.updateSurvey);
-router.delete('/delete-survey/:id', SurveyController.deleteSurvey);
+router.get('/survey', SurveyController.getAllSurveys);
+router.post('/survey', SurveyController.createSurvey);
+router.get('/survey/:id', SurveyController.getSurveyById);
+router.put('/survey/:id', SurveyController.updateSurvey);
+router.delete('/survey/:id', SurveyController.deleteSurvey);
+
+router.get('/metrics', metricsController.getAllMetrics);
+router.get('/metrics/:day', metricsController.getMetricsByDay);
 
 export const webUrl = process.env.WEB_URL || 'http://localhost';
 
