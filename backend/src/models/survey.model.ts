@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import sequelize from '../database';
+import { sequelize } from '../database';
 
 class Survey extends Model {
   public id!: number;
@@ -60,4 +60,4 @@ Survey.init({
   modelName: 'Survey',
 });
 
-export default Survey;
+export { Survey };

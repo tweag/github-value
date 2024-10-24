@@ -1,9 +1,6 @@
 import cron from "node-cron";
-import dotenv from "dotenv";
 import { Metrics, Breakdown } from '../models/metrics.model';
 import github from "./octokit";
-
-dotenv.config();
 
 export async function queryCopilotMetrics() {
   try {

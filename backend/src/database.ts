@@ -1,4 +1,7 @@
 import { Sequelize } from 'sequelize';
+import { Metrics, Breakdown } from './models/metrics.model';
+import { Settings } from './models/settings.model';
+import { Survey } from './models/survey.model';
 
 const sequelize = new Sequelize({
   dialect: 'mysql',
@@ -8,8 +11,7 @@ const sequelize = new Sequelize({
   host: process.env.MYSQL_HOST,
   port: parseInt(process.env.MYSQL_PORT || '3306'),
 });
-
-(async () => {
+const dbConnect = async () => {
   try {
     console.log('Attempting to connect to the database...');
     await sequelize.authenticate();
@@ -22,6 +24,6 @@ const sequelize = new Sequelize({
   } catch (error) {
     console.error('Unable to sync the database:', error);
   }
-})();
+};
 
-export default sequelize;
+export { dbConnect, sequelize };

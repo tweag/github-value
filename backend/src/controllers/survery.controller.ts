@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
-import Survey from '../models/survey.model';
+import { Survey } from '../models/survey.model';
 import github from '../services/octokit';
-import { Octokit } from 'octokit';
 
 class SurveyController {
   // Create a new survey 🎨

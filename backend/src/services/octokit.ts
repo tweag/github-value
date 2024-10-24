@@ -13,7 +13,7 @@ const github = new App({
     webhooks: {
         secret: process.env.GITHUB_WEBHOOK_SECRET
     },
-    installationId: process.env.GITHUB_APP_INSTALLATION_ID,
+    // installationId: process.env.GITHUB_APP_INSTALLATION_ID,
     oauth: {
         clientId: null!, // process.env.GITHUB_APP_CLIENT_ID,
         clientSecret: null! //process.env.GITHUB_APP_CLIENT_SECRET
