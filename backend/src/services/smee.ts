@@ -3,7 +3,7 @@ import { createWebhookChannel, createWebhookProxy } from "../helpers/webhook-pro
 export const createSmeeWebhookProxy = async (port: number) => {
   const url = await createWebhookChannel();
   if (!url) return;
-  await createWebhookProxy({
+  return createWebhookProxy({
     url,
     port,
     path: '/api/github/webhooks'

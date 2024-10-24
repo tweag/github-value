@@ -15,6 +15,4 @@ router.delete('/survey/:id', SurveyController.deleteSurvey);
 router.get('/metrics', metricsController.getAllMetrics);
 router.get('/metrics/:day', metricsController.getMetricsByDay);
 
-export const webUrl = process.env.WEB_URL || 'http://localhost';
-
 export default router;

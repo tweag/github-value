@@ -11,7 +11,7 @@ export async function queryCopilotMetrics() {
       Number(process.env.GITHUB_APP_INSTALLATION_ID)
     );
     const response = await octokit.rest.copilot.usageMetricsForOrg({
-      org: "github"
+      org: "octodemo"
     });
     const metricsArray = response.data;
 

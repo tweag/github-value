@@ -1,5 +1,4 @@
-// backend/src/database.ts
-import { DataTypes, Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
 
 const sequelize = new Sequelize({
   dialect: 'mysql',
@@ -12,14 +11,14 @@ const sequelize = new Sequelize({
 
 (async () => {
   try {
-    console.log('Attempting to connect to the database...'); // 🌐🔍
+    console.log('Attempting to connect to the database...');
     await sequelize.authenticate();
-    console.log('Connection has been established successfully.'); // 🎉✅
+    console.log('Connection has been established successfully.');
   } catch (error) {
-    console.error('Unable to connect to the database:', error); // 🚨❌
+    console.error('Unable to connect to the database:', error);
   }
   try {
-    await sequelize.sync(); // Recreate the database schema
+    await sequelize.sync();
   } catch (error) {
     console.error('Unable to sync the database:', error);
   }
