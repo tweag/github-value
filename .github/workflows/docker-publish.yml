@@ -38,10 +38,6 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - uses: actions/checkout@v3
-      - uses: actions/download-artifact@v3
-        with:
-          name: ${{ inputs.artifact-name }}
-          path: dist/${{ github.event.repository.name }}
       - uses: docker/metadata-action@v5
         id: meta
         with:
