@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import SurveyController from '../controllers/survery.controller';
 import metricsController from '../controllers/metrics.controller';
 import settingsController from '../controllers/settings.controller';
@@ -6,7 +6,9 @@ import setupController from '../controllers/setup.controller';
 
 const router = Router();
 
-router.get('/', (req, res) => res.send('🎉 Welcome to the Survey API! 🚀✨'));
+router.get('/', (req: Request, res: Response) => {
+  res.send('Hello World!');
+});
 
 router.get('/survey', SurveyController.getAllSurveys);
 router.post('/survey', SurveyController.createSurvey);
