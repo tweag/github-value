@@ -1,17 +1,13 @@
 import cron from "node-cron";
-import dotenv from "dotenv";
 import { Metrics, Breakdown } from '../models/metrics.model';
-import github from "./octokit";
-
-dotenv.config();
+import setup from './setup';
+import logger from "./logger";
 
 export async function queryCopilotMetrics() {
   try {
-    const octokit = await github.getInstallationOctokit(
-      Number(process.env.GITHUB_APP_INSTALLATION_ID)
-    );
+    const octokit = await setup.getOctokit();
     const response = await octokit.rest.copilot.usageMetricsForOrg({
-      org: "github"
+      org: "octodemo"
     });
     const metricsArray = response.data;
 
@@ -31,7 +27,7 @@ export async function queryCopilotMetrics() {
       });
 
       if (!created) {
-        console.log(`Metrics for ${metrics.day} already exist. Updating... ✏️`);
+        logger.info(`Metrics for ${metrics.day} already exist. Updating... ✏️`);
     
         await createdMetrics.update({
           totalSuggestionsCount: metrics.total_suggestions_count,
@@ -48,7 +44,7 @@ export async function queryCopilotMetrics() {
       }
 
       if (!metrics.breakdown) {
-        console.log(`No breakdown data for ${metrics.day}. Skipping...`);
+        logger.info(`No breakdown data for ${metrics.day}. Skipping...`);
         continue;
       }
       for (const breakdown of metrics.breakdown) {
@@ -65,13 +61,13 @@ export async function queryCopilotMetrics() {
       }
     }
 
-    console.log("Metrics stored successfully! 🎉📊");
+    logger.info("Metrics successfully updated! 📈");
   } catch (error) {
-    console.error("Error querying Copilot metrics: ", error); // 🚨❌
+    logger.error('Error querying copilot metrics', error);
   }
 }
 
 // Schedule the task to run daily at midnight
 cron.schedule('0 0 * * *', queryCopilotMetrics);
 
-console.log("Scheduler setup complete! ⏰");
+logger.info('Metrics cron job scheduled to run daily at midnight');

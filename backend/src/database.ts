@@ -1,28 +1,27 @@
-// backend/src/database.ts
-import { DataTypes, Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
+import { Metrics, Breakdown } from './models/metrics.model';
+import { Settings } from './models/settings.model';
+import { Survey } from './models/survey.model';
+import logger from './services/logger';
 
 const sequelize = new Sequelize({
   dialect: 'mysql',
   database: process.env.MYSQL_DATABASE,
-  username: 'root',
-  password: process.env.MYSQL_ROOT_PASSWORD,
+  username: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
   host: process.env.MYSQL_HOST,
   port: parseInt(process.env.MYSQL_PORT || '3306'),
+  logging: (sql: string, timing?: number) => {
+    logger.info(sql, timing && `(${timing}ms)`);
+  }
 });
+const dbConnect = async () => {
+  await sequelize.authenticate().catch((error) => {
+    logger.info('Unable to authenticate to the database:', error);
+  });
+  await sequelize.sync().catch((error) => {
+    logger.info('Unable to authenticate to the database:', error);
+  });
+};
 
-(async () => {
-  try {
-    console.log('Attempting to connect to the database...'); // 🌐🔍
-    await sequelize.authenticate();
-    console.log('Connection has been established successfully.'); // 🎉✅
-  } catch (error) {
-    console.error('Unable to connect to the database:', error); // 🚨❌
-  }
-  try {
-    await sequelize.sync(); // Recreate the database schema
-  } catch (error) {
-    console.error('Unable to sync the database:', error);
-  }
-})();
-
-export default sequelize;
+export { dbConnect, sequelize };

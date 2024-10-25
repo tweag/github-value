@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MaterialModule } from '../material.module';
 import { AppModule } from '../app.module';
-import { CopilotSurveyService as CopilotSurveyService } from '../copilot-survery.service';
+import { CopilotSurveyService as CopilotSurveyService } from '../services/copilot-survery.service';
 import { Survey } from '../models/survey';
 
 @Component({

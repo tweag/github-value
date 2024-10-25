@@ -1,0 +1,17 @@
+{
+  "name": "Demonstrate GitHub Value",
+  "url": "https://www.example.com",
+  "hook_attributes": {
+    "url": "https://example.com/github/events"
+  },
+  "setup_url": "http://localhost/api/setup/install",
+  "redirect_url": "http://localhost/api/setup/redirect",
+  "public": false,
+  "default_permissions": {
+    "pull_requests": "write",
+    "organization_copilot_seat_management": "read"
+  },
+  "default_events": [
+    "pull_request"
+  ]
+}

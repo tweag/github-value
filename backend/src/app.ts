@@ -1,29 +1,47 @@
 import 'dotenv/config'
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import bodyParser from 'body-parser';
-import apiRoutes from "./routes/index"
-import { createNodeMiddleware } from "octokit";
-import { setupWebhookListeners } from './controllers/webhook.controller';
-import github from './services/octokit';
 import cors from 'cors';
-import { queryCopilotMetrics } from './services/metrics.service';
+import path from 'path';
+import apiRoutes from "./routes/index"
+import { dbConnect } from './database';
+import setup from './services/setup';
+import SmeeService from './services/smee';
+import logger, { expressLoggerMiddleware } from './services/logger';
 
-const app = express();
-const PORT = Number(process.env.PORT) || 3000;
+const PORT = Number(process.env.PORT) || 80;
 
+export const app = express();
 app.use(cors());
+app.use(expressLoggerMiddleware);
 
-// Setup webhook listeners
-setupWebhookListeners(github);
-app.use(createNodeMiddleware(github));
+(async () => {
+  await dbConnect();
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+  const { url: webhookProxyUrl } = await SmeeService.createSmeeWebhookProxy(PORT);
 
-app.use('/api', apiRoutes);
+  try {
+    await setup.createAppFromEnv();
+  } catch (error) {
+    logger.info('Failed to create app from environment. This is expected if the app is not yet installed.');
+  }
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+  // API Routes
+  app.use('/api', bodyParser.json(), bodyParser.urlencoded({ extended: true }), apiRoutes);
 
-queryCopilotMetrics();
+  // Angular Frontend
+  const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
+  app.use(express.static(frontendPath));
+  app.get('*', rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5000, // limit each IP to 100 requests per windowMs
+  }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
+
+  app.listen(PORT, () => {
+    logger.info(`Server is running at http://localhost:${PORT} 🚀`);
+    if (process.env.WEB_URL) {
+      logger.debug(`Frontend is running at ${process.env.WEB_URL} 🚀`);
+    }
+  });
+})();

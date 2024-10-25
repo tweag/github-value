@@ -1,32 +1,36 @@
 import { Webhooks } from '@octokit/webhooks';
 import { App } from 'octokit';
-import { webUrl } from '../routes/index';
+import logger from '../services/logger';
 
 const webhooks = new Webhooks({
   secret: process.env.GITHUB_WEBHOOK_SECRET || 'your-secret',
-});
-
-webhooks.onAny(({ id, name, payload }) => {
-  console.log(name, 'event received:', payload);
-  // Process the webhook event here
+  log: {
+    debug: logger.debug,
+    info: logger.info,
+    warn: logger.warn,
+    error: logger.error
+  }
 });
 
 export const setupWebhookListeners = (github: App) => {
   github.webhooks.on("pull_request.opened", ({ octokit, payload }) => {
-    console.log("Pull request opened", payload);
+    const surveyUrl = new URL(`/surveys/new`, octokit.request.endpoint.DEFAULTS.baseUrl);
 
-    const surveyUrl = new URL(`${webUrl}/surveys/new`);
     surveyUrl.searchParams.append('url', payload.pull_request.html_url);
     surveyUrl.searchParams.append('author', payload.pull_request.user.login);
     
-    return octokit.rest.issues.createComment({
-      owner: payload.repository.owner.login,
-      repo: payload.repository.name,
-      issue_number: payload.pull_request.number,
-      body: `Hi @${payload.pull_request.user.login}! \
-Please fill out this [survey](${surveyUrl.toString()}) \
-to help us understand if you leveraged Copilot in your pull request.`
-    });
+    try {
+      octokit.rest.issues.createComment({
+        owner: payload.repository.owner.login,
+        repo: payload.repository.name,
+        issue_number: payload.pull_request.number,
+        body: `Hi @${payload.pull_request.user.login}! \
+  Please fill out this [survey](${surveyUrl.toString()}) \
+  to help us understand if you leveraged Copilot in your pull request.`
+      });
+    } catch (error) {
+      logger.error('Error creating survey comment', error);
+    };
   });
 }
 

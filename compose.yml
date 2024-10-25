@@ -1,29 +1,21 @@
 services:
-  frontend:
+  backend:
+    restart: always
     build:
-      context: ./frontend
+      context: ./
       dockerfile: Dockerfile
     ports:
       - "80:80"
-    depends_on:
-      - backend
-
-  backend:
-    env_file: ./backend/.env
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "3000:3000"
     environment:
       NODE_ENV: production
-      DB_HOST: db
-      DB_PORT: 3306
-      DB_USER: root
-      DB_PASSWORD: octocat
-      DB_NAME: value
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: octocat
+      MYSQL_DATABASE: value
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     links:
       - db
     volumes:
@@ -33,7 +25,7 @@ services:
     image: mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: octocat
+      MYSQL_PASSWORD: octocat
       MYSQL_DATABASE: value
     ports:
       - '3306:3306'
@@ -42,7 +34,12 @@ services:
     volumes:
       - db:/var/lib/mysql
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
-
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      
 volumes:
   db:
 

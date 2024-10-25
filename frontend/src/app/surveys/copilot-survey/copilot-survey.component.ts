@@ -1,8 +1,7 @@
 import { Component, forwardRef, OnInit } from '@angular/core';
 import { AppModule } from '../../app.module';
 import { FormBuilder, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
-import { CopilotSurveyService } from '../../copilot-survery.service';
-import { provideHttpClient } from '@angular/common/http';
+import { CopilotSurveyService } from '../../services/copilot-survery.service';
 import { ActivatedRoute, Params } from '@angular/router';
 
 @Component({
@@ -24,6 +23,7 @@ import { ActivatedRoute, Params } from '@angular/router';
 export class CopilotSurveyComponent implements OnInit {
   surveyForm: FormGroup;
   params: Params = {};
+  defaultPercentTimeSaved = 30;
 
   constructor(
     private fb: FormBuilder,
@@ -32,7 +32,7 @@ export class CopilotSurveyComponent implements OnInit {
   ) {
     this.surveyForm = this.fb.group({
       usedCopilot: new FormControl(true, Validators.required),
-      percentTimeSaved: new FormControl(30, Validators.required),
+      percentTimeSaved: new FormControl(this.defaultPercentTimeSaved, Validators.required),
       reason: new FormControl(''),
       timeUsedFor: new FormControl('', Validators.required)
     });
@@ -40,6 +40,13 @@ export class CopilotSurveyComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => this.params = params);
+    this.surveyForm.get('usedCopilot')?.valueChanges.subscribe((value) => {
+      if (!value) {
+        this.surveyForm.get('percentTimeSaved')?.setValue(0);
+      } else {
+        this.surveyForm.get('percentTimeSaved')?.setValue(this.defaultPercentTimeSaved);
+      }
+    });
   }
 
   parseGitHubPRUrl(url: string) {
@@ -67,8 +74,11 @@ export class CopilotSurveyComponent implements OnInit {
       reason: this.surveyForm.value.reason,
       timeUsedFor: this.surveyForm.value.timeUsedFor
     }).subscribe((res) => {
-      if (this.params['url']) {
-        window.location.href = new URL(this.params['url']).pathname.toString();
+      const redirectUrl = this.params['url'];
+      if (redirectUrl && redirectUrl.startsWith('https://github.com/')) {
+        window.location.href = redirectUrl;
+      } else {
+        console.error('Unauthorized URL:', redirectUrl);
       }
     });
   }
