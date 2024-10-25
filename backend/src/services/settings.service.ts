@@ -8,7 +8,11 @@ class SettingsService {
 
   // Get settings by name 🆔
   async getSettingsByName(name: string) {
-    return await Settings.findOne({ where: { name } });
+    const rsp = await Settings.findOne({ where: { name } });
+    if (!rsp) {
+      throw new Error('Settings not found');
+    }
+    return rsp.dataValues.value;
   }
 
   // Update settings ✏️

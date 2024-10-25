@@ -1,5 +1,5 @@
 {
-  "name": "my-fullstack-app-backend",
+  "name": "GitHub Value",
   "version": "1.0.0",
   "description": "Backend for my fullstack application using Node.js and TypeScript",
   "main": "src/app.ts",
@@ -11,6 +11,7 @@
     "proxy": "npx smee -t http://127.0.0.1:3000/api/github/webhooks"
   },
   "dependencies": {
+    "bunyan": "^1.8.15",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "eventsource": "^2.0.2",
@@ -23,6 +24,7 @@
     "sqlite3": "^5.0.2"
   },
   "devDependencies": {
+    "@types/bunyan": "^1.8.11",
     "@types/cors": "^2.8.17",
     "@types/eventsource": "^1.1.15",
     "@types/express": "^4.17.13",

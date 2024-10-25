@@ -3,7 +3,7 @@ import { MaterialModule } from '../material.module';
 import { AppModule } from '../app.module';
 import { FormControl, FormGroup, FormGroupDirective, NgForm, Validators } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { SettingsHttpService } from '../settings.service';
+import { SettingsHttpService } from '../services/settings.service';
 import { CommonModule } from '@angular/common';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {

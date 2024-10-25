@@ -1,22 +1,26 @@
 <div class="container">
   <mat-card>
     <mat-card-header>
-      <div mat-card-avatar class="example-header-image"></div>
-      <mat-card-title>Welcome to the GitHub App</mat-card-title>
-      <mat-card-subtitle>Dog Breed</mat-card-subtitle>
+      <!-- <div mat-card-avatar class="example-header-image"></div> -->
+      <mat-card-title>Welcome to the GitHub Value App</mat-card-title>
+      <!-- <mat-card-subtitle>Dog Breed</mat-card-subtitle> -->
     </mat-card-header>
-    <img mat-card-image src="https://material.angular.io/assets/img/examples/shiba2.jpg" alt="Photo of a Shiba Inu">
+    <img mat-card-image src="assets/images/copilot.png" alt="Photo of Copilot Head">
     <mat-card-content>
       <p>
-        This is a simple Angular app that demonstrates how to use the
+        To get start you'll need to register a new app on GitHub.
       </p>
     </mat-card-content>
     <mat-card-actions>
-      <form #form action="https://github.com/settings/apps/new?state=abc123" method="post">
+      <form #form [action]="formAction" method="post" target="_blank">
         <input type="text" name="manifest" id="manifest" [value]="manifestString"><br>
+        <mat-form-field class="example-full-width">
+          <mat-label>Organization Name</mat-label>
+          <input type="text" matInput [formControl]="organizationFormControl" placeholder="Ex. Octodemo">
+        </mat-form-field>
         <!-- <input type="submit" value="Submit"> -->
-        <button type="submit" (click)="form.submit()" mat-flat-button color="primary">Register GitHub App</button>
-        <button mat-button>use an existing GitHub App</button>
+        <button type="submit" (click)="onSubmit()" mat-flat-button color="primary">Register GitHub App</button>
+        <button disabled mat-button>or use an existing GitHub App</button>
       </form>
     </mat-card-actions>
   </mat-card>

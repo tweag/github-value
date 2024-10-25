@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { serverUrl } from './server.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class SettingsHttpService {
-  // private apiUrl = '/api/settings'; // Adjust the URL as needed
-  private apiUrl = 'http://localhost/api/settings'; // Adjust the URL as needed
+  private apiUrl = `${serverUrl}/api/settings`;
 
   constructor(private http: HttpClient) { }
 

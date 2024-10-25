@@ -3,38 +3,40 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import path from 'path';
-import { createNodeMiddleware } from "octokit";
 import apiRoutes from "./routes/index"
-import { setupWebhookListeners } from './controllers/webhook.controller';
-import github from './services/octokit';
-import { createSmeeWebhookProxy } from './services/smee';
-import settingsService from './services/settings.service';
 import { dbConnect } from './database';
+import setup from './services/setup';
+import SmeeService from './services/smee';
+import logger, { expressLoggerMiddleware } from './services/logger';
 
 const PORT = Number(process.env.PORT) || 80;
 
-// I hate esm modules... I can't use top level await without a ton of misc. issues
+export const app = express();
+app.use(cors());
+app.use(expressLoggerMiddleware);
+
 (async () => {
   await dbConnect();
 
-  // queryCopilotMetrics(); // Temporarily disabling the metrics query for testing
+  const { url: webhookProxyUrl } = await SmeeService.createSmeeWebhookProxy(PORT);
 
-  const { url } = await createSmeeWebhookProxy(PORT);
-  settingsService.updateOrCreateSettings({ webhookProxyUrl: url });
+  try {
+    await setup.createAppFromEnv();
+  } catch (error) {
+    logger.info('Failed to create app from environment. This is expected if the app is not yet installed.');
+  }
 
-  const app = express();
-
-  app.use(cors());
-
-  // GitHub Webhook middleware
-  setupWebhookListeners(github);
-  app.use(createNodeMiddleware(github));
-
-  app.use(bodyParser.json());
-  app.use(bodyParser.urlencoded({ extended: true }));
+  // Skip middleware if the request is for the GitHub webhook
+  // app.use((req, res, next) => {
+  //   if (req.originalUrl === '/api/github/webhooks') {
+  //     next();
+  //   } else {
+  //     bodyParser.json()(req, res, (err) => err ? next(err) : bodyParser.urlencoded({ extended: true })(req, res, next));
+  //   }
+  // });
 
   // API Routes
-  app.use('/api', apiRoutes);
+  app.use('/api', bodyParser.json(), bodyParser.urlencoded({ extended: true }), apiRoutes);
 
   // Angular Frontend
   const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
@@ -42,6 +44,9 @@ const PORT = Number(process.env.PORT) || 80;
   app.get('*', (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
   app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT} 🚀`);
+    logger.info(`Server is running at http://localhost:${PORT} 🚀`);
+    if (process.env.WEB_URL) {
+      logger.debug(`Frontend is running at ${process.env.WEB_URL} 🚀`);
+    }
   });
 })();

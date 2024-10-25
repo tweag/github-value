@@ -1,6 +1,4 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
-import { MaterialModule } from './material.module';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AppModule } from './app.module';
@@ -17,8 +15,7 @@ const GITHUB_MARK = `
   selector: 'app-root',
   standalone: true,
   imports: [
-    AppModule,
-    MaterialModule
+    AppModule
   ],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'

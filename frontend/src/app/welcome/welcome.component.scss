@@ -1,6 +1,7 @@
 :host {
   display: block;
   width: 100%;
+  height: 100%;
   overflow: hidden;
 }
 
@@ -10,13 +11,22 @@
   align-items: center;
   flex-direction: column;
   width: 100%;
+  height: 100%;
 }
 
 mat-card {
-  width: 400px;
+  width: 450px;
 }
 
 .example-header-image {
   background-image: url('https://material.angular.io/assets/img/examples/shiba1.jpg');
   background-size: cover;
+}
+
+#manifest {
+  display: none;
+}
+
+.example-full-width {
+  width: 100%;
 }
