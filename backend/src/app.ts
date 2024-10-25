@@ -12,11 +12,6 @@ import logger, { expressLoggerMiddleware } from './services/logger';
 
 const PORT = Number(process.env.PORT) || 80;
 
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-});
-
 export const app = express();
 app.use(cors());
 app.use(expressLoggerMiddleware);
@@ -32,22 +27,16 @@ app.use(expressLoggerMiddleware);
     logger.info('Failed to create app from environment. This is expected if the app is not yet installed.');
   }
 
-  // Skip middleware if the request is for the GitHub webhook
-  // app.use((req, res, next) => {
-  //   if (req.originalUrl === '/api/github/webhooks') {
-  //     next();
-  //   } else {
-  //     bodyParser.json()(req, res, (err) => err ? next(err) : bodyParser.urlencoded({ extended: true })(req, res, next));
-  //   }
-  // });
-
   // API Routes
   app.use('/api', bodyParser.json(), bodyParser.urlencoded({ extended: true }), apiRoutes);
 
   // Angular Frontend
   const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
   app.use(express.static(frontendPath));
-  app.get('*', limiter, (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
+  app.get('*', rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5000, // limit each IP to 100 requests per windowMs
+  }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
   app.listen(PORT, () => {
     logger.info(`Server is running at http://localhost:${PORT} 🚀`);
