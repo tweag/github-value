@@ -41,12 +41,12 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          # tags: |
-          #   type=schedule
-          #   type=ref,event=branch
-          #   type=ref,event=tag
-          #   type=ref,event=pr
-          #   type=sha,format=long
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=ref,event=pr
+            type=sha,format=long
           images: ghcr.io/${{ github.event.repository.owner.login }}/${{ github.event.repository.name }}
       - uses: docker/build-push-action@v3
         with:
