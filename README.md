@@ -1,6 +1,6 @@
 # GitHub Value
 
-This is a full-stack application that is designed to demonstrate the value of GitHub. It is built with Angular, Node.js, and SQLite. It is designed to be run using Docker Compose.
+This is a full-stack application that is designed to demonstrate the value of GitHub. It is built with Angular, Node.js, and MySQL. It is designed to be run using Docker Compose.
 
 ### Prerequisites
 
@@ -21,7 +21,7 @@ run docker-compose:
 docker-compose up
 ```
 
-This will start the server along with the SQLite database.
+This will start the server along with the MySQL database.
 
 ### Getting Started
 
