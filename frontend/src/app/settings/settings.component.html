@@ -1,9 +1,25 @@
 <form class="example-form" [formGroup]="form" (ngSubmit)="onSubmit()">
   <mat-form-field class="example-full-width">
-    <mat-label>Webhook Url</mat-label>
+    <mat-label>Metrics Polling Rate</mat-label>
+    <input type="text" matInput [formControl]="form.controls.metricsCronExpression" [errorStateMatcher]="matcher"
+           placeholder="Ex: 0 0 * * *">
+           <mat-error *ngIf="form.controls.metricsCronExpression.hasError('required')">Repository is <strong>required</strong></mat-error>
+           <!-- <mat-hint><a href="https://crontab.guru/">crontab.guru</a></mat-hint> -->
+  </mat-form-field>
+
+  <mat-form-field class="example-full-width">
+    <mat-label>Base URL</mat-label>
+    <input type="email" matInput [formControl]="form.controls.baseUrl" [errorStateMatcher]="matcher"
+           placeholder="Ex: https://localhost">
+           <mat-error *ngIf="form.controls.baseUrl.hasError('required')">Base URL is <strong>required</strong></mat-error>
+           <mat-error *ngIf="form.controls.baseUrl.hasError('pattern')">Please enter a valid URL</mat-error>
+  </mat-form-field>
+
+  <mat-form-field class="example-full-width">
+    <mat-label>Webhook URL</mat-label>
     <input type="email" matInput [formControl]="form.controls.webhookProxyUrl" [errorStateMatcher]="matcher"
            placeholder="Ex: https://smee.io/ZzmdZIYqsXt7RHS5">
-           <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('required')">Webhook Url is <strong>required</strong></mat-error>
+           <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('required')">Webhook URL is <strong>required</strong></mat-error>
            <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('pattern')">Please enter a valid URL</mat-error>
   </mat-form-field>
   
@@ -13,22 +29,5 @@
            placeholder="Ex: password">
   </mat-form-field>
 
-  <mat-form-field class="example-full-width">
-    <mat-label>App ID</mat-label>
-    <input type="text" matInput [formControl]="form.controls.appId" [errorStateMatcher]="matcher"
-           placeholder="Ex: 1028385">
-    <mat-error *ngIf="form.controls.appId.hasError('required')">App ID is <strong>required</strong></mat-error>
-    <mat-error *ngIf="form.controls.appId.hasError('pattern')">App ID must be a number</mat-error>
-    <mat-error *ngIf="form.controls.appId.hasError('min') || form.controls.appId.hasError('max')">App ID must be <strong>7</strong> digits</mat-error>
-  </mat-form-field>
-
-  <mat-form-field class="example-full-width">
-    <mat-label>Private Key</mat-label>
-    <textarea matInput [formControl]="form.controls.privateKey" [errorStateMatcher]="matcher"
-                placeholder="Ex: -----BEGIN RSA PRIVATE KEY-----"></textarea>
-    <mat-error *ngIf="form.controls.privateKey.hasError('required')">Private Key is <strong>required</strong></mat-error>
-    <mat-error *ngIf="form.controls.privateKey.hasError('pattern')">Please enter a valid private key</mat-error>
-  </mat-form-field>
-
-  <button mat-raised-button color="primary" [disabled]="form.invalid" type="submit">Save</button>
+  <button mat-raised-button color="primary" type="submit">Save</button>
 </form>

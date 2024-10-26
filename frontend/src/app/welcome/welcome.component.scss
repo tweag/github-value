@@ -14,19 +14,23 @@
   height: 100%;
 }
 
-mat-card {
+.intro {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
   width: 450px;
+  img-container {
+    height: 18em;
+  }
+  img {
+    display: block;
+    margin: 20px;
+    height: 18em;
+  }
 }
 
 .example-header-image {
   background-image: url('https://material.angular.io/assets/img/examples/shiba1.jpg');
   background-size: cover;
-}
-
-#manifest {
-  display: none;
-}
-
-.example-full-width {
-  width: 100%;
 }

@@ -57,7 +57,8 @@ import { MatToolbarModule } from '@angular/material/toolbar';
     MatCardModule,
     MatRadioModule,
     MatIconModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatDialogModule
   ]
 })
 export class MaterialModule { }

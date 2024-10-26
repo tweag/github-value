@@ -26,7 +26,7 @@ class SmeeService {
     if (!this.webhookProxyUrl) {
       this.webhookProxyUrl = await this.createWebhookChannel();
       if (!this.webhookProxyUrl) throw new Error('Unable to create webhook channel');
-      await settingsService.updateOrCreateSetting('webhookProxyUrl', this.webhookProxyUrl);
+      await settingsService.updateSetting('webhookProxyUrl', this.webhookProxyUrl);
     }
     let eventSource: EventSource | undefined;
     try {
@@ -39,7 +39,7 @@ class SmeeService {
       logger.error('Unable to connect to smee.io. recreating webhook.', error);
       this.webhookProxyUrl = await this.createWebhookChannel();
       if (!this.webhookProxyUrl) throw new Error('Unable to create webhook channel');
-      await settingsService.updateOrCreateSetting('webhookProxyUrl', this.webhookProxyUrl);
+      await settingsService.updateSetting('webhookProxyUrl', this.webhookProxyUrl);
       eventSource = await this.createWebhookProxy({
         url: this.webhookProxyUrl,
         port,

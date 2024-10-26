@@ -29,6 +29,7 @@ router.get('/setup/redirect', setupController.setup);
 router.get('/setup/install', setupController.install);
 router.get('/setup/status', setupController.isSetup);
 router.get('/setup/manifest', setupController.getManifest);
+router.post('/setup/existing-app', setupController.addExistingApp);
 
 router.get
 

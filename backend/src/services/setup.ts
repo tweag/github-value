@@ -3,9 +3,11 @@ import { appendFileSync, readFileSync } from "fs";
 import { App, createNodeMiddleware, Octokit } from "octokit";
 import { setupWebhookListeners } from '../controllers/webhook.controller';
 import { app as expressApp } from '../app';
-import { queryCopilotMetrics } from "./metrics.service";
+import metricsService from "./metrics.service";
 import SmeeService from './smee';
 import logger from "./logger";
+import updateDotenv from 'update-dotenv';
+import settingsService from './settings.service';
 
 class Setup {
   private static instance: Setup;
@@ -31,14 +33,62 @@ class Setup {
     })
     const data = response.data;
 
-    appendFileSync('.env', `GITHUB_WEBHOOK_SECRET=${data.webhook_secret}\n`);
-    appendFileSync('.env', `GITHUB_APP_ID=${data.id}\n`);
-    appendFileSync('.env', `GITHUB_APP_PRIVATE_KEY="${data.pem}"\n`);
-    process.env.GITHUB_WEBHOOK_SECRET = data.webhook_secret;
-    process.env.GITHUB_APP_ID = data.id.toString();
-    process.env.GITHUB_APP_PRIVATE_KEY = data.pem;
+    this.addToEnv({
+      GITHUB_WEBHOOK_SECRET: data.webhook_secret,
+      GITHUB_APP_ID: data.id.toString(),
+      GITHUB_APP_PRIVATE_KEY: data.pem
+    });
 
     return data;
+  }
+
+  createAppFromExisting = async (appId: string, privateKey: string, webhookSecret: string) => {
+    const _app = new App({
+      appId: appId,
+      privateKey: privateKey,
+      webhooks: {
+        secret: webhookSecret
+      },
+      oauth: {
+        clientId: null!,
+        clientSecret: null!
+      }
+    })
+
+    const installUrl = await _app.getInstallationUrl();
+    if (!installUrl) {
+      throw new Error('Failed to get installation URL');
+    }
+
+    const installation: any = await (new Promise((resolve, reject) => {
+      _app.eachInstallation((install) => {
+        if (install && install.installation && install.installation.id) {
+          resolve(install.installation);
+        } else {
+          reject(new Error("No installation found"));
+        }
+        return false; // Stop after the first installation
+      });
+    }));
+
+    this.installationId = installation.id;
+    this.addToEnv({
+      GITHUB_APP_ID: appId,
+      GITHUB_APP_PRIVATE_KEY: privateKey,
+      GITHUB_WEBHOOK_SECRET: webhookSecret,
+      GITHUB_APP_INSTALLATION_ID: installation.id.toString()
+    })
+
+    await this.createAppFromEnv();
+
+    return installUrl;
+  }
+
+  addToEnv = (obj: { [key: string]: string }) => {
+    updateDotenv(obj);
+    Object.entries(obj).forEach(([key, value]) => {
+      process.env[key] = value;
+    });
   }
 
   createAppFromInstallationId = async (installationId: number) => {
@@ -60,8 +110,9 @@ class Setup {
       },
     });
 
-    appendFileSync('.env', `GITHUB_APP_INSTALLATION_ID=${installationId.toString()}\n`);
-    process.env.GITHUB_APP_INSTALLATION_ID = installationId.toString();
+    this.addToEnv({
+      GITHUB_APP_INSTALLATION_ID: installationId.toString()
+    })
     this.installationId = installationId;
 
     this.start();
@@ -120,7 +171,15 @@ class Setup {
     const authenticated = await octokit.rest.apps.getAuthenticated();
     this.installation = authenticated.data;
     this.createWebhookMiddleware();
-    queryCopilotMetrics();
+
+    const metricsCronExpression = await settingsService.getSettingsByName('metricsCronExpression').catch(() => {
+      return '0 0 * * *';
+    });
+    const timezone = await settingsService.getSettingsByName('timezone').catch(() => {
+      return 'UTC';
+    });
+    metricsService.createInstance(metricsCronExpression, timezone);
+
     logger.info(`GitHub App ${this.installation.slug} is ready to use`);
   }
 

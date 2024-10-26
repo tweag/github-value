@@ -12,7 +12,7 @@ const sequelize = new Sequelize({
   host: process.env.MYSQL_HOST,
   port: parseInt(process.env.MYSQL_PORT || '3306'),
   logging: (sql: string, timing?: number) => {
-    logger.info(sql, timing && `(${timing}ms)`);
+    logger.info(sql);
   }
 });
 const dbConnect = async () => {

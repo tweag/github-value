@@ -1,33 +1,30 @@
-# Backend Documentation
+# Backend
 
 ## Overview
-This is the backend part of the fullstack application built with Node.js, TypeScript, and SQLite. The backend serves as the API for the frontend Angular application.
 
-## Project Structure
-- **src/**: Contains the source code for the backend.
-  - **controllers/**: Handles incoming requests and responses.
-  - **models/**: Defines data models for interacting with the SQLite database.
-  - **routes/**: Sets up API routes and links them to controllers.
-  - **services/**: Contains business logic and data access methods.
-  - **app.ts**: Entry point for the Node.js backend, setting up the Express app.
 
-## Getting Started
-1. Clone the repository.
-2. Navigate to the backend directory.
-3. Install dependencies:
-   ```
-   npm install
-   ```
-4. Start the server:
-   ```
-   npm start
-   ```
+## Development
+```bash
+npm run dev
+```
 
 ## Database
-The backend uses SQLite for data storage. The database file is located in the `database/` directory.
+The backend uses a MySQL database to store data.
+
+You can run the docker compose file to start the database. Just shutdown the backend server so you can free up the port.
+
+You can also run it manually:
+```bash
+docker run -d \
+  --name db \
+  --restart always \
+  -e MYSQL_PASSWORD=octocat \
+  -e MYSQL_DATABASE=value \
+  -p 3306:3306 \
+  -v db:/var/lib/mysql \
+  -v ./db/init.sql:/docker-entrypoint-initdb.d/init.sql \
+  mysql
+```
 
 ## API Endpoints
-Refer to the routes defined in the `src/routes/index.ts` file for available API endpoints.
-
-## License
-This project is licensed under the MIT License.
+Refer to the routes defined in the [`src/routes/index.ts`](./src/routes/index.ts) file for available API endpoints.

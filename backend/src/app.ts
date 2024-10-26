@@ -9,6 +9,7 @@ import { dbConnect } from './database';
 import setup from './services/setup';
 import SmeeService from './services/smee';
 import logger, { expressLoggerMiddleware } from './services/logger';
+import dotenv from 'dotenv'
 
 const PORT = Number(process.env.PORT) || 80;
 
@@ -27,8 +28,13 @@ app.use(expressLoggerMiddleware);
     logger.info('Failed to create app from environment. This is expected if the app is not yet installed.');
   }
 
-  // API Routes
-  app.use('/api', bodyParser.json(), bodyParser.urlencoded({ extended: true }), apiRoutes);
+  app.use((req, res, next) => {
+    if (req.path === '/api/github/webhooks') {
+      return next();
+    }
+    bodyParser.json()(req, res, next);
+  }, bodyParser.urlencoded({ extended: true }));  
+  app.use('/api', apiRoutes);
 
   // Angular Frontend
   const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
