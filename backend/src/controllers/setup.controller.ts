@@ -22,7 +22,7 @@ class SetupController {
         throw new Error('installation_id must be a number');
       }
       const app = await setup.createAppFromInstallationId(Number(installation_id));
-      
+
       res.redirect(process.env.WEB_URL || '/');
     } catch (error) {
       res.status(500).json(error);
@@ -33,6 +33,24 @@ class SetupController {
     try {
       const manifest = setup.getManifest(`${req.protocol}://${req.hostname}`);
       res.json(manifest);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
+  async addExistingApp(req: Request, res: Response) {
+    try {
+      const { appId, privateKey, webhookSecret } = req.body;
+
+      if (!appId || !privateKey || !webhookSecret) {
+        return res.status(400).json({ error: 'All fields are required' });
+      }
+
+      const installUrl = await setup.createAppFromExisting(appId, privateKey, webhookSecret);
+      
+      console.log('installUrl', installUrl  );
+
+      res.json({ installUrl });
     } catch (error) {
       res.status(500).json(error);
     }

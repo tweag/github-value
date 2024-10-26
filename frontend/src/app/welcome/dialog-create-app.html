@@ -1,0 +1,72 @@
+<h1 mat-dialog-title>{{ existingApp ? 'Add Existing Github App' : 'Register GitHub App'}}</h1>
+<div mat-dialog-content>
+  <ng-container *ngIf="existingApp; else newApp">
+    <p>
+      Nice! You're using an existing GitHub App.
+    </p>
+    <p>
+      Replace your app's Webhook URL with<br>
+      <b>{{manifest?.hook_attributes?.url}}</b>
+    </p>
+    <p>
+      <a mat-button href="https://github.com/settings/apps" target="_blank">
+        You can do that here
+      </a>
+    </p>
+    <mat-divider></mat-divider>
+    <br>
+    <p>
+      Fill out your app's details
+    </p>
+    <form [formGroup]="existingAppForm" id="existingAppForm">
+      <mat-form-field class="example-full-width" appearance="outline">
+        <mat-label>App ID</mat-label>
+        <input formControlName="appIdFormControl" type="text" matInput placeholder="Ex. 1036914">
+        <mat-error *ngIf="existingAppForm.controls.appIdFormControl.hasError('required')">
+          The App ID is required
+        </mat-error>
+      </mat-form-field>
+      <mat-form-field class="example-full-width" appearance="outline">
+        <mat-label>Webhook secret</mat-label>
+        <input formControlName="webhookSecretFormControl" type="text" matInput placeholder="Ex. s3cr3tW3bh00kK3y!">
+        <mat-error *ngIf="existingAppForm.controls.webhookSecretFormControl.hasError('required')">
+          The webhook secret is required
+        </mat-error>
+      </mat-form-field>
+      <button class="button-margin-bottom" type="button" mat-raised-button (click)="fileInput.click()">
+        {{existingAppForm.controls.privateKeyFormControl.value ?
+        existingAppForm.controls.privateKeyFormControl.value.split('\\').pop() : 'Private Key'}}
+      </button>
+      <input formControlName="privateKeyFormControl" hidden (change)="onFileSelected($event)" #fileInput type="file"
+        id="file" accept=".pem">
+      <div class="mat-error-container">
+        <mat-error
+          *ngIf="existingAppForm.controls.privateKeyFormControl.touched && existingAppForm.controls.privateKeyFormControl.hasError('required')">
+          The pem file is required
+        </mat-error>
+      </div>
+    </form>
+  </ng-container>
+  <ng-template #newApp>
+    <form #form [action]="formAction" method="post" target="_blank">
+      <p>Enter the name of the organization if you don't want to register the app under your personal account</p>
+      <input type="text" name="manifest" id="manifest" [value]="manifestString">
+      <mat-form-field class="example-full-width" appearance="outline">
+        <mat-label>Organization Name</mat-label>
+        <input type="text" matInput [formControl]="organizationFormControl" placeholder="Ex. Octodemo">
+      </mat-form-field>
+    </form>
+  </ng-template>
+  <!-- <input type="submit" value="Submit"> -->
+  <!-- <button type="submit" (click)="onSubmit()" mat-flat-button color="primary">Register GitHub App</button> -->
+  <!-- <button disabled mat-button>or use an existing GitHub App</button> -->
+</div>
+<div mat-dialog-actions>
+  <button mat-button (click)="onNoClick()">No Thanks</button>
+  <ng-container *ngIf="existingApp; else registerAppActions">
+    <button type="submit" [disabled]="existingAppForm.invalid" (click)="addExistingApp()" mat-button>Add</button>
+  </ng-container>
+  <ng-template #registerAppActions>
+    <button type="submit" [disabled]="false" (click)="registerNewApp()" mat-button cdkFocusInitial>Create</button>
+  </ng-template>
+</div>

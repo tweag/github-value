@@ -5,6 +5,7 @@ import { FormControl, FormGroup, FormGroupDirective, NgForm, Validators } from '
 import { ErrorStateMatcher } from '@angular/material/core';
 import { SettingsHttpService } from '../services/settings.service';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -26,45 +27,44 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 })
 export class SettingsComponent implements OnInit {
   form = new FormGroup({
+    metricsCronExpression: new FormControl('', []),
+    baseUrl: new FormControl('', [
+      Validators.required,
+      Validators.pattern(/^(https?:\/\/)[^\s/$.?#].[^\s]*$/)
+    ]),
     webhookProxyUrl: new FormControl('', [
       Validators.required,
-      // any https or http url
-      Validators.pattern(/^(https?:\/\/)[^\s/$.?#].[^\s]*$/) // Matches HTTP and HTTPS URLs, but not FTP
+      Validators.pattern(/^(https?:\/\/)[^\s/$.?#].[^\s]*$/)
     ]),
-    webhookSecret: new FormControl('', []),
-    appId: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/^\d+$/),
-      Validators.minLength(7),
-      Validators.maxLength(7)
-    ]),
-    privateKey: new FormControl('', [
-      Validators.required,
-      Validators.pattern(/-----BEGIN RSA PRIVATE KEY-----\n(?:.|\n)+\n-----END RSA PRIVATE KEY-----\n?/), // Matches only valid private keys
-    ]),
+    webhookSecret: new FormControl('', [])
   });
 
   matcher = new MyErrorStateMatcher();
 
   constructor(
-    private settingsService: SettingsHttpService
+    private settingsService: SettingsHttpService,
+    private router: Router
   ) { }
 
   ngOnInit() {
     this.settingsService.getAllSettings().subscribe((settings) => {
       console.log(settings);
       this.form.setValue({
+        metricsCronExpression: settings.metricsCronExpression || '',
+        baseUrl: settings.baseUrl || '',
         webhookProxyUrl: settings.webhookProxyUrl || '',
         webhookSecret: settings.webhookSecret || '',
-        appId: settings.appId || '',
-        privateKey: settings.privateKey || ''
       });
     });
   }
 
   onSubmit() {
+    this.form.markAllAsTouched();
+    if (this.form.invalid) {
+      return;
+    }
     this.settingsService.createSettings(this.form.value).subscribe((response) => {
-      console.log(response);
+      this.router.navigate(['/']);
     });
   }
 }

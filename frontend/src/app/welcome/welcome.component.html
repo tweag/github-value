@@ -1,28 +1,23 @@
 <div class="container">
-  <mat-card>
+  <div class="intro noselect">
     <mat-card-header>
       <!-- <div mat-card-avatar class="example-header-image"></div> -->
-      <mat-card-title>Welcome to the GitHub Value App</mat-card-title>
-      <!-- <mat-card-subtitle>Dog Breed</mat-card-subtitle> -->
+      <!-- <mat-card-title>Welcome to the GitHub Value App</mat-card-title> -->
+      <!-- <mat-card-subtitle></mat-card-subtitle> -->
     </mat-card-header>
-    <img mat-card-image src="assets/images/copilot.png" alt="Photo of Copilot Head">
+    <h3>GitHub Value App</h3>
+    <div class="img-container">
+      <img mat-card-image src="assets/images/github-mark.svg" alt="GitHub Mark" draggable="false">
+    </div>
     <mat-card-content>
       <p>
-        To get start you'll need to register a new app on GitHub.
+        To get started you'll need a GitHub App.
       </p>
     </mat-card-content>
     <mat-card-actions>
-      <form #form [action]="formAction" method="post" target="_blank">
-        <input type="text" name="manifest" id="manifest" [value]="manifestString"><br>
-        <mat-form-field class="example-full-width">
-          <mat-label>Organization Name</mat-label>
-          <input type="text" matInput [formControl]="organizationFormControl" placeholder="Ex. Octodemo">
-        </mat-form-field>
-        <!-- <input type="submit" value="Submit"> -->
-        <button type="submit" (click)="onSubmit()" mat-flat-button color="primary">Register GitHub App</button>
-        <button disabled mat-button>or use an existing GitHub App</button>
-      </form>
+      <button (click)="openDialog(false)" mat-flat-button color="primary">Register GitHub App</button>
+      <button (click)="openDialog(true)" mat-button>or use an existing GitHub App</button>
     </mat-card-actions>
-  </mat-card>
+  </div>
 </div>
 https://github.com/settings/apps/manifest

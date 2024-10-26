@@ -1,0 +1,22 @@
+
+#manifest {
+  display: none;
+}
+
+.example-full-width {
+  width: 100%;
+}
+
+#existingAppForm {
+  .button-margin-bottom {
+    margin-bottom: 5px;
+  }
+  mat-form-field {
+    margin-bottom: 10px;
+  }
+}
+
+.mat-error-container {
+  padding: 0 16px;
+  font-size:12px;
+}

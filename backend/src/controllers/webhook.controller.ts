@@ -1,6 +1,7 @@
 import { Webhooks } from '@octokit/webhooks';
 import { App } from 'octokit';
 import logger from '../services/logger';
+import settingsService from '../services/settings.service';
 
 const webhooks = new Webhooks({
   secret: process.env.GITHUB_WEBHOOK_SECRET || 'your-secret',
@@ -14,7 +15,7 @@ const webhooks = new Webhooks({
 
 export const setupWebhookListeners = (github: App) => {
   github.webhooks.on("pull_request.opened", ({ octokit, payload }) => {
-    const surveyUrl = new URL(`/surveys/new`, octokit.request.endpoint.DEFAULTS.baseUrl);
+    const surveyUrl = new URL(`/surveys/new`, settingsService.baseUrl);
 
     surveyUrl.searchParams.append('url', payload.pull_request.html_url);
     surveyUrl.searchParams.append('author', payload.pull_request.user.login);

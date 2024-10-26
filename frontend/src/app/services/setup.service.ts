@@ -11,12 +11,20 @@ export class SetupService {
 
   constructor(private http: HttpClient) { }
 
-  getSetupStatus(): Observable<any> {
+  getSetupStatus(): Observable<{ isSetup: boolean }> {
     return this.http.get<any>(`${this.apiUrl}/status`);
   }
 
   getManifest(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/manifest`);
+  }
+
+  addExistingApp(request: {
+    appId: string,
+    privateKey: string,
+    webhookSecret: string
+  }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/existing-app`, request);
   }
 
 }

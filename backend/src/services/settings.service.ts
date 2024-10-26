@@ -1,13 +1,21 @@
 import { Settings } from '../models/settings.model';
+import MetricsService from './metrics.service';
+import setup from './setup';
 
 class SettingsService {
-  // Get all settings ⚙️
+  public baseUrl = process.env.BASE_URL || 'http://localhost';
+
+  constructor() {
+    this.getSettingsByName('baseUrl').then((baseUrl) => {
+      this.baseUrl = baseUrl;
+    });
+  }
+
   async getAllSettings() {
     return await Settings.findAll();
   }
 
-  // Get settings by name 🆔
-  async getSettingsByName(name: string) {
+  async getSettingsByName(name: string): Promise<string> {
     const rsp = await Settings.findOne({ where: { name } });
     if (!rsp) {
       throw new Error('Settings not found');
@@ -15,40 +23,24 @@ class SettingsService {
     return rsp.dataValues.value;
   }
 
-  // Update settings ✏️
-  async updateSetting(name: string, data: any) {
-    const [updated] = await Settings.update(data, {
-      where: { name }
-    });
-    if (updated) {
-      return await Settings.findOne({ where: { name } });
-    }
-    throw new Error('Settings not found');
-  }
-
-  async updateSettings(obj: any) {
-    Object.entries(obj).forEach(([name, value]) => {
-      this.updateSetting(name, { value });
-    });
-  }
-
-  async updateOrCreateSettings(obj: { [key: string]: string }) {
-    Object.entries(obj).forEach(([name, value]) => {
-      this.updateOrCreateSetting(name, value);
-    });
-  }
-
-  async updateOrCreateSetting(name: string, value: string) {
+  async updateSetting(name: string, value: string) {
+    if (name === 'webhookProxyUrl') setup.addToEnv({ WEBHOOK_PROXY_URL: value });
+    if (name === 'webhookSecret') setup.addToEnv({ GITHUB_WEBHOOK_SECRET: value });
+    if (name === 'metricsCronExpression') MetricsService.getInstance().updateCronJob(value);
     try {
       await Settings.upsert({ name, value });
       return await Settings.findOne({ where: { name } });
     } catch (error) {
-      // 😱 Handle any unexpected errors 😱
       throw error;
     }
   }
 
-  // Delete settings 🗑️
+  async updateSettings(obj: { [key: string]: string }) {
+    Object.entries(obj).forEach(([name, value]) => {
+      this.updateSetting(name, value);
+    });
+  }
+
   async deleteSettings(name: string) {
     const deleted = await Settings.destroy({
       where: { name }
