@@ -15,6 +15,10 @@ export class SetupService {
     return this.http.get<any>(`${this.apiUrl}/status`);
   }
 
+  getInstall(): Observable<any> {
+    return this.http.get<any>(`${this.apiUrl}/install`);
+  }
+
   getManifest(): Observable<any> {
     return this.http.get<any>(`${this.apiUrl}/manifest`);
   }

@@ -5,7 +5,9 @@ import { SetupService } from '../services/setup.service';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-``
+import { ClipboardModule } from '@angular/cdk/clipboard';
+
+
 @Component({
   selector: 'app-welcome',
   standalone: true,
@@ -36,7 +38,7 @@ export class WelcomeComponent {
 
   openDialog(existingApp: boolean): void {
     this.dialog.open(DialogOverviewExampleDialog, {
-      width: '325px',
+      width: '400px',
       data: existingApp
     }).afterClosed().subscribe(() => {
       this.checkIfSetup();
@@ -52,7 +54,8 @@ export class WelcomeComponent {
   imports: [
     MaterialModule,
     ReactiveFormsModule,
-    CommonModule
+    CommonModule,
+    ClipboardModule
   ]
 })
 export class DialogOverviewExampleDialog {

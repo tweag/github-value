@@ -6,6 +6,7 @@ import { ErrorStateMatcher } from '@angular/material/core';
 import { SettingsHttpService } from '../services/settings.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { SetupService } from '../services/setup.service';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -38,23 +39,27 @@ export class SettingsComponent implements OnInit {
     ]),
     webhookSecret: new FormControl('', [])
   });
-
-  matcher = new MyErrorStateMatcher();
+  install: any;
 
   constructor(
     private settingsService: SettingsHttpService,
-    private router: Router
+    private router: Router,
+    private setupService: SetupService
   ) { }
 
   ngOnInit() {
     this.settingsService.getAllSettings().subscribe((settings) => {
-      console.log(settings);
       this.form.setValue({
         metricsCronExpression: settings.metricsCronExpression || '',
         baseUrl: settings.baseUrl || '',
         webhookProxyUrl: settings.webhookProxyUrl || '',
         webhookSecret: settings.webhookSecret || '',
       });
+    });
+
+    this.setupService.getInstall().subscribe((install) => {
+      this.install = install;
+      console.log(install);
     });
   }
 

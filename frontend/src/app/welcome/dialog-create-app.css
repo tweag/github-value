@@ -7,12 +7,17 @@
   width: 100%;
 }
 
-#existingAppForm {
-  .button-margin-bottom {
-    margin-bottom: 5px;
+.stepper-margin-top {
+  margin-top: 16px;
+}
+#existingAppForm {  
+  .mat-stepper-vertical {
+    margin-top: 8px;
   }
-  mat-form-field {
-    margin-bottom: 10px;
+  
+  .mdc-button,
+  .mat-mdc-form-field {
+    margin-top: 16px;
   }
 }
 

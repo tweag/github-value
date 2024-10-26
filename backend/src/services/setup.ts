@@ -189,10 +189,11 @@ class Setup {
 
   getManifest = (baseUrl: string) => {
     const manifest = JSON.parse(readFileSync('github-manifest.json', 'utf8'));
-    manifest.url = baseUrl;
-    manifest.hook_attributes.url = `${baseUrl}/api/github/webhooks`;
-    manifest.setup_url = `${baseUrl}/api/setup/install`;
-    manifest.redirect_url = `${baseUrl}/api/setup/redirect`;
+    const base = new URL(baseUrl);
+    manifest.url = base.href;
+    manifest.hook_attributes.url = new URL('/api/github/webhooks', base).href;
+    manifest.setup_url = new URL('/api/setup/install/complete', base).href;
+    manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;
     manifest.hook_attributes.url = SmeeService.getWebhookProxyUrl();
     return manifest;
   };
