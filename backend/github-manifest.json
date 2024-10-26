@@ -1,11 +1,12 @@
 {
   "name": "Demonstrate GitHub Value",
+  "description": "This GitHub App demonstrates the value of GitHub",
   "url": "https://www.example.com",
   "hook_attributes": {
     "url": "https://example.com/github/events"
   },
-  "setup_url": "http://localhost/api/setup/install",
-  "redirect_url": "http://localhost/api/setup/redirect",
+  "setup_url": "http://localhost/api/setup/install/complete",
+  "redirect_url": "http://localhost/api/setup/registration/complete",
   "public": false,
   "default_permissions": {
     "pull_requests": "write",

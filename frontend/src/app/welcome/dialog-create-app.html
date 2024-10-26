@@ -4,52 +4,63 @@
     <p>
       Nice! You're using an existing GitHub App.
     </p>
-    <p>
-      Replace your app's Webhook URL with<br>
-      <b>{{manifest?.hook_attributes?.url}}</b>
-    </p>
-    <p>
-      <a mat-button href="https://github.com/settings/apps" target="_blank">
-        You can do that here
-      </a>
-    </p>
-    <mat-divider></mat-divider>
-    <br>
-    <p>
-      Fill out your app's details
-    </p>
-    <form [formGroup]="existingAppForm" id="existingAppForm">
-      <mat-form-field class="example-full-width" appearance="outline">
-        <mat-label>App ID</mat-label>
-        <input formControlName="appIdFormControl" type="text" matInput placeholder="Ex. 1036914">
-        <mat-error *ngIf="existingAppForm.controls.appIdFormControl.hasError('required')">
-          The App ID is required
-        </mat-error>
-      </mat-form-field>
-      <mat-form-field class="example-full-width" appearance="outline">
-        <mat-label>Webhook secret</mat-label>
-        <input formControlName="webhookSecretFormControl" type="text" matInput placeholder="Ex. s3cr3tW3bh00kK3y!">
-        <mat-error *ngIf="existingAppForm.controls.webhookSecretFormControl.hasError('required')">
-          The webhook secret is required
-        </mat-error>
-      </mat-form-field>
-      <button class="button-margin-bottom" type="button" mat-raised-button (click)="fileInput.click()">
-        {{existingAppForm.controls.privateKeyFormControl.value ?
-        existingAppForm.controls.privateKeyFormControl.value.split('\\').pop() : 'Private Key'}}
-      </button>
-      <input formControlName="privateKeyFormControl" hidden (change)="onFileSelected($event)" #fileInput type="file"
-        id="file" accept=".pem">
-      <div class="mat-error-container">
-        <mat-error
-          *ngIf="existingAppForm.controls.privateKeyFormControl.touched && existingAppForm.controls.privateKeyFormControl.hasError('required')">
-          The pem file is required
-        </mat-error>
-      </div>
-    </form>
+    <mat-stepper orientation="vertical" #stepper linear>
+      <mat-step>
+        <ng-template matStepLabel>Add Webhook URL</ng-template>
+        <p class="stepper-margin-top">
+          Replace your app's Webhook URL with
+        </p>
+        <mat-form-field class="example-full-width" appearance="outline">
+          <mat-label>Webhook URL</mat-label>
+          <input matInput #webhookInput [value]="manifest?.hook_attributes?.url" readonly>
+          <mat-icon matSuffix [cdkCopyToClipboard]="manifest?.hook_attributes?.url || ''" (click)="webhookInput.select()">content_copy</mat-icon>
+        </mat-form-field>
+        <div>
+          <a mat-raised-button href="https://github.com/settings/organizations" target="_blank">
+            View your Organizations
+          </a>
+          <button mat-button matStepperNext>Next</button>
+        </div>
+      </mat-step>
+      <mat-step [stepControl]="existingAppForm">
+        <ng-template matStepLabel>Fill out your App's details</ng-template>
+        <form [formGroup]="existingAppForm" id="existingAppForm">
+          <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>App ID</mat-label>
+            <input formControlName="appIdFormControl" type="text" matInput placeholder="Ex. 1036914">
+            <mat-error *ngIf="existingAppForm.controls.appIdFormControl.hasError('required')">
+              The App ID is required
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field class="example-full-width" appearance="outline">
+            <mat-label>Webhook secret</mat-label>
+            <input formControlName="webhookSecretFormControl" type="text" matInput placeholder="Ex. s3cr3tW3bh00kK3y!">
+            <mat-error *ngIf="existingAppForm.controls.webhookSecretFormControl.hasError('required')">
+              The webhook secret is required
+            </mat-error>
+          </mat-form-field>
+          <button type="button" mat-raised-button (click)="fileInput.click()">
+            {{existingAppForm.controls.privateKeyFormControl.value ?
+            existingAppForm.controls.privateKeyFormControl.value.split('\\').pop() : 'Private Key'}}
+          </button>
+          <input formControlName="privateKeyFormControl" hidden (change)="onFileSelected($event)" #fileInput type="file"
+            id="file" accept=".pem">
+          <div class="mat-error-container">
+            <mat-error
+              *ngIf="existingAppForm.controls.privateKeyFormControl.touched && existingAppForm.controls.privateKeyFormControl.hasError('required')">
+              The pem file is required
+            </mat-error>
+          </div>
+        </form>
+      </mat-step>
+      <ng-template matStepperIcon="edit" let-index="index">
+        {{index +1}}
+        </ng-template>
+    </mat-stepper>
   </ng-container>
   <ng-template #newApp>
     <form #form [action]="formAction" method="post" target="_blank">
-      <p>Enter the name of the organization if you don't want to register the app under your personal account</p>
+      <p>Enter the name of the organization, unless you want to register the app under your personal account</p>
       <input type="text" name="manifest" id="manifest" [value]="manifestString">
       <mat-form-field class="example-full-width" appearance="outline">
         <mat-label>Organization Name</mat-label>

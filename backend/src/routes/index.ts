@@ -25,8 +25,9 @@ router.get('/settings/:name', settingsController.getSettingsByName);
 router.put('/settings/:name', settingsController.updateSettings);
 router.delete('/settings/:name', settingsController.deleteSettings);
 
-router.get('/setup/redirect', setupController.setup);
-router.get('/setup/install', setupController.install);
+router.get('/setup/registration/complete', setupController.registrationComplete);
+router.get('/setup/install/complete', setupController.installComplete);
+router.get('/setup/install', setupController.getInstall);
 router.get('/setup/status', setupController.isSetup);
 router.get('/setup/manifest', setupController.getManifest);
 router.post('/setup/existing-app', setupController.addExistingApp);

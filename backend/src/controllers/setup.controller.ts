@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import setup from '../services/setup';
 
 class SetupController {
-  async setup(req: Request, res: Response) {
+  async registrationComplete(req: Request, res: Response) {
     try {
       const { code } = req.query;
 
@@ -14,7 +14,7 @@ class SetupController {
     }
   }
 
-  async install(req: Request, res: Response) {
+  async installComplete(req: Request, res: Response) {
     try {
       const { installation_id } = req.query;
 
@@ -59,6 +59,17 @@ class SetupController {
   isSetup(req: Request, res: Response) {
     try {
       res.json({ isSetup: setup.isSetup() });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
+  getInstall(req: Request, res: Response) {
+    try {
+      if (!setup.installation) {
+        throw new Error('No installation found');
+      }
+      res.json(setup.installation);
     } catch (error) {
       res.status(500).json(error);
     }
