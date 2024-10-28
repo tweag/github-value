@@ -7,6 +7,7 @@ import path from 'path';
 import apiRoutes from "./routes/index"
 import { dbConnect } from './database';
 import setup from './services/setup';
+import settingsService from './services/settings.service';
 import SmeeService from './services/smee';
 import logger, { expressLoggerMiddleware } from './services/logger';
 import dotenv from 'dotenv'
@@ -19,6 +20,7 @@ app.use(expressLoggerMiddleware);
 
 (async () => {
   await dbConnect();
+  await settingsService.initializeSettings();
 
   const { url: webhookProxyUrl } = await SmeeService.createSmeeWebhookProxy(PORT);
 
