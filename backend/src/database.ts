@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize';
-import { Metrics, Breakdown } from './models/metrics.model';
 import { Settings } from './models/settings.model';
+import { Metrics, Breakdown } from './models/metrics.model';
 import { Survey } from './models/survey.model';
 import logger from './services/logger';
 

@@ -6,9 +6,14 @@ class SettingsService {
   public baseUrl = process.env.BASE_URL || 'http://localhost';
 
   constructor() {
-    this.getSettingsByName('baseUrl').then((baseUrl) => {
-      this.baseUrl = baseUrl;
-    });
+  }
+
+  async initializeSettings() {
+    try {
+      this.baseUrl = await this.getSettingsByName('baseUrl')
+    } catch (error) {
+      this.updateSetting('baseUrl', this.baseUrl);
+    }
   }
 
   async getAllSettings() {
