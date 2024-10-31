@@ -10,7 +10,6 @@ import setup from './services/setup';
 import settingsService from './services/settings.service';
 import SmeeService from './services/smee';
 import logger, { expressLoggerMiddleware } from './services/logger';
-import dotenv from 'dotenv'
 
 const PORT = Number(process.env.PORT) || 80;
 
