@@ -49,3 +49,17 @@ body {
   -ms-user-select: none;
   user-select: none;
 }
+
+.page-container {
+  display:block;
+  width:100%;
+  width: 1250px;
+}
+
+.page-header {
+  display: flex;
+}
+
+.spacer {
+  flex: 1 1 auto;
+}
