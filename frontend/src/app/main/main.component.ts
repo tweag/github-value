@@ -29,6 +29,10 @@ export class MainComponent {
   private breakpointObserver = inject(BreakpointObserver);
   hideNavText = false;
 
+  constructor() {
+    this.hideNavText = localStorage.getItem('hideNavText') === 'true';
+  }
+
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
     .pipe(
       map(result => result.matches),
@@ -37,5 +41,6 @@ export class MainComponent {
 
   toggleNavText(): void {
     this.hideNavText = !this.hideNavText;
+    localStorage.setItem('hideNavText', this.hideNavText.toString());
   }
 }

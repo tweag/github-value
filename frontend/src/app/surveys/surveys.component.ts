@@ -19,7 +19,7 @@ export class SurveysComponent {
   surveys?: Survey[];
   surveysColumns: ColumnOptions[] = [
     { columnDef: 'id', header: 'ID', cell: (element: Survey) => `${element.id}` },
-    { columnDef: 'userId', header: 'Author', cell: (element: Survey) => `${element.userId}` },
+    { columnDef: 'userId', header: 'Author', cell: (element: Survey) => `${element.userId}`, link: (element: Survey) => `https://github.com/${element.userId}` },
     { columnDef: 'usedCopilot', header: 'Used Copilot', cell: (element: Survey) => `${element.usedCopilot}` },
     { columnDef: 'percentTimeSaved', header: 'Time Saved', cell: (element: Survey) => `${element.percentTimeSaved}%` },
     { columnDef: 'timeUsedFor', header: 'Time Used For', cell: (element: Survey) => this.formatTimeUsedFor(element.timeUsedFor) },

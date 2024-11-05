@@ -40,9 +40,9 @@ mat-sidenav {
 
 .sidenav-content {
   display: flex;
-  // height: 100%;
-  // align-items: center;
+  width: 100%;
   justify-content: center;
+  height: calc(100vh - 64px);
 }
 
 mat-divider {
