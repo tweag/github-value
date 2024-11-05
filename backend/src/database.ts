@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize';
 import { Settings } from './models/settings.model';
 import { Metrics, Breakdown } from './models/metrics.model';
 import { Survey } from './models/survey.model';
+import { Assignee, AssigningTeam, Seat } from './models/copilot.seats';
 import logger from './services/logger';
 
 const sequelize = new Sequelize({
@@ -19,7 +20,11 @@ const sequelize = new Sequelize({
 const dbConnect = async () => {
   try {
     await sequelize.authenticate()
-    await sequelize.sync()
+    await sequelize.sync({ force: false }).then(() => {
+      logger.info('All models were synchronized successfully. 🚀');
+    }).catch((error) => {
+      logger.error('Error synchronizing models', error);
+    });
   } catch (error) {
     logger.info('Unable to initialize the database', error);
   }
