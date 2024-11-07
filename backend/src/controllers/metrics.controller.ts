@@ -3,12 +3,11 @@ import { MetricDaily, MetricDotcomChatMetrics, MetricDotcomChatModelStats, Metri
 import { Op } from 'sequelize';
 
 class MetricsController {
-  // Get all metrics 📊
-  async getMetrics(req: Request, res: Response): Promise<void> {
+   async getMetrics(req: Request, res: Response): Promise<void> {
     const { type, since, until, editor, language, model } = req.query;
     try {
       // consider the fact that these are UTC dates...
-      const dateFilter: any = { };
+           const dateFilter: any = { };
       if (since) {
         dateFilter[Op.gte] = new Date(since as string);
       }
@@ -104,11 +103,9 @@ class MetricsController {
         where: Object.getOwnPropertySymbols(dateFilter).length ? { date: dateFilter } : {},
         include
       });
-      res.status(200).json(metrics); // 🎉 All metrics retrieved!
-    } catch (error) {
+      res.status(200).json(metrics);    } catch (error) {
       console.log(error)
-      res.status(500).json(error); // 🚨 Error handling
-    }
+      res.status(500).json(error);    }
   }
 }
 

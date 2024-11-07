@@ -37,13 +37,10 @@ app.use(expressLoggerMiddleware);
   }, bodyParser.urlencoded({ extended: true }));  
   app.use('/api', apiRoutes);
 
-  // Angular Frontend
-  const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
+   const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
   app.use(express.static(frontendPath));
   app.get('*', rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5000, // limit each IP to 100 requests per windowMs
-  }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
+    windowMs: 15 * 60 * 1000,    max: 5000,  }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
   app.listen(PORT, () => {
     logger.info(`Server is running at http://localhost:${PORT} 🚀`);

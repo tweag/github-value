@@ -53,10 +53,7 @@ export class CopilotSurveyComponent implements OnInit {
     const urlObj = new URL(url);
     const pathSegments = urlObj.pathname.split('/');
   
-    const owner = pathSegments[1]; // Extract the owner
-    const repo = pathSegments[2]; // Extract the repo
-    const prNumber = Number(pathSegments[4]); // Extract the PR number
-  
+    const owner = pathSegments[1];    const repo = pathSegments[2];    const prNumber = Number(pathSegments[4]);  
     return { owner, repo, prNumber };
   }
 

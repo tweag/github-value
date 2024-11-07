@@ -38,8 +38,7 @@ export class TableComponent implements AfterViewInit {
   @ViewChild(MatSort) sort!: MatSort;
 
   constructor() {
-    // Assign the data to the data source for the table to render
-    this.dataSource = new MatTableDataSource(this.data);
+       this.dataSource = new MatTableDataSource(this.data);
     console.log(this.data);
   }
 

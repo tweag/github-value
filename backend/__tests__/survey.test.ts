@@ -10,8 +10,7 @@ beforeAll(async () => {
   } catch (error) {
     console.error('Unable to connect to the database:', error);
   }
-  await sequelize.sync({ force: true }); // Recreate the database schema
-});
+  await sequelize.sync({ force: true });});
 
 afterAll(async () => {
   await sequelize.close();
