@@ -1,17 +1,12 @@
-// models/daily-metric.ts
 import { Model, DataTypes, Sequelize } from 'sequelize';
 import { sequelize } from '../database';
 import { ChatModel, CopilotMetrics } from './metrics.model.interfaces';
 import logger from '../services/logger';
-
-// Main metric model 📈
 export class MetricDaily extends Model {
   public date!: Date;
   public total_active_users!: number;
   public total_engaged_users!: number;
 }
-
-// IDE Completions model 🖥️
 export class MetricIdeCompletions extends Model {
   public id!: number;
   public total_engaged_users!: number;
@@ -52,8 +47,6 @@ export class MetricLanguageStats extends Model {
   public total_code_lines_suggested!: number;
   public model_stat_id!: number;
 }
-
-// PR Repository Model 🏢
 export class MetricPrRepository extends Model {
   public id!: number;
   public name!: string;
@@ -72,8 +65,6 @@ export class MetricPrMetrics extends Model {
   public total_engaged_users!: number;
   public total_pr_summaries_created!: number;
 }
-
-// Chat Model 💬
 export class MetricDotcomChatMetrics extends Model {
   public id!: number;
   public total_engaged_users!: number;
@@ -110,8 +101,6 @@ export class MetricIdeChatModelStats extends Model {
   public total_chat_copy_events!: number;
   public total_chat_insertion_events!: number;
 }
-
-// Initialize models
 MetricDaily.init({
   date: {
     type: DataTypes.DATEONLY,
@@ -301,11 +290,8 @@ MetricDotcomChatModelStats.init({
   sequelize,
   timestamps: false
 });
-
-// Set up associations 🔗
 MetricDaily.hasOne(MetricIdeCompletions, {
-  as: 'copilot_ide_code_completions',  // This matches your response structure
-  foreignKey: 'daily_metric_id',
+  as: 'copilot_ide_code_completions', foreignKey: 'daily_metric_id',
   sourceKey: 'date'
 });
 MetricDaily.hasOne(MetricPrMetrics, {
@@ -345,20 +331,18 @@ MetricIdeCompletions.belongsTo(MetricDaily, {
   targetKey: 'date'
 });
 MetricIdeCompletions.hasMany(MetricEditor, {
-  as: 'editors',  // Match the response structure
-  foreignKey: 'ide_completion_id'
+  as: 'editors', foreignKey: 'ide_completion_id'
 });
 MetricEditor.belongsTo(MetricIdeCompletions, {
   as: 'copilot_ide_code_completions',
   foreignKey: 'ide_completion_id'
 });
 MetricEditor.hasMany(MetricModelStats, {
-  as: 'models',  // Match API response structure
-  foreignKey: 'editor_id'  // Use consistent casing
+  as: 'models', foreignKey: 'editor_id'
 });
 MetricModelStats.belongsTo(MetricEditor, {
   as: 'editor',
-  foreignKey: 'editor_id'  // Match the foreign key name
+  foreignKey: 'editor_id'
 });
 MetricModelStats.hasMany(MetricLanguageStats, {
   as: 'languages',
@@ -472,7 +456,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
     }
 
     if (day.copilot_ide_code_completions) {
-      // Create IdeCompletions second 🖥️
       const completions = await MetricIdeCompletions.create({
         total_engaged_users: day.copilot_ide_code_completions.total_engaged_users,
         daily_metric_id: metric.date,
@@ -484,7 +467,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
 
       let dailyTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
-      // Process editors third 👨‍💻
       for (const editor of day.copilot_ide_code_completions.editors) {
         const editorRecord = await MetricEditor.create({
           name: editor.name,
@@ -498,7 +480,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
 
         let editorTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
-        // Process models fourth 🤖
         for (const model of editor.models) {
           const modelRecord = await MetricModelStats.create({
             name: model.name,
@@ -513,7 +494,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
 
           let modelTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
-          // Process languages last 🗣️
           if ('languages' in model) {
             for (const lang of model.languages) {
               await MetricLanguageStats.create({
@@ -526,7 +506,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
                 model_stat_id: modelRecord.id
               });
 
-              // Roll up language totals to model 📈
               modelTotals.acceptances += lang.total_code_acceptances || 0;
               modelTotals.suggestions += lang.total_code_suggestions || 0;
               modelTotals.linesAccepted += lang.total_code_lines_accepted || 0;
@@ -534,7 +513,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
             }
           }
 
-          // Update model with totals ⬆️
           await modelRecord.update({
             total_code_acceptances: modelTotals.acceptances,
             total_code_suggestions: modelTotals.suggestions,
@@ -542,14 +520,12 @@ export async function insertMetrics(data: CopilotMetrics[]) {
             total_code_lines_suggested: modelTotals.linesSuggested
           });
 
-          // Roll up model totals to editor 📊
           editorTotals.acceptances += modelTotals.acceptances;
           editorTotals.suggestions += modelTotals.suggestions;
           editorTotals.linesAccepted += modelTotals.linesAccepted;
           editorTotals.linesSuggested += modelTotals.linesSuggested;
         }
 
-        // Update editor with totals ⬆️
         await editorRecord.update({
           total_code_acceptances: editorTotals.acceptances,
           total_code_suggestions: editorTotals.suggestions,
@@ -557,14 +533,12 @@ export async function insertMetrics(data: CopilotMetrics[]) {
           total_code_lines_suggested: editorTotals.linesSuggested
         });
 
-        // Roll up editor totals to daily 📅
         dailyTotals.acceptances += editorTotals.acceptances;
         dailyTotals.suggestions += editorTotals.suggestions;
         dailyTotals.linesAccepted += editorTotals.linesAccepted;
         dailyTotals.linesSuggested += editorTotals.linesSuggested;
       }
 
-      // Update final totals ⬆️
       await completions.update({
         total_code_acceptances: dailyTotals.acceptances,
         total_code_suggestions: dailyTotals.suggestions,
@@ -574,14 +548,12 @@ export async function insertMetrics(data: CopilotMetrics[]) {
     }
 
     if (day.copilot_dotcom_pull_requests) {
-      let totalPrSummaries = 0;  // Initialize counter 🔢
-
+      let totalPrSummaries = 0;
       const prMetrics = await MetricPrMetrics.create({
         daily_metric_id: metric.date,
         total_engaged_users: day.copilot_dotcom_pull_requests.total_engaged_users
       });
 
-      // Create repositories and their models
       for (const repo of day.copilot_dotcom_pull_requests.repositories) {
         let totalPrSummariesRepo = 0;
         const repository = await MetricPrRepository.create({
@@ -590,10 +562,8 @@ export async function insertMetrics(data: CopilotMetrics[]) {
           total_engaged_users: repo.total_engaged_users
         });
 
-        // Create model stats for each repository
         await Promise.all(repo.models.map(model => {
-          totalPrSummaries += model.total_pr_summaries_created || 0;  // Add to running total ➕
-          totalPrSummariesRepo += model.total_pr_summaries_created || 0;
+          totalPrSummaries += model.total_pr_summaries_created || 0; totalPrSummariesRepo += model.total_pr_summaries_created || 0;
 
           MetricPrModelStats.create({
             repository_id: repository.id,
@@ -614,17 +584,14 @@ export async function insertMetrics(data: CopilotMetrics[]) {
     }
 
     if (day.copilot_dotcom_chat) {
-      let totalChats = 0;  // Initialize counter 🔢
-
+      let totalChats = 0;
       const chatMetrics = await MetricDotcomChatMetrics.create({
         daily_metric_id: metric.date,
         total_engaged_users: day.copilot_dotcom_chat.total_engaged_users
       });
 
-      // Create chat model stats
       await Promise.all(day.copilot_dotcom_chat.models.map(model => {
-        totalChats += model.total_chats || 0;  // Add to running total ➕
-        MetricDotcomChatModelStats.create({
+        totalChats += model.total_chats || 0; MetricDotcomChatModelStats.create({
           chat_metrics_id: chatMetrics.id,
           name: model.name,
           is_custom_model: model.is_custom_model,
