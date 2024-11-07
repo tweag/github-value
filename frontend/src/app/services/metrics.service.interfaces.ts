@@ -1,4 +1,3 @@
-// Core metrics interfaces 📊
 interface LanguageMetrics {
   name: string;
   total_engaged_users: number;
@@ -33,7 +32,6 @@ interface PullRequestModel extends ModelBase {
   total_pr_summaries_created: number;
 }
 
-// Editor and repository interfaces 🖥️
 interface Editor {
   name: string;
   total_engaged_users: number;
@@ -46,7 +44,6 @@ interface Repository {
   models: PullRequestModel[];
 }
 
-// Feature-specific interfaces 🚀
 interface IdeCodeCompletions {
   total_engaged_users: number;
   languages: LanguageMetrics[];
@@ -68,7 +65,6 @@ interface DotComPullRequests {
   repositories: Repository[];
 }
 
-// Main metrics interface 📈
 interface CopilotMetrics {
   date: string;
   total_active_users: number;

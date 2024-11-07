@@ -74,7 +74,7 @@ class QueryService {
         total_seats: _seatAssignments[0]?.total_seats || 0,
         // octokit paginate returns an array of objects (bug)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        seats: (_seatAssignments).reduce((acc, rsp) => acc.concat(rsp.seats), [] as any[])
+                      seats: (_seatAssignments).reduce((acc, rsp) => acc.concat(rsp.seats), [] as any[])
       };
 
       if (!seatAssignments.seats) {
@@ -97,8 +97,7 @@ class QueryService {
         org: setup.installation.owner?.login
       });
 
-      // TODO process the teams
-      console.log(response.data);
+           console.log(response.data);
 
       logger.info("Teams successfully updated! 🧑‍🤝‍🧑");
     } catch (error) {

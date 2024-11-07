@@ -8,8 +8,7 @@ import { SetupGuard } from './guards/setup.guard';
 import { MainComponent } from './main/main.component';
 
 export const routes: Routes = [
-  { path: 'setup', component: WelcomeComponent }, // Not guarded
-  {
+  { path: 'setup', component: WelcomeComponent },  {
     path: '',
     component: MainComponent,
     canActivate: [SetupGuard],

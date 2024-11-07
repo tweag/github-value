@@ -39,7 +39,6 @@ router.get('/setup/status', setupController.isSetup);
 router.get('/setup/manifest', setupController.getManifest);
 router.post('/setup/existing-app', setupController.addExistingApp);
 
-// get all other routes
 router.get('*', (req: Request, res: Response) => {
   res.status(404).send('Route not found');
 });

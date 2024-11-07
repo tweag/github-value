@@ -19,8 +19,7 @@ const logger = bunyan.createLogger({
     req: (req: Request) => ({
       method: req.method,
       url: req.url,
-      // headers: req.headers,
-      remoteAddress: req.connection.remoteAddress,
+           remoteAddress: req.connection.remoteAddress,
       remotePort: req.connection.remotePort
     }),
     res: (res: Response) => ({
@@ -34,9 +33,7 @@ const logger = bunyan.createLogger({
     },
     {
       path: `${logsDir}/app.log`,
-      period: '1d',   // daily rotation
-      count: 14       // keep 14 back copies
-    }
+      period: '1d',        count: 14          }
   ]
 });
 

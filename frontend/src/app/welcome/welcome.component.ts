@@ -60,7 +60,7 @@ export class WelcomeComponent {
 })
 export class DialogOverviewExampleDialog {
   // Manifest Parameters: https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest#github-app-manifest-parameters
-  @ViewChild('form') form!: ElementRef<HTMLFormElement>;
+   @ViewChild('form') form!: ElementRef<HTMLFormElement>;
   formAction: string = 'https://github.com/settings/apps/new?state=abc123';
   manifest: {
     name: string;

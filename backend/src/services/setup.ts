@@ -16,8 +16,7 @@ class Setup {
   installationId: number | undefined;
   installation: any;
 
-  private constructor() {} // Private constructor to prevent direct instantiation
-
+  private constructor() {}
   public static getInstance(): Setup {
     if (!Setup.instance) {
       Setup.instance = new Setup();
@@ -67,8 +66,7 @@ class Setup {
         } else {
           reject(new Error("No installation found"));
         }
-        return false; // Stop after the first installation
-      });
+        return false;      });
     }));
 
     this.installationId = installation.id;

@@ -30,17 +30,14 @@ class SurveyController {
         logger.error('Error updating survey comment', error);
       }
     } catch (error) {
-      res.status(500).json(error); // 🚨 Error handling
-    }
+      res.status(500).json(error);    }
   }
 
   async getAllSurveys(req: Request, res: Response): Promise<void> {
     try {
       const surveys = await Survey.findAll();
-      res.status(200).json(surveys); // 🎉 All surveys retrieved!
-    } catch (error) {
-      res.status(500).json(error); // 🚨 Error handling
-    }
+      res.status(200).json(surveys);    } catch (error) {
+      res.status(500).json(error);    }
   }
 
   async getSurveyById(req: Request, res: Response): Promise<void> {
@@ -48,13 +45,10 @@ class SurveyController {
       const { id } = req.params;
       const survey = await Survey.findByPk(id);
       if (survey) {
-        res.status(200).json(survey); // 🎉 Survey found!
-      } else {
-        res.status(404).json({ error: 'Survey not found' }); // 🚨 Survey not found
-      }
+        res.status(200).json(survey);      } else {
+        res.status(404).json({ error: 'Survey not found' });      }
     } catch (error) {
-      res.status(500).json(error); // 🚨 Error handling
-    }
+      res.status(500).json(error);    }
   }
 
   async updateSurvey(req: Request, res: Response): Promise<void> {
@@ -66,13 +60,10 @@ class SurveyController {
       });
       if (updated) {
         const updatedSurvey = await Survey.findByPk(id);
-        res.status(200).json(updatedSurvey); // 🎉 Survey updated!
-      } else {
-        res.status(404).json({ error: 'Survey not found' }); // 🚨 Survey not found
-      }
+        res.status(200).json(updatedSurvey);      } else {
+        res.status(404).json({ error: 'Survey not found' });      }
     } catch (error) {
-      res.status(500).json(error); // 🚨 Error handling
-    }
+      res.status(500).json(error);    }
   }
 
   async deleteSurvey(req: Request, res: Response): Promise<void> {
@@ -82,13 +73,10 @@ class SurveyController {
         where: { id }
       });
       if (deleted) {
-        res.status(204).send(); // 🎉 Survey deleted!
-      } else {
-        res.status(404).json({ error: 'Survey not found' }); // 🚨 Survey not found
-      }
+        res.status(204).send();      } else {
+        res.status(404).json({ error: 'Survey not found' });      }
     } catch (error) {
-      res.status(500).json(error); // 🚨 Error handling
-    }
+      res.status(500).json(error);    }
   }
 }
 
