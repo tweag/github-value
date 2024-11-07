@@ -18,7 +18,7 @@ class MetricsService {
 
   private async cronTask() {
     // this.queryCopilotUsageMetrics();
-    // this.queryCopilotUsageMetricsNew();
+    this.queryCopilotUsageMetricsNew();
     // this.queryCopilotSeatAssignments();
   }
 

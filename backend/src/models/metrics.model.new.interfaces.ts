@@ -82,5 +82,7 @@ interface CopilotMetrics {
 type CopilotMetricsArray = CopilotMetrics[];
 
 export {
-  CopilotMetrics
+  CopilotMetrics,
+  ChatModel,
+  CodeModel,
 }
