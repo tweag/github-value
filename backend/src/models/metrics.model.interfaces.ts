@@ -75,8 +75,6 @@ interface CopilotMetrics {
   copilot_dotcom_pull_requests: DotComPullRequests | null;
 }
 
-type CopilotMetricsArray = CopilotMetrics[];
-
 export {
   CopilotMetrics,
   ChatModel,

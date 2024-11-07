@@ -70,7 +70,7 @@ export class CopilotSurveyComponent implements OnInit {
       percentTimeSaved: Number(this.surveyForm.value.percentTimeSaved),
       reason: this.surveyForm.value.reason,
       timeUsedFor: this.surveyForm.value.timeUsedFor
-    }).subscribe((res) => {
+    }).subscribe(() => {
       const redirectUrl = this.params['url'];
       if (redirectUrl && redirectUrl.startsWith('https://github.com/')) {
         window.location.href = redirectUrl;

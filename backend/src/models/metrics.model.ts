@@ -1,6 +1,6 @@
-import { Model, DataTypes, Sequelize } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database';
-import { ChatModel, CopilotMetrics } from './metrics.model.interfaces';
+import { CopilotMetrics } from './metrics.model.interfaces';
 import logger from '../services/logger';
 export class MetricDaily extends Model {
   public date!: Date;

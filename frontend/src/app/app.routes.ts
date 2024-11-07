@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { CopilotSurveyComponent } from './surveys/copilot-survey/copilot-survey.component';
-import { CopilotDashboardComponent } from './copilot-dashboard/copilot-dashboard.component';
 import { SurveysComponent } from './surveys/surveys.component';
 import { SettingsComponent } from './settings/settings.component';
 import { WelcomeComponent } from './welcome/welcome.component';
