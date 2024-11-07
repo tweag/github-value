@@ -1,8 +1,4 @@
 import { Sequelize } from 'sequelize';
-import { Settings } from './models/settings.model';
-import { Metrics, Breakdown } from './models/metrics.model';
-import { Survey } from './models/survey.model';
-import { Assignee, AssigningTeam, Seat } from './models/copilot.seats';
 import logger from './services/logger';
 import mysql2 from 'mysql2/promise';
 
