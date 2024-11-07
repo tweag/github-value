@@ -1,5 +1,5 @@
 import { Settings } from '../models/settings.model';
-import MetricsService from './metrics.service';
+import QueryService from './query.service';
 import setup from './setup';
 
 class SettingsService {
@@ -31,7 +31,7 @@ class SettingsService {
   async updateSetting(name: string, value: string) {
     if (name === 'webhookProxyUrl') setup.addToEnv({ WEBHOOK_PROXY_URL: value });
     if (name === 'webhookSecret') setup.addToEnv({ GITHUB_WEBHOOK_SECRET: value });
-    if (name === 'metricsCronExpression') MetricsService.getInstance().updateCronJob(value);
+    if (name === 'metricsCronExpression') QueryService.getInstance().updateCronJob(value);
     try {
       await Settings.upsert({ name, value });
       return await Settings.findOne({ where: { name } });
