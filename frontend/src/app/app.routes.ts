@@ -5,6 +5,8 @@ import { SettingsComponent } from './settings/settings.component';
 import { WelcomeComponent } from './welcome/welcome.component';
 import { SetupGuard } from './guards/setup.guard';
 import { MainComponent } from './main/main.component';
+import { CopilotDashboardComponent } from './copilot-dashboard/copilot-dashboard.component';
+import { HomeComponent } from './home/home.component';
 
 export const routes: Routes = [
   { path: 'setup', component: WelcomeComponent },  {
@@ -13,6 +15,8 @@ export const routes: Routes = [
     canActivate: [SetupGuard],
     canActivateChild: [SetupGuard],
     children: [
+      { path: '', component: HomeComponent },
+      { path: 'copilot', component: CopilotDashboardComponent },
       { path: 'surveys/new', component: CopilotSurveyComponent },
       { path: 'surveys', component: SurveysComponent },
       { path: 'settings', component: SettingsComponent }

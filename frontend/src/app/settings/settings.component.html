@@ -1,33 +1,39 @@
-<mat-list role="installation-info">
-  <mat-list-item role="listitem">Installation: <a [href]="install?.html_url">&#64;octodemo</a></mat-list-item>
-</mat-list>
-
-<form class="example-form" [formGroup]="form" (ngSubmit)="onSubmit()">
-  <mat-form-field class="example-full-width">
-    <mat-label>Metrics Polling Rate</mat-label>
-    <input type="text" matInput [formControl]="form.controls.metricsCronExpression" placeholder="Ex: 0 0 * * *">
-           <mat-error *ngIf="form.controls.metricsCronExpression.hasError('required')">Repository is <strong>required</strong></mat-error>
-           <!-- <mat-hint><a href="https://crontab.guru/">crontab.guru</a></mat-hint> -->
-  </mat-form-field>
-
-  <mat-form-field class="example-full-width">
-    <mat-label>Base URL</mat-label>
-    <input type="email" matInput [formControl]="form.controls.baseUrl" placeholder="Ex: https://localhost">
-           <mat-error *ngIf="form.controls.baseUrl.hasError('required')">Base URL is <strong>required</strong></mat-error>
-           <mat-error *ngIf="form.controls.baseUrl.hasError('pattern')">Please enter a valid URL</mat-error>
-  </mat-form-field>
-
-  <mat-form-field class="example-full-width">
-    <mat-label>Webhook URL</mat-label>
-    <input type="email" matInput [formControl]="form.controls.webhookProxyUrl" placeholder="Ex: https://smee.io/ZzmdZIYqsXt7RHS5">
-           <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('required')">Webhook URL is <strong>required</strong></mat-error>
-           <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('pattern')">Please enter a valid URL</mat-error>
-  </mat-form-field>
+<div class="page-container">
+  <div class="page-header">
+    <h1>Settings</h1>
+    <span class="spacer"></span>
+  </div>
+  <mat-list role="installation-info">
+    <mat-list-item role="listitem">Installation: <a [href]="install?.html_url">&#64;octodemo</a></mat-list-item>
+  </mat-list>
   
-  <mat-form-field class="example-full-width">
-    <mat-label>Webhook Secret</mat-label>
-    <input type="text" matInput [formControl]="form.controls.webhookSecret" placeholder="Ex: password">
-  </mat-form-field>
-
-  <button mat-raised-button color="primary" type="submit">Save</button>
-</form>
+  <form class="example-form" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-form-field class="example-full-width">
+      <mat-label>Metrics Polling Rate</mat-label>
+      <input type="text" matInput [formControl]="form.controls.metricsCronExpression" placeholder="Ex: 0 0 * * *">
+             <mat-error *ngIf="form.controls.metricsCronExpression.hasError('required')">Repository is <strong>required</strong></mat-error>
+             <!-- <mat-hint><a href="https://crontab.guru/">crontab.guru</a></mat-hint> -->
+    </mat-form-field>
+  
+    <mat-form-field class="example-full-width">
+      <mat-label>Base URL</mat-label>
+      <input type="email" matInput [formControl]="form.controls.baseUrl" placeholder="Ex: https://localhost">
+             <mat-error *ngIf="form.controls.baseUrl.hasError('required')">Base URL is <strong>required</strong></mat-error>
+             <mat-error *ngIf="form.controls.baseUrl.hasError('pattern')">Please enter a valid URL</mat-error>
+    </mat-form-field>
+  
+    <mat-form-field class="example-full-width">
+      <mat-label>Webhook URL</mat-label>
+      <input type="email" matInput [formControl]="form.controls.webhookProxyUrl" placeholder="Ex: https://smee.io/ZzmdZIYqsXt7RHS5">
+             <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('required')">Webhook URL is <strong>required</strong></mat-error>
+             <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('pattern')">Please enter a valid URL</mat-error>
+    </mat-form-field>
+    
+    <mat-form-field class="example-full-width">
+      <mat-label>Webhook Secret</mat-label>
+      <input type="password" matInput [formControl]="form.controls.webhookSecret" placeholder="Ex: password">
+    </mat-form-field>
+  
+    <button mat-raised-button color="primary" type="submit">Save</button>
+  </form>
+</div>

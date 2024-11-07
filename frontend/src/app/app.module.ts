@@ -3,7 +3,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from './material.module';
 import { RouterLink, RouterModule, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { TableComponent } from './table/table.component';
+import { TableComponent } from './shared/table/table.component';
 
 @NgModule({
   imports: [

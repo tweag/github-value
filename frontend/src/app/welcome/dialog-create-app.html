@@ -34,7 +34,7 @@
           </mat-form-field>
           <mat-form-field class="example-full-width" appearance="outline">
             <mat-label>Webhook secret</mat-label>
-            <input formControlName="webhookSecretFormControl" type="text" matInput placeholder="Ex. s3cr3tW3bh00kK3y!">
+            <input formControlName="webhookSecretFormControl" type="password" matInput placeholder="Ex. s3cr3tW3bh00kK3y!">
             <mat-error *ngIf="existingAppForm.controls.webhookSecretFormControl.hasError('required')">
               The webhook secret is required
             </mat-error>

@@ -6,26 +6,28 @@ import { insertSeats } from '../models/copilot.seats';
 import { insertMetrics } from '../models/metrics.model';
 import { CopilotMetrics } from '../models/metrics.model.interfaces';
 
+const DEFAULT_CRON_EXPRESSION = '0 0 * * *';
 class QueryService {
   private static instance: QueryService;
   private cronJob: CronJob;
 
   private constructor(cronExpression: string, timeZone: string) {
-    this.cronJob = new CronJob('0 0 * * *', this.cronTask, null, true);
-    this.cronTask();
+    this.cronJob = new CronJob(DEFAULT_CRON_EXPRESSION, this.task, null, true);
+    this.task();
   }
 
-  private async cronTask() {
-    this.queryCopilotUsageMetrics();
-    this.queryCopilotUsageMetricsNew();
-    this.queryCopilotSeatAssignments();
-    this.queryTeams();
+  private async task() {
+    // this.queryCopilotUsageMetrics();
+    // this.queryCopilotUsageMetricsNew();
+    // this.queryCopilotSeatAssignments();
+    // this.queryTeams();
   }
 
   public static createInstance(cronExpression: string, timeZone: string) {
     if (!QueryService.instance) {
       QueryService.instance = new QueryService(cronExpression, timeZone);
     }
+    return QueryService.instance;
   }
 
   public static getInstance(): QueryService {
@@ -74,16 +76,16 @@ class QueryService {
         total_seats: _seatAssignments[0]?.total_seats || 0,
         // octokit paginate returns an array of objects (bug)
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                      seats: (_seatAssignments).reduce((acc, rsp) => acc.concat(rsp.seats), [] as any[])
+        seats: (_seatAssignments).reduce((acc, rsp) => acc.concat(rsp.seats), [] as any[])
       };
 
       if (!seatAssignments.seats) {
         logger.info(`No seat assignment data found. Skipping...`);
         return;
       }
-      
+
       insertSeats(seatAssignments.seats);
-      
+
       logger.info("Seat assignments successfully updated! 🪑");
     } catch (error) {
       logger.error('Error querying copilot seat assignments', error);
@@ -97,7 +99,7 @@ class QueryService {
         org: setup.installation.owner?.login
       });
 
-           console.log(response.data);
+      console.log(response.data);
 
       logger.info("Teams successfully updated! 🧑‍🤝‍🧑");
     } catch (error) {
@@ -106,8 +108,11 @@ class QueryService {
   }
 
   public updateCronJob(cronExpression: string) {
+    if (!cronExpression) cronExpression = DEFAULT_CRON_EXPRESSION;
     this.cronJob.setTime(new CronTime(cronExpression));
   }
 }
 
-export default QueryService
+export {
+  QueryService
+}

@@ -1,6 +1,8 @@
 import { Settings } from '../models/settings.model';
-import QueryService from './query.service';
+import logger from './logger';
+import { QueryService } from './query.service';
 import setup from './setup';
+import SmeeService from './smee';
 
 class SettingsService {
   public baseUrl = process.env.BASE_URL || 'http://localhost';
@@ -11,7 +13,7 @@ class SettingsService {
   async initializeSettings() {
     try {
       this.baseUrl = await this.getSettingsByName('baseUrl')
-    } catch (error) {
+    } catch {
       this.updateSetting('baseUrl', this.baseUrl);
     }
   }
@@ -29,15 +31,19 @@ class SettingsService {
   }
 
   async updateSetting(name: string, value: string) {
-    if (name === 'webhookProxyUrl') setup.addToEnv({ WEBHOOK_PROXY_URL: value });
-    if (name === 'webhookSecret') setup.addToEnv({ GITHUB_WEBHOOK_SECRET: value });
-    if (name === 'metricsCronExpression') QueryService.getInstance().updateCronJob(value);
-    try {
-      await Settings.upsert({ name, value });
-      return await Settings.findOne({ where: { name } });
-    } catch (error) {
-      throw error;
+    await Settings.upsert({ name, value });
+    if (name === 'webhookProxyUrl') {
+      if (value !== await this.getSettingsByName('webhookProxyUrl')) {
+        setup.addToEnv({ WEBHOOK_PROXY_URL: value });
+        await SmeeService.createSmeeWebhookProxy();
+      }
     }
+    if (name === 'webhookSecret') {
+      setup.addToEnv({ GITHUB_WEBHOOK_SECRET: value });
+      await setup.createAppFromEnv();
+    }
+    if (name === 'metricsCronExpression') QueryService.getInstance().updateCronJob(value);
+    return await Settings.findOne({ where: { name } });
   }
 
   async updateSettings(obj: { [key: string]: string }) {

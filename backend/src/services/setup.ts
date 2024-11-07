@@ -1,22 +1,23 @@
 import dotenv from 'dotenv';
-import { appendFileSync, readFileSync } from "fs";
+import { readFileSync } from "fs";
 import { App, createNodeMiddleware, Octokit } from "octokit";
 import { setupWebhookListeners } from '../controllers/webhook.controller';
 import { app as expressApp } from '../app';
-import metricsService from "./query.service";
+import { QueryService } from "./query.service";
 import SmeeService from './smee';
 import logger from "./logger";
 import updateDotenv from 'update-dotenv';
 import settingsService from './settings.service';
+import { Express } from 'express';
 
 class Setup {
   private static instance: Setup;
   app?: App;
-  webhooks: any;
-  installationId: number | undefined;
-  installation: any;
+  webhooks?: Express;
+  installationId?: number;
+  installation?: any;
 
-  private constructor() {}
+  private constructor() { }
   public static getInstance(): Setup {
     if (!Setup.instance) {
       Setup.instance = new Setup();
@@ -59,15 +60,9 @@ class Setup {
       throw new Error('Failed to get installation URL');
     }
 
-    const installation: any = await (new Promise((resolve, reject) => {
-      _app.eachInstallation((install) => {
-        if (install && install.installation && install.installation.id) {
-          resolve(install.installation);
-        } else {
-          reject(new Error("No installation found"));
-        }
-        return false;      });
-    }));
+    const installation = await this._findFirstInstallation(_app);
+
+    await _app.getInstallationOctokit(installation.id);
 
     this.installationId = installation.id;
     this.addToEnv({
@@ -87,6 +82,10 @@ class Setup {
     Object.entries(obj).forEach(([key, value]) => {
       process.env[key] = value;
     });
+  }
+
+  getEnv = (key: string) => {
+    return process.env[key];
   }
 
   createAppFromInstallationId = async (installationId: number) => {
@@ -141,20 +140,24 @@ class Setup {
       },
     });
 
-    this.start();
+    await this.start();
     return this.app;
   }
 
   createWebhookMiddleware = () => {
+    const webhookMiddlewearIndex = expressApp._router.stack.findIndex((layer: any) => layer.name === 'bound middleware');
+    if (webhookMiddlewearIndex > -1) {
+      expressApp._router.stack.splice(webhookMiddlewearIndex, 1);
+    }
     if (this.webhooks) {
       logger.debug('Webhook middleware already created');
-      return;
     }
     if (!this.app) {
       throw new Error('App is not initialized');
     }
     setupWebhookListeners(this.app);
-    this.webhooks = expressApp.use(createNodeMiddleware(this.app));
+    const web = expressApp.use(createNodeMiddleware(this.app));
+    return web;
   };
 
   getOctokit = () => {
@@ -165,10 +168,11 @@ class Setup {
   }
 
   start = async () => {
+    if (!this.installationId) throw new Error('Installation ID is not set');
     const octokit = await this.getOctokit();
     const authenticated = await octokit.rest.apps.getAuthenticated();
     this.installation = authenticated.data;
-    this.createWebhookMiddleware();
+    this.webhooks = this.createWebhookMiddleware();
 
     const metricsCronExpression = await settingsService.getSettingsByName('metricsCronExpression').catch(() => {
       return '0 0 * * *';
@@ -176,7 +180,7 @@ class Setup {
     const timezone = await settingsService.getSettingsByName('timezone').catch(() => {
       return 'UTC';
     });
-    metricsService.createInstance(metricsCronExpression, timezone);
+    QueryService.createInstance(metricsCronExpression, timezone);
 
     logger.info(`GitHub App ${this.installation.slug} is ready to use`);
   }
@@ -195,6 +199,17 @@ class Setup {
     manifest.hook_attributes.url = SmeeService.getWebhookProxyUrl();
     return manifest;
   };
+
+  _findFirstInstallation = async (_app: App) => (new Promise<any>((resolve, reject) => {
+    _app.eachInstallation((install) => {
+      if (install && install.installation && install.installation.id) {
+        resolve(install.installation);
+      } else {
+        reject(new Error("No installation found"));
+      }
+      return false;
+    });
+  }));
 
 }
 
