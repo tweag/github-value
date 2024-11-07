@@ -4,6 +4,7 @@ import metricsController from '../controllers/metrics.controller';
 import settingsController from '../controllers/settings.controller';
 import setupController from '../controllers/setup.controller';
 import SeatsController from '../controllers/seats.controller';
+import metricsControllerNew from '../controllers/metrics.controller.new';
 
 const router = Router();
 
@@ -19,6 +20,8 @@ router.delete('/survey/:id', SurveyController.deleteSurvey);
 
 router.get('/metrics', metricsController.getAllMetrics);
 router.get('/metrics/:day', metricsController.getMetricsByDay);
+
+router.get('/metrics-new', metricsControllerNew.getAllMetrics);
 
 router.get('/seats', SeatsController.getAllSeats);
 router.get('/seats/:login', SeatsController.getSeatByLogin);

@@ -3,6 +3,9 @@ import { Metrics, Breakdown } from '../models/metrics.model';
 import setup from './setup';
 import logger from "./logger";
 import { Assignee, AssigningTeam, Seat } from '../models/copilot.seats';
+import { writeFileSync } from 'fs';
+import { insertDailyMetrics } from '../models/metrics.model.new';
+import { CopilotMetrics } from '../models/metrics.model.new.interfaces';
 
 class MetricsService {
   private static instance: MetricsService;
@@ -15,7 +18,8 @@ class MetricsService {
 
   private async cronTask() {
     // this.queryCopilotUsageMetrics();
-    this.queryCopilotSeatAssignments();
+    // this.queryCopilotUsageMetricsNew();
+    // this.queryCopilotSeatAssignments();
   }
 
   public static createInstance(cronExpression: string, timeZone: string) {
@@ -26,6 +30,25 @@ class MetricsService {
 
   public static getInstance(): MetricsService {
     return MetricsService.instance;
+  }
+
+  public async queryCopilotUsageMetricsNew() {
+    try {
+      const octokit = await setup.getOctokit();
+      const response = await octokit.paginate<CopilotMetrics>('GET /orgs/{org}/copilot/metrics', {
+        org: setup.installation.owner?.login,
+        headers: {
+          'X-GitHub-Api-Version': '2022-11-28'
+        }
+      });
+      const metricsArray = response;
+      writeFileSync('../metrics.json', JSON.stringify(metricsArray, null, 2));
+
+      await insertDailyMetrics(metricsArray);
+    } catch (error) {
+      console.log(error);
+      logger.error('Error querying copilot metrics', error);
+    }
   }
 
   public async queryCopilotUsageMetrics() {
@@ -53,7 +76,7 @@ class MetricsService {
 
         if (!created) {
           logger.info(`Metrics for ${metrics.day} already exist. Updating... ✏️`);
-      
+
           await createdMetrics.update({
             totalSuggestionsCount: metrics.total_suggestions_count,
             totalAcceptancesCount: metrics.total_acceptances_count,
@@ -64,7 +87,7 @@ class MetricsService {
             totalChatTurns: metrics.total_chat_turns,
             totalActiveChatUsers: metrics.total_active_chat_users,
           });
-      
+
           await Breakdown.destroy({ where: { metricsDay: metrics.day } });
         }
 
@@ -104,7 +127,6 @@ class MetricsService {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         seats: (_seatAssignments).reduce((acc, rsp) => acc.concat(rsp.seats), [] as any[])
       };
-      console.log(seatAssignments)
 
       if (!seatAssignments.seats) {
         logger.info(`No seat assignment data found. Skipping...`);
@@ -134,7 +156,7 @@ class MetricsService {
             site_admin: seat.assignee.site_admin,
           }
         });
-  
+
         const assigningTeam = seat.assigning_team ? await AssigningTeam.findOrCreate({
           where: { id: seat.assigning_team.id },
           defaults: {
@@ -164,7 +186,7 @@ class MetricsService {
           assigningTeamId: assigningTeam ? seat.assigning_team?.id : null,
         });
       }
-  
+
       logger.info("Seat assignments successfully updated! ✅");
     } catch (error) {
       logger.error('Error querying copilot seat assignments', error);
