@@ -1,4 +1,4 @@
-import { Component, ElementRef, Inject, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, OnInit, ViewChild } from '@angular/core';
 import { MaterialModule } from '../material.module';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SetupService } from '../services/setup.service';
@@ -18,7 +18,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
   templateUrl: './welcome.component.html',
   styleUrl: './welcome.component.scss'
 })
-export class WelcomeComponent {
+export class WelcomeComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
@@ -37,7 +37,7 @@ export class WelcomeComponent {
   }
 
   openDialog(existingApp: boolean): void {
-    this.dialog.open(DialogOverviewExampleDialog, {
+    this.dialog.open(DialogAppComponent, {
       width: '400px',
       data: existingApp
     }).afterClosed().subscribe(() => {
@@ -47,7 +47,7 @@ export class WelcomeComponent {
 }
 
 @Component({
-  selector: 'dialog-create-app',
+  selector: 'app-dialog-create-app',
   templateUrl: './dialog-create-app.html',
   styleUrl: './dialog-create-app.scss',
   standalone: true,
@@ -58,10 +58,10 @@ export class WelcomeComponent {
     ClipboardModule
   ]
 })
-export class DialogOverviewExampleDialog {
+export class DialogAppComponent {
   // Manifest Parameters: https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest#github-app-manifest-parameters
    @ViewChild('form') form!: ElementRef<HTMLFormElement>;
-  formAction: string = 'https://github.com/settings/apps/new?state=abc123';
+  formAction = 'https://github.com/settings/apps/new?state=abc123';
   manifest: {
     name: string;
     url: string;
@@ -88,7 +88,7 @@ export class DialogOverviewExampleDialog {
   });
 
   constructor(
-    public dialogRef: MatDialogRef<DialogOverviewExampleDialog>,
+    public dialogRef: MatDialogRef<DialogAppComponent>,
     @Inject(MAT_DIALOG_DATA) public data: boolean,
     private setupService: SetupService
   ) {
@@ -120,7 +120,7 @@ export class DialogOverviewExampleDialog {
       appId: this.existingAppForm.value.appIdFormControl!,
       webhookSecret: this.existingAppForm.value.webhookSecretFormControl!,
       privateKey: this.existingAppForm.value.privateKey!
-    }).subscribe((response: any) => {
+    }).subscribe(() => {
       this.dialogRef.close();
     });
   }

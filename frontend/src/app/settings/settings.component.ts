@@ -68,7 +68,7 @@ export class SettingsComponent implements OnInit {
     if (this.form.invalid) {
       return;
     }
-    this.settingsService.createSettings(this.form.value).subscribe((response) => {
+    this.settingsService.createSettings(this.form.value).subscribe(() => {
       this.router.navigate(['/']);
     });
   }

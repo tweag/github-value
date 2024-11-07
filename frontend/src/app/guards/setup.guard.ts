@@ -13,7 +13,7 @@ export class SetupGuard implements CanActivate, CanActivateChild {
     private router: Router
   ) { }
 
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): MaybeAsync<GuardResult> {
+  canActivate(): MaybeAsync<GuardResult> {
     console.log('SetupGuard');
     return this.setupService.getSetupStatus().pipe(
       map((response: any) => {
