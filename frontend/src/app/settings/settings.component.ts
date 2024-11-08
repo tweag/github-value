@@ -7,6 +7,7 @@ import { SettingsHttpService } from '../services/settings.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SetupService } from '../services/setup.service';
+import { Endpoints } from '@octokit/types';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {

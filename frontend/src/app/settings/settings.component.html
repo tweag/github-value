@@ -3,37 +3,72 @@
     <h1>Settings</h1>
     <span class="spacer"></span>
   </div>
-  <mat-list role="installation-info">
-    <mat-list-item role="listitem">Installation: <a [href]="install?.html_url">&#64;octodemo</a></mat-list-item>
-  </mat-list>
-  
   <form class="example-form" [formGroup]="form" (ngSubmit)="onSubmit()">
-    <mat-form-field class="example-full-width">
-      <mat-label>Metrics Polling Rate</mat-label>
-      <input type="text" matInput [formControl]="form.controls.metricsCronExpression" placeholder="Ex: 0 0 * * *">
-             <mat-error *ngIf="form.controls.metricsCronExpression.hasError('required')">Repository is <strong>required</strong></mat-error>
-             <!-- <mat-hint><a href="https://crontab.guru/">crontab.guru</a></mat-hint> -->
-    </mat-form-field>
-  
-    <mat-form-field class="example-full-width">
-      <mat-label>Base URL</mat-label>
-      <input type="email" matInput [formControl]="form.controls.baseUrl" placeholder="Ex: https://localhost">
-             <mat-error *ngIf="form.controls.baseUrl.hasError('required')">Base URL is <strong>required</strong></mat-error>
-             <mat-error *ngIf="form.controls.baseUrl.hasError('pattern')">Please enter a valid URL</mat-error>
-    </mat-form-field>
-  
-    <mat-form-field class="example-full-width">
-      <mat-label>Webhook URL</mat-label>
-      <input type="email" matInput [formControl]="form.controls.webhookProxyUrl" placeholder="Ex: https://smee.io/ZzmdZIYqsXt7RHS5">
-             <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('required')">Webhook URL is <strong>required</strong></mat-error>
-             <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('pattern')">Please enter a valid URL</mat-error>
-    </mat-form-field>
-    
-    <mat-form-field class="example-full-width">
-      <mat-label>Webhook Secret</mat-label>
-      <input type="password" matInput [formControl]="form.controls.webhookSecret" placeholder="Ex: password">
-    </mat-form-field>
-  
-    <button mat-raised-button color="primary" type="submit">Save</button>
+    <div class="settings-header">
+      <h4>Metrics</h4>
+      <!-- <p>Learn more</p> -->
+    </div>
+    <div class="settings-content">
+      <mat-form-field>
+        <mat-label>Metrics Polling Rate</mat-label>
+        <input type="text" matInput [formControl]="form.controls.metricsCronExpression" placeholder="Ex: 0 0 * * *">
+        <mat-error *ngIf="form.controls.metricsCronExpression.hasError('required')">Repository is
+          <strong>required</strong></mat-error>
+        <!-- <mat-hint><a href="https://crontab.guru/">crontab.guru</a></mat-hint> -->
+      </mat-form-field>
+    </div>
+
+    <div class="settings-divider">
+      <mat-divider></mat-divider>
+    </div>
+
+    <ng-container *ngIf="install">
+      <div class="settings-header">
+        <h4>GitHub App Installation</h4>
+      </div>
+      <div class="settings-content">
+        <a [href]="install.html_url" target="_blank">
+          <h4>{{install.name}}</h4>
+        </a>
+        <p>{{install.description}}</p>
+        <h6 *ngIf="install.owner">Owner: <a [href]="install.owner.html_url">{{install.owner.login}}</a></h6>
+        <!-- <h6>Permissions:</h6>
+        @for (permission of install.permissions | keyvalue; track $index) {
+        <div class="permission">
+          <span>{{permission.key}}</span>
+          <span>{{permission.value}}</span>
+        </div>
+        } -->
+      </div>
+    </ng-container>
+
+    <div class="settings-header">
+      <h4>Advanced</h4>
+    </div>
+    <div class="settings-content">
+      <mat-form-field>
+        <mat-label>Base URL</mat-label>
+        <input type="email" matInput [formControl]="form.controls.baseUrl" placeholder="Ex: https://localhost">
+        <mat-error *ngIf="form.controls.baseUrl.hasError('required')">Base URL is <strong>required</strong></mat-error>
+        <mat-error *ngIf="form.controls.baseUrl.hasError('pattern')">Please enter a valid URL</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Webhook URL</mat-label>
+        <input type="email" matInput [formControl]="form.controls.webhookProxyUrl"
+          placeholder="Ex: https://smee.io/ZzmdZIYqsXt7RHS5">
+        <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('required')">Webhook URL is
+          <strong>required</strong></mat-error>
+        <mat-error *ngIf="form.controls.webhookProxyUrl.hasError('pattern')">Please enter a valid URL</mat-error>
+      </mat-form-field>
+
+      <mat-form-field>
+        <mat-label>Webhook Secret</mat-label>
+        <input type="password" matInput [formControl]="form.controls.webhookSecret" placeholder="Ex: password">
+      </mat-form-field>
+    </div>
+    <div class="settings-content">
+      <button mat-flat-button color="primary" type="submit">Save</button>
+    </div>
   </form>
 </div>

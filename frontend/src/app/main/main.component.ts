@@ -7,7 +7,7 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
+import { map, shareReplay, tap } from 'rxjs/operators';
 import { AppModule } from '../app.module';
 import { MetricsService } from '../services/metrics.service';
 
@@ -39,11 +39,12 @@ export class MainComponent {
     });
   }
 
-  isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
-    .pipe(
-      map(result => result.matches),
-      shareReplay()
-    );
+  isHandset$: Observable<boolean> = this.breakpointObserver.observe([
+    '(max-width: 599px)'  // Standard mobile breakpoint
+  ]).pipe(
+    map(result => result.matches),
+    shareReplay()
+  );
 
   toggleNavText(): void {
     this.hideNavText = !this.hideNavText;

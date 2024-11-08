@@ -2,6 +2,7 @@ import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database';
 import { CopilotMetrics } from './metrics.model.interfaces';
 import logger from '../services/logger';
+
 export class MetricDaily extends Model {
   public date!: Date;
   public total_active_users!: number;

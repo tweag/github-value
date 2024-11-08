@@ -19,7 +19,7 @@ class QueryService {
   private async task() {
     // this.queryCopilotUsageMetrics();
     // this.queryCopilotUsageMetricsNew();
-    // this.queryCopilotSeatAssignments();
+    this.queryCopilotSeatAssignments();
     // this.queryTeams();
   }
 
@@ -90,6 +90,9 @@ class QueryService {
     } catch (error) {
       logger.error('Error querying copilot seat assignments', error);
     }
+  }
+
+  queryActivity() {
   }
 
   public async queryTeams() {

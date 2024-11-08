@@ -23,8 +23,8 @@ router.get('/usage', usageController.getUsage);
 router.get('/metrics', metricsController.getMetrics);
 
 router.get('/seats', SeatsController.getAllSeats);
-router.get('/seats/:login', SeatsController.getSeatByLogin);
-router.get('/seats/:login/activity', SeatsController.getSeatActivityByLogin);
+router.get('/seats/activity', SeatsController.getActivity);
+router.get('/seats/activity/highcharts', SeatsController.getActivityHighcharts);
 
 router.get('/settings', settingsController.getAllSettings);
 router.post('/settings', settingsController.createSettings);

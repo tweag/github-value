@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { serverUrl } from './server.service';
+import { Endpoints } from '@octokit/types';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,7 @@ export class SetupService {
     return this.http.get<any>(`${this.apiUrl}/status`);
   }
 
-  getInstall(): Observable<any> {
+  getInstall() {
     return this.http.get<any>(`${this.apiUrl}/install`);
   }
 

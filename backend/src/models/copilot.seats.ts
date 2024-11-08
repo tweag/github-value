@@ -1,189 +1,147 @@
-import { DataTypes } from 'sequelize';
+import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database';
+import { Endpoints } from '@octokit/types';
 
-const CopilotAssignee = sequelize.define('CopilotAssignee', {
-  login: {
-    type: DataTypes.STRING,
-    allowNull: false,
+export type seatEntry = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
+
+class Seat extends Model {
+  public created_at!: Date;
+  public updated_at!: Date;
+  public pending_cancellation_date!: Date | null;
+  public last_activity_at!: Date;
+  public last_activity_editor!: string;
+  public plan_type!: string;
+  public assignee_id!: number;
+  public assigning_team_id!: number;
+  public createdAt!: Date;
+  public updatedAt!: Date;
+}
+
+class Assignee extends Model {
+  public login!: string;
+  public id!: number;
+  public node_id!: string;
+  public avatar_url!: string;
+  public gravatar_id!: string;
+  public url!: string;
+  public html_url!: string;
+  public followers_url!: string;
+  public following_url!: string;
+  public gists_url!: string;
+  public starred_url!: string;
+  public subscriptions_url!: string;
+  public organizations_url!: string;
+  public repos_url!: string;
+  public events_url!: string;
+  public received_events_url!: string;
+  public type!: string;
+  public site_admin!: boolean;
+  public activity!: Seat[];
+}
+
+class AssigningTeam extends Model {
+  public id!: number;
+  public node_id!: string;
+  public url!: string;
+  public html_url!: string;
+  public name!: string;
+  public slug!: string;
+  public description!: string;
+  public privacy!: string;
+  public notification_setting!: string;
+  public permission!: string;
+  public members_url!: string;
+  public repositories_url!: string;
+  public parent!: string | null;
+}
+
+Seat.init({
+  created_at: DataTypes.DATE,
+  updated_at: DataTypes.DATE,
+  pending_cancellation_date: DataTypes.DATE,
+  last_activity_at: DataTypes.DATE,
+  last_activity_editor: DataTypes.STRING,
+  plan_type: DataTypes.STRING,
+  assignee_id: {
+    type: DataTypes.INTEGER,
   },
+  assigning_team_id: {
+    type: DataTypes.INTEGER,
+  }
+}, {
+  sequelize,
+  timestamps: true
+});
+
+Assignee.init({
+  login: DataTypes.STRING,
   id: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
+    primaryKey: true
   },
-  node_id: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  avatar_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  gravatar_id: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  html_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  followers_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  following_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  gists_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  starred_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  subscriptions_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  organizations_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  repos_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  events_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  received_events_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  type: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  site_admin: {
-    type: DataTypes.BOOLEAN,
-    allowNull: false,
-  },
+  node_id: DataTypes.STRING,
+  avatar_url: DataTypes.STRING,
+  gravatar_id: DataTypes.STRING,
+  url: DataTypes.STRING,
+  html_url: DataTypes.STRING,
+  followers_url: DataTypes.STRING,
+  following_url: DataTypes.STRING,
+  gists_url: DataTypes.STRING,
+  starred_url: DataTypes.STRING,
+  subscriptions_url: DataTypes.STRING,
+  organizations_url: DataTypes.STRING,
+  repos_url: DataTypes.STRING,
+  events_url: DataTypes.STRING,
+  received_events_url: DataTypes.STRING,
+  type: DataTypes.STRING,
+  site_admin: DataTypes.BOOLEAN
 }, {
-  timestamps: false,
+  sequelize,
+  timestamps: false
 });
 
-const CopilotAssigningTeam = sequelize.define('CopilotAssigningTeam', {
+AssigningTeam.init({
   id: {
     type: DataTypes.INTEGER,
-    primaryKey: true,
+    primaryKey: true
   },
-  node_id: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  html_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  slug: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  description: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  privacy: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  notification_setting: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  permission: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  members_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  repositories_url: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  parent: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
+  node_id: DataTypes.STRING,
+  url: DataTypes.STRING,
+  html_url: DataTypes.STRING,
+  name: DataTypes.STRING,
+  slug: DataTypes.STRING,
+  description: DataTypes.STRING,
+  privacy: DataTypes.STRING,
+  notification_setting: DataTypes.STRING,
+  permission: DataTypes.STRING,
+  members_url: DataTypes.STRING,
+  repositories_url: DataTypes.STRING,
+  parent: DataTypes.STRING
 }, {
-  timestamps: false,
+  sequelize,
+  timestamps: false
 });
 
-const CopilotSeat = sequelize.define('CopilotSeat', {
-  created_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  updated_at: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  pending_cancellation_date: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  last_activity_at: {
-    type: DataTypes.DATE,
-    allowNull: true,
-  },
-  last_activity_editor: {
-    type: DataTypes.STRING,
-    allowNull: true,
-  },
-  plan_type: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  assigneeId: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: CopilotAssignee,
-      key: 'id',
-    }
-  },
-  assigningTeamId: {
-    type: DataTypes.INTEGER,
-    references: {
-      model: CopilotAssigningTeam,
-      key: 'id',
-    },
-  },
-}, {
-  timestamps: false,
+Seat.belongsTo(Assignee, { 
+  as: 'assignee', 
+  foreignKey: 'assignee_id' 
+});
+Seat.belongsTo(AssigningTeam, { 
+  as: 'assigning_team', 
+  foreignKey: 'assigning_team_id' 
+});
+Assignee.hasMany(Seat, { 
+  as: 'activity',
+  foreignKey: 'assignee_id' 
+});
+AssigningTeam.hasMany(Seat, { 
+  as: 'activity',
+  foreignKey: 'assigning_team_id' 
 });
 
-CopilotSeat.belongsTo(CopilotAssignee, { foreignKey: 'assigneeId', as: 'assignee' });
-CopilotSeat.belongsTo(CopilotAssigningTeam, { foreignKey: 'assigningTeamId', as: 'assigning_team' });
-
-async function insertSeats(data: any[]) {
+async function insertSeats(data: seatEntry[]) {
   for (const seat of data) {
-    const assignee = await CopilotAssignee.findOrCreate({
+    const assignee = await Assignee.findOrCreate({
       where: { id: seat.assignee.id },
       defaults: {
         login: seat.assignee.login,
@@ -206,7 +164,7 @@ async function insertSeats(data: any[]) {
       }
     });
 
-    const assigningTeam = seat.assigning_team ? await CopilotAssigningTeam.findOrCreate({
+    const assigningTeam = seat.assigning_team ? await AssigningTeam.findOrCreate({
       where: { id: seat.assigning_team.id },
       defaults: {
         node_id: seat.assigning_team.node_id,
@@ -223,18 +181,81 @@ async function insertSeats(data: any[]) {
         parent: seat.assigning_team.parent,
       }
     }) : null;
-
-    await CopilotSeat.create({
+    
+    await Seat.create({
       created_at: seat.created_at,
       updated_at: seat.updated_at,
       pending_cancellation_date: seat.pending_cancellation_date,
       last_activity_at: seat.last_activity_at,
       last_activity_editor: seat.last_activity_editor,
       plan_type: (seat as any).plan_type,
-      assigneeId: seat.assignee.id,
-      assigningTeamId: assigningTeam ? seat.assigning_team?.id : null,
+      assignee_id: assignee[0].id,
+      assigning_team_id: assigningTeam?.[0].id
     });
   }
 }
 
-export { CopilotAssignee, CopilotAssigningTeam, CopilotSeat, insertSeats };
+type AssigneeDailyActivity = {
+  [date: string]: {
+    totalSeats: number,
+    totalActive: number,
+    totalInactive: number,
+    active: {
+      [assignee: string]: Date
+    },
+    inactive: {
+      [assignee: string]: Date
+    }
+  };
+};
+const getAssigneesActivity = async (daysInactive: number): Promise<AssigneeDailyActivity> => {
+  const assignees = await Assignee.findAll({
+    attributes: ['login', 'id'],
+    order: [
+      ['login', 'ASC'],
+      [{ model: Seat, as: 'activity' }, 'createdAt', 'DESC']
+    ],
+    include: [
+      {
+        model: Seat,
+        as: 'activity',
+        required: false,
+        attributes: ['createdAt', 'last_activity_at']
+      }
+    ]
+  });
+  const activityDays: AssigneeDailyActivity = {};
+  assignees.forEach((assignee) => {
+    assignee.activity.forEach((activity) => {
+      const fromTime = activity.last_activity_at?.getTime() || 0;
+      const toTime = activity.createdAt.getTime();
+      const diff = Math.floor((toTime - fromTime) / 86400000);
+      const dateIndex = activity.createdAt.toISOString().slice(0, 10);
+      if (!activityDays[dateIndex]) {
+        activityDays[dateIndex] = {
+          totalSeats: 0,
+          totalActive: 0,
+          totalInactive: 0,
+          active: {},
+          inactive: {}
+        }
+      }
+      if (activityDays[dateIndex].active[assignee.login] || activityDays[dateIndex].inactive[assignee.login]) {
+        return; // already processed for this day
+      }
+      if (diff > daysInactive) {
+        activityDays[dateIndex].inactive[assignee.login] = assignee.activity[0].last_activity_at;
+      } else {
+        activityDays[dateIndex].active[assignee.login] = assignee.activity[0].last_activity_at;
+      }
+    });
+  });
+  Object.entries(activityDays).forEach(([date, activity]) => {
+    activityDays[date].totalSeats = Object.values(activity.active).length + Object.values(activity.inactive).length
+    activityDays[date].totalActive = Object.values(activity.active).length
+    activityDays[date].totalInactive = Object.values(activity.inactive).length
+  });
+  return activityDays;
+}
+
+export { Seat, Assignee, AssigningTeam, insertSeats, getAssigneesActivity };

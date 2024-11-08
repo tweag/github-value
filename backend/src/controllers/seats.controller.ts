@@ -1,58 +1,52 @@
 import { Request, Response } from 'express';
-import { CopilotSeat, CopilotAssignee, CopilotAssigningTeam } from '../models/copilot.seats';
+import { Assignee, getAssigneesActivity, AssigningTeam, Seat } from '../models/copilot.seats';
 
 class SeatsController {
-   async getAllSeats(req: Request, res: Response): Promise<void> {
+  async getAllSeats(req: Request, res: Response): Promise<void> {
     try {
-      const metrics = await CopilotSeat.findAll({
+      res.status(200).json(await Seat.findAll({
         include: [
-          { model: CopilotAssignee, as: 'assignee' },
-          { model: CopilotAssigningTeam, as: 'assigning_team' }
+          {
+            model: Assignee,
+            as: 'assignee',
+            required: false
+          },
+          {
+            model: AssigningTeam,
+            as: 'assigning_team',
+            required: false
+          }
         ]
-      });
-      res.status(200).json(metrics);    } catch (error) {
-      console.log(error);
-      res.status(500).json(error);    }
+      }));
+    } catch (error) {
+      res.status(500).json(error);
+    }
   }
 
-  async getSeatByLogin(req: Request, res: Response): Promise<void> {
-    try {
-      const { login } = req.params;
-      const assignee = await CopilotAssignee.findOne({
-        where: { login }
-      });
-      if (!assignee) {
-        res.status(404).json({ error: 'Assignee not found' });        return;
-      }
-      const metrics = await CopilotSeat.findOne({
-        where: { assigneeId: assignee?.dataValues.id },
-        include: [
-          { model: CopilotAssignee, as: 'assignee' },
-          { model: CopilotAssigningTeam, as: 'assigning_team' }
-        ]
-      });
-      if (metrics) {
-        res.status(200).json(metrics);      } else {
-        res.status(404).json({ error: 'Metrics not found' });      }
+  async getActivity(req: Request, res: Response): Promise<void> {
+    try {      
+      const activityDays = await getAssigneesActivity(1);
+      res.status(200).json(activityDays);
     } catch (error) {
-      res.status(500).json(error);    }
+      res.status(500).json(error);
+    }
   }
 
-   async getSeatActivityByLogin(req: Request, res: Response): Promise<void> {
+  async getActivityHighcharts(req: Request, res: Response): Promise<void> {
     try {
-      const { login } = req.params;
-      const metrics = await CopilotSeat.findAndCountAll({
-        where: { login },
-        include: [
-          { model: CopilotAssignee, as: 'assignee' },
-          { model: CopilotAssigningTeam, as: 'assigning_team' }
-        ]
-      });
-      if (metrics) {
-        res.status(200).json(metrics);      } else {
-        res.status(404).json({ error: 'Metrics not found' });      }
+      const activityDays = await getAssigneesActivity(1);
+      const series = Object.entries(activityDays).reduce((acc, [date, data]) => {
+        acc[0].data.push([new Date(date).getTime(), data.totalActive]);
+        acc[1].data.push([new Date(date).getTime(), data.totalInactive]);
+        return acc;
+      }, [
+        { name: 'Active', data: [] as [number, number][], type: 'line' },
+        { name: 'Inactive', data: [] as [number, number][], type: 'line' }
+      ]);
+      res.status(200).json(series);
     } catch (error) {
-      res.status(500).json(error);    }
+      res.status(500).json(error);
+    }
   }
 
 }
