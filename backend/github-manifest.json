@@ -9,8 +9,10 @@
   "redirect_url": "http://localhost/api/setup/registration/complete",
   "public": false,
   "default_permissions": {
-    "pull_requests": "write",
-    "organization_copilot_seat_management": "read"
+    "members": "read",
+    "metadata": "read",
+    "organization_copilot_seat_management": "read",
+    "pull_requests": "write"
   },
   "default_events": [
     "pull_request"

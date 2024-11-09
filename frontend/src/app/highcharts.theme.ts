@@ -53,7 +53,51 @@ Highcharts.theme = {
     animation: {
       duration: 300
     },
-    spacing: [20, 20, 20, 20]
+    spacing: [20, 20, 20, 20],
+    resetZoomButton: {
+      theme: {
+        fill: 'var(--mdc-filled-button-container-color)',
+        stroke: 'none',
+        style: {
+          color: 'var(--mdc-filled-button-label-text-color)',
+          font: 'var(--mdc-filled-button-label-text-font, var(--mat-app-label-large-font))',
+          fontSize: 'var(--mdc-filled-button-label-text-size)',
+          letterSpacing: 'var(--mdc-filled-button-label-text-tracking)',
+          fontWeight: 'var(--mdc-filled-button-label-text-weight)',
+          cursor: 'pointer',
+          transition: 'box-shadow 280ms cubic-bezier(0.4, 0, 0.2, 1)',
+          userSelect: 'none',
+          minWidth: '64px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: 36
+        },
+        states: {
+          hover: {
+            fill: 'var(--mdc-filled-button-container-color)',
+            brightness: 1.08,
+            style: {
+              color: 'var(--mdc-filled-button-label-text-color)'
+            }
+          },
+          select: {
+            fill: 'var(--mdc-filled-button-container-color)',
+            brightness: 0.95
+          }
+        },
+        paddingLeft: 24,
+        paddingRight: 24,
+        height: 24,
+        r: 24
+      },
+      position: {
+        align: 'right',
+        verticalAlign: 'top',
+        x: -10,
+        y: 10
+      }
+    }
   },
   title: {
     align: 'left',
@@ -87,7 +131,7 @@ Highcharts.theme = {
     backgroundColor: 'var(--sys-surface-container)',
     borderColor: 'var(--sys-outline)',
     borderRadius: 4,
-    padding: 8,
+    padding: 12,
     shadow: {
       color: 'var(--sys-shadow)',
       offsetX: 2,

@@ -18,9 +18,9 @@ class QueryService {
   }
 
   private async task() {
-    // this.queryCopilotUsageMetrics();
-    // this.queryCopilotUsageMetricsNew();
-    // this.queryCopilotSeatAssignments();
+    this.queryCopilotUsageMetrics();
+    this.queryCopilotUsageMetricsNew();
+    this.queryCopilotSeatAssignments();
     this.queryTeamsAndMembers();
   }
 

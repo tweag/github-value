@@ -401,7 +401,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
     }
 
     if (day.copilot_ide_chat) {
-      let chatTotals = {
+      const chatTotals = {
         chats: 0,
         copyEvents: 0,
         insertionEvents: 0
@@ -413,7 +413,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
       });
 
       for (const editor of day.copilot_ide_chat.editors) {
-        let chatTotalsEditor = {
+        const chatTotalsEditor = {
           chats: 0,
           copyEvents: 0,
           insertionEvents: 0
@@ -466,7 +466,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_code_lines_suggested: 0
       });
 
-      let dailyTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
+      const dailyTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
       for (const editor of day.copilot_ide_code_completions.editors) {
         const editorRecord = await MetricEditor.create({
@@ -479,7 +479,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
           total_code_lines_suggested: 0
         });
 
-        let editorTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
+        const editorTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
         for (const model of editor.models) {
           const modelRecord = await MetricModelStats.create({
@@ -493,7 +493,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
             total_code_lines_suggested: 0
           });
 
-          let modelTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
+          const modelTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
           if ('languages' in model) {
             for (const lang of model.languages) {
@@ -555,28 +555,31 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_engaged_users: day.copilot_dotcom_pull_requests.total_engaged_users
       });
 
-      for (const repo of day.copilot_dotcom_pull_requests.repositories) {
-        let totalPrSummariesRepo = 0;
-        const repository = await MetricPrRepository.create({
-          pr_metrics_id: prMetrics.id,
-          name: repo.name,
-          total_engaged_users: repo.total_engaged_users
-        });
+      console.log(day.copilot_dotcom_pull_requests)
+      if (day.copilot_dotcom_pull_requests.repositories) {
+        for (const repo of day.copilot_dotcom_pull_requests.repositories) {
+          let totalPrSummariesRepo = 0;
+          const repository = await MetricPrRepository.create({
+            pr_metrics_id: prMetrics.id,
+            name: repo.name,
+            total_engaged_users: repo.total_engaged_users
+          });
 
-        await Promise.all(repo.models.map(model => {
-          totalPrSummaries += model.total_pr_summaries_created || 0; totalPrSummariesRepo += model.total_pr_summaries_created || 0;
+          await Promise.all(repo.models.map(model => {
+            totalPrSummaries += model.total_pr_summaries_created || 0; totalPrSummariesRepo += model.total_pr_summaries_created || 0;
 
-          MetricPrModelStats.create({
-            repository_id: repository.id,
-            name: model.name,
-            is_custom_model: model.is_custom_model,
-            total_engaged_users: model.total_engaged_users,
-            total_pr_summaries_created: model.total_pr_summaries_created
-          })
-        }));
-        repository.update({
-          total_pr_summaries_created: totalPrSummariesRepo
-        });
+            MetricPrModelStats.create({
+              repository_id: repository.id,
+              name: model.name,
+              is_custom_model: model.is_custom_model,
+              total_engaged_users: model.total_engaged_users,
+              total_pr_summaries_created: model.total_pr_summaries_created
+            })
+          }));
+          repository.update({
+            total_pr_summaries_created: totalPrSummariesRepo
+          });
+        }
       }
 
       await prMetrics.update({
