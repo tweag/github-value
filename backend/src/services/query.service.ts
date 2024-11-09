@@ -81,7 +81,7 @@ class QueryService {
       };
 
       if (!seatAssignments.seats) {
-        logger.info(`No seat assignment data found. Skipping...`);
+        logger.info(`No seat assignment data found.`);
         return;
       }
 

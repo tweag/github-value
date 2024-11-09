@@ -10,6 +10,7 @@ import { Observable } from 'rxjs';
 import { map, shareReplay, tap } from 'rxjs/operators';
 import { AppModule } from '../app.module';
 import { MetricsService } from '../services/metrics.service';
+import { ThemeService } from '../services/theme.service';
 
 @Component({
   selector: 'app-main',
@@ -31,7 +32,8 @@ export class MainComponent {
   hideNavText = false;
 
   constructor(
-    private metricsService: MetricsService
+    private metricsService: MetricsService,
+    public themeService: ThemeService
   ) {
     this.hideNavText = localStorage.getItem('hideNavText') === 'true';
     this.metricsService.getMetrics().subscribe(data => {

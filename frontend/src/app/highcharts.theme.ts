@@ -103,14 +103,15 @@ Highcharts.theme = {
     align: 'left',
     style: {
       color: 'var(--sys-on-surface)',
-      font: 'var(--sys-headline-small)'
+      font: 'var(--sys-title-large)',
+      padding: '0 0 0.6em 0',
     }
   },
   subtitle: {
     align: 'left',
     style: {
       color: 'var(--sys-on-surface-variant)',
-      font: 'var(--sys-title-medium)'
+      font: 'var(--sys-title-medium)',
     }
   },
   xAxis: xAxisConfig,

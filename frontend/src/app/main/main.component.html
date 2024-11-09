@@ -9,7 +9,14 @@
           <mat-icon>menu</mat-icon>
         </button>
       }
-      <img *ngIf="!hideNavText || (isHandset$ | async)" routerLink="/" src="assets/images/GitHub_Logo_nopadding.png" alt="GitHub Copilot Logo" style="height: 25px;">
+      <img 
+      *ngIf="!hideNavText || (isHandset$ | async)" 
+      routerLink="/" 
+      [src]="(themeService.isDarkTheme() | async) ? 
+        'assets/images/GitHub_Logo_White.png' : 
+        'assets/images/GitHub_Logo_Black.png'"
+      alt="GitHub Copilot Logo" 
+      style="height: 50px;">
     </mat-toolbar>
     <mat-nav-list [ngClass]="{'hide-nav-text': hideNavText && (isHandset$ | async) === false }">
       <a mat-list-item routerLink="/">
