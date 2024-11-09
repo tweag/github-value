@@ -1,12 +1,12 @@
 import { Routes } from '@angular/router';
-import { CopilotSurveyComponent } from './surveys/copilot-survey/copilot-survey.component';
-import { SurveysComponent } from './surveys/surveys.component';
-import { SettingsComponent } from './settings/settings.component';
+import { CopilotSurveyComponent } from './main/surveys/copilot-survey/copilot-survey.component';
+import { SurveysComponent } from './main/surveys/surveys.component';
+import { SettingsComponent } from './main/settings/settings.component';
 import { WelcomeComponent } from './welcome/welcome.component';
 import { SetupGuard } from './guards/setup.guard';
 import { MainComponent } from './main/main.component';
-import { CopilotDashboardComponent } from './copilot-dashboard/copilot-dashboard.component';
-import { HomeComponent } from './home/home.component';
+import { CopilotDashboardComponent } from './main/copilot-dashboard/copilot-dashboard.component';
+import { HomeComponent } from './main/home/home.component';
 
 export const routes: Routes = [
   { path: 'setup', component: WelcomeComponent },  {

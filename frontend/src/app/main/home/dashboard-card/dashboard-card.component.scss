@@ -1,0 +1,22 @@
+
+.dashboard-card {
+  // background: var(--sys-surface-container);
+}
+
+.primary-value {
+  font-size: 48px;
+  margin: 0;
+  color: var(--sys-on-surface);
+}
+
+.trend-indicator {
+  display: flex;
+  gap: 8px;
+  font-size: var(--mat-card-title-text-size, var(--mat-app-title-large-size));
+  .positive {
+    color: #4caf50;
+  }
+  .negative {
+    color: #f44336;
+  }
+}

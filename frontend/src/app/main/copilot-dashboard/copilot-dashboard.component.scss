@@ -20,6 +20,11 @@
 }
 
 .chart-card {
-  padding: 12px;
-  margin: 12px;
+  // padding: 12px;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(800px, 1fr));
+  gap: 24px;
 }

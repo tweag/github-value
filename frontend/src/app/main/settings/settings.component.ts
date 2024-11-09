@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { MaterialModule } from '../material.module';
-import { AppModule } from '../app.module';
+import { MaterialModule } from '../../material.module';
+import { AppModule } from '../../app.module';
 import { FormControl, FormGroup, FormGroupDirective, NgForm, Validators } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
-import { SettingsHttpService } from '../services/settings.service';
+import { SettingsHttpService } from '../../services/settings.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { SetupService } from '../services/setup.service';
-import { Endpoints } from '@octokit/types';
+import { SetupService } from '../../services/setup.service';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import { ThemeService } from '../../services/theme.service';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -22,7 +23,8 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
   imports: [
     MaterialModule,
     AppModule,
-    CommonModule
+    CommonModule,
+    MatCheckboxModule
   ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
@@ -45,7 +47,8 @@ export class SettingsComponent implements OnInit {
   constructor(
     private settingsService: SettingsHttpService,
     private router: Router,
-    private setupService: SetupService
+    private setupService: SetupService,
+    public themeService: ThemeService
   ) { }
 
   ngOnInit() {

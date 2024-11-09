@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { MaterialModule } from '../material.module';
-import { AppModule } from '../app.module';
-import { CopilotSurveyService as CopilotSurveyService } from '../services/copilot-survery.service';
-import { Survey } from '../models/survey';
-import { ColumnOptions } from '../shared/table/table.component';
+import { MaterialModule } from '../../material.module';
+import { AppModule } from '../../app.module';
+import { CopilotSurveyService as CopilotSurveyService } from '../../services/copilot-survery.service';
+import { Survey } from '../../models/survey';
+import { ColumnOptions } from '../../shared/table/table.component';
 
 @Component({
   selector: 'app-surveys',

@@ -88,9 +88,6 @@ export class TimeSavedChartComponent {
       },
       width: undefined,
     },
-    title: {
-      text: 'Time Saved'
-    },
     xAxis: {
       type: 'datetime',
       dateTimeLabelFormats: {

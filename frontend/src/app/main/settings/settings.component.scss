@@ -13,9 +13,10 @@ form {
 .settings-header {
   grid-column: 1;
   max-width: 200px;
-  h4 {
-    margin: 0;
-  }
+}
+
+h4, h3 {
+  margin: 0;
 }
 
 .settings-content {

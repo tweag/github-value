@@ -1,0 +1,47 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Copilot Developer Survey</h1>
+  </div>
+  <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
+    <label for="usedCopilot">Did you use Copilot for this PR?</label>
+    <mat-radio-group id="usedCopilot" formControlName="usedCopilot" aria-labelledby="example-radio-group-label" class="example-radio-group">
+      <mat-radio-button class="example-radio-button" [value]="true">Yes</mat-radio-button>
+      <mat-radio-button class="example-radio-button" [value]="false">No</mat-radio-button>
+    </mat-radio-group>
+    <label for="percentTimeSavedSlider">How much less time did the actual coding take with Copilot?</label>
+    <div>
+      <mat-slider class="example-mat-slider" id="percentTimeSavedSlider" [max]="100" [min]="0" [step]="5" discrete="true" tickInterval="5" showTickMarks  [displayWith]="formatPercent">
+        <input matSliderThumb formControlName="percentTimeSaved">
+      </mat-slider>
+      <div class="slider-labels-container">
+        <div class="slider-labels">
+          <span style="left: 0%">0%</span>
+          <span style="left: 25%">25%</span>
+          <span style="left: 50%">50%</span>
+          <span style="left: 75%">75%</span>
+          <span style="left: 100%">100%</span>
+        </div>
+      </div>
+    </div>
+    <!-- <label>Describe your thought process for calculating (or estimating) the {{surveyForm.get('percentTimeSaved')?.value}}% time
+      saved</label> -->
+    <mat-form-field class="example-form-field">
+      <mat-label>{{surveyForm.get('percentTimeSaved')?.value ? 'I chose ' + surveyForm.get('percentTimeSaved')?.value + '% because Copilot enabled me to' : 'I didn\'t use Copilot because'}}...</mat-label>
+      <textarea formControlName="reason" placeholder="Ex. Write boilerplate code more quickly, freeing up time to focus on complex logic." matInput></textarea>
+      <mat-hint>Describe your thought process for calculating (or estimating) the {{surveyForm.get('percentTimeSaved')?.value}}% time saved</mat-hint>
+    </mat-form-field>
+    <br><br>
+    <label for="timeUsedForGroup">Given the context, where would the Copilot time savings most likely show up?</label>
+    <mat-radio-group id="timeUsedForGroup" formControlName="timeUsedFor" aria-labelledby="example-radio-group-label" class="example-radio-group">
+      <mat-radio-button class="example-radio-button" value="fasterPRs">Faster PR's 🚀</mat-radio-button>
+      <mat-radio-button class="example-radio-button" value="fasterReleases">Faster Releases 📦</mat-radio-button>
+      <mat-radio-button class="example-radio-button" value="repoHousekeeping">Repo/Team Housekeeping 🧹</mat-radio-button>
+      <mat-radio-button class="example-radio-button" value="techDebt">Tech Debt, Reduce Defects and Vulns
+        🛠️</mat-radio-button>
+      <mat-radio-button class="example-radio-button" value="experimentLearn">Experiment, Learn, or Work on Something NEW
+        🧪</mat-radio-button>
+      <mat-radio-button class="example-radio-button" value="other">Other 🤔</mat-radio-button>
+    </mat-radio-group>
+    <button mat-raised-button color="primary" type="submit">Submit</button>
+  </form>
+</div>

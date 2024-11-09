@@ -47,6 +47,7 @@ Highcharts.theme = {
   ],
   chart: {
     backgroundColor: 'var(--sys-surface)',
+    borderRadius: 16,
     style: {
       fontFamily: 'var(--sys-body-large-font)'
     },
@@ -100,6 +101,7 @@ Highcharts.theme = {
     }
   },
   title: {
+    text: undefined,
     align: 'left',
     style: {
       color: 'var(--sys-on-surface)',

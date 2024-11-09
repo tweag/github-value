@@ -89,9 +89,6 @@ export class AdoptionChartComponent {
       },
       width: undefined,
     },
-    title: {
-      text: 'Adoption'
-    },
     xAxis: {
       type: 'datetime',
       dateTimeLabelFormats: {

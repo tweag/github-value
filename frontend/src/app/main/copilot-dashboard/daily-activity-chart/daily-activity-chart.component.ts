@@ -89,9 +89,6 @@ export class DailyActivityChartComponent {
       },
       width: undefined,
     },
-    title: {
-      text: 'Daily Activity (Usage)'
-    },
     xAxis: {
       type: 'datetime',
       dateTimeLabelFormats: {

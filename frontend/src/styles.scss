@@ -20,19 +20,17 @@
   @include mat.system-level-typography(theme.$dark-theme);
 
   // Apply the light theme only when the user prefers light themes.
-  @media (prefers-color-scheme: light) {
+  .light-theme {
     // Use the `-color` mixins to only apply color styles without reapplying the same
     // typography and density styles.
-    @include mat.core-color(theme.$light-theme);
     @include mat.all-component-colors(theme.$light-theme);
     @include mat.system-level-colors(theme.$light-theme);
-    @include mat.system-level-typography(theme.$light-theme);
     a:not(.mat-mdc-button-base) {
       color: mat.get-theme-color(theme.$light-theme, primary, 40);
     }
   }
 
-  @media (prefers-color-scheme: dark) {
+  .dark-theme {
     color-scheme: dark;
     // @include mat.strong-focus-indicators-color($dark-theme);
     a:not(.mat-mdc-button-base) {
@@ -78,6 +76,7 @@ a {
   max-width: 1250px;
   margin: auto;
   width: 100%;
+  margin-bottom: 48px;
 }
 
 .page-header {
