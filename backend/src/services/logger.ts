@@ -27,10 +27,10 @@ const logger = bunyan.createLogger({
     })
   },
   streams: [
-    {
-      level: 'info',
-      stream: process.stdout
-    },
+    // {
+    //   level: 'info',
+    //   stream: process.stdout
+    // },
     {
       path: `${logsDir}/app.log`,
       period: '1d',        count: 14          }

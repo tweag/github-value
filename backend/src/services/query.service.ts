@@ -2,9 +2,10 @@ import { CronJob, CronTime } from 'cron';
 import logger from './logger';
 import setup from './setup';
 import { insertUsage } from '../models/usage.model';
-import { insertSeats } from '../models/copilot.seats';
+import { insertSeats } from '../models/copilot.seats.model';
 import { insertMetrics } from '../models/metrics.model';
 import { CopilotMetrics } from '../models/metrics.model.interfaces';
+import { Member, Team, TeamMemberAssociation } from '../models/teams.model';
 
 const DEFAULT_CRON_EXPRESSION = '0 0 * * *';
 class QueryService {
@@ -19,8 +20,8 @@ class QueryService {
   private async task() {
     // this.queryCopilotUsageMetrics();
     // this.queryCopilotUsageMetricsNew();
-    this.queryCopilotSeatAssignments();
-    // this.queryTeams();
+    // this.queryCopilotSeatAssignments();
+    this.queryTeamsAndMembers();
   }
 
   public static createInstance(cronExpression: string, timeZone: string) {
@@ -92,18 +93,80 @@ class QueryService {
     }
   }
 
-  queryActivity() {
-  }
-
-  public async queryTeams() {
+  public async queryTeamsAndMembers() {
     try {
       const octokit = await setup.getOctokit();
-      const response = await octokit.rest.teams.list({
+      const teams = await octokit.paginate(octokit.rest.teams.list, {
         org: setup.installation.owner?.login
       });
-
-      console.log(response.data);
-
+      
+      // First pass: Create all teams without parent relationships 🏗️
+      for (const team of teams) {
+        await Team.upsert({
+          id: team.id,
+          node_id: team.node_id,
+          name: team.name,
+          slug: team.slug,
+          description: team.description,
+          privacy: team.privacy,
+          notification_setting: team.notification_setting,
+          permission: team.permission,
+          url: team.url,
+          html_url: team.html_url,
+          members_url: team.members_url,
+          repositories_url: team.repositories_url
+        });
+      }
+  
+      // Second pass: Update parent relationships 👨‍👦
+      for (const team of teams) {
+        if (team.parent?.id) {
+          await Team.update(
+            { parent_id: team.parent.id },
+            { where: { id: team.id } }
+          );
+        }
+      }
+  
+      // Third pass: Add team members 👥
+      for (const team of teams) {
+        const members = await octokit.paginate(octokit.rest.teams.listMembersInOrg, {
+          org: setup.installation.owner?.login,
+          team_slug: team.slug
+        });
+        
+        if (members?.length) {
+          await Promise.all(members.map(async member => {
+            const [dbMember] = await Member.upsert({
+              id: member.id,
+              login: member.login,
+              node_id: member.node_id,
+              avatar_url: member.avatar_url,
+              gravatar_id: member.gravatar_id || null,
+              url: member.url,
+              html_url: member.html_url,
+              followers_url: member.followers_url,
+              following_url: member.following_url,
+              gists_url: member.gists_url,
+              starred_url: member.starred_url,
+              subscriptions_url: member.subscriptions_url,
+              organizations_url: member.organizations_url,
+              repos_url: member.repos_url,
+              events_url: member.events_url,
+              received_events_url: member.received_events_url,
+              type: member.type,
+              site_admin: member.site_admin
+            });
+          
+            // Create team-member association 🤝
+            await TeamMemberAssociation.upsert({
+              TeamId: team.id,
+              MemberId: dbMember.id
+            });
+          }));
+        }
+      }
+  
       logger.info("Teams successfully updated! 🧑‍🤝‍🧑");
     } catch (error) {
       logger.error('Error querying teams', error);

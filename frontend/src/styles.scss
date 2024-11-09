@@ -16,6 +16,8 @@
   // Apply the dark theme by default
   @include mat.core-theme(theme.$dark-theme);
   @include mat.all-component-themes(theme.$dark-theme);
+  @include mat.system-level-colors(theme.$dark-theme);
+  @include mat.system-level-typography(theme.$dark-theme);
 
   // Apply the light theme only when the user prefers light themes.
   @media (prefers-color-scheme: light) {
@@ -23,6 +25,8 @@
     // typography and density styles.
     @include mat.core-color(theme.$light-theme);
     @include mat.all-component-colors(theme.$light-theme);
+    @include mat.system-level-colors(theme.$light-theme);
+    @include mat.system-level-typography(theme.$light-theme);
     a:not(.mat-mdc-button-base) {
       color: mat.get-theme-color(theme.$light-theme, primary, 40);
     }

@@ -5,6 +5,7 @@ import settingsController from '../controllers/settings.controller';
 import setupController from '../controllers/setup.controller';
 import SeatsController from '../controllers/seats.controller';
 import metricsController from '../controllers/metrics.controller';
+import TeamsController from '../controllers/teams.controller';
 
 const router = Router();
 
@@ -25,6 +26,8 @@ router.get('/metrics', metricsController.getMetrics);
 router.get('/seats', SeatsController.getAllSeats);
 router.get('/seats/activity', SeatsController.getActivity);
 router.get('/seats/activity/highcharts', SeatsController.getActivityHighcharts);
+
+router.get('/teams', TeamsController.getAllTeams);
 
 router.get('/settings', settingsController.getAllSettings);
 router.post('/settings', settingsController.createSettings);

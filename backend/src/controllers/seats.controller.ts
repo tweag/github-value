@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Assignee, getAssigneesActivity, AssigningTeam, Seat } from '../models/copilot.seats';
+import { Assignee, getAssigneesActivity, AssigningTeam, Seat } from '../models/copilot.seats.model';
 
 class SeatsController {
   async getAllSeats(req: Request, res: Response): Promise<void> {
