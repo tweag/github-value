@@ -7,7 +7,7 @@ import { SettingsHttpService } from '../../services/settings.service';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { SetupService } from '../../services/setup.service';
-import {MatCheckboxModule} from '@angular/material/checkbox';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ThemeService } from '../../services/theme.service';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -31,9 +31,26 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 })
 export class SettingsComponent implements OnInit {
   form = new FormGroup({
+    developerCount: new FormControl('', [
+      Validators.min(1)
+    ]),
+    devCostPerYear: new FormControl('', [
+      Validators.min(0)
+    ]),
+    hoursPerYear: new FormControl('2080', [
+      Validators.min(1),
+      Validators.max(8760)
+    ]),
+    percentCoding: new FormControl('', [
+      Validators.min(0),
+      Validators.max(100)
+    ]),
+    percentTimeSaved: new FormControl('', [
+      Validators.min(0),
+      Validators.max(100)
+    ]),
     metricsCronExpression: new FormControl('', []),
     baseUrl: new FormControl('', [
-      Validators.required,
       Validators.pattern(/^(https?:\/\/)[^\s/$.?#].[^\s]*$/)
     ]),
     webhookProxyUrl: new FormControl('', [
@@ -58,6 +75,11 @@ export class SettingsComponent implements OnInit {
         baseUrl: settings.baseUrl || '',
         webhookProxyUrl: settings.webhookProxyUrl || '',
         webhookSecret: settings.webhookSecret || '',
+        devCostPerYear: settings.devCostPerYear || '',
+        developerCount: settings.developerCount || '',
+        hoursPerYear: settings.hoursPerYear || '',
+        percentCoding: settings.percentCoding || '',
+        percentTimeSaved: settings.percentTimeSaved || ''
       });
     });
 

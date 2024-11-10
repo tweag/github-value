@@ -2,7 +2,7 @@ import { CronJob, CronTime } from 'cron';
 import logger from './logger';
 import setup from './setup';
 import { insertUsage } from '../models/usage.model';
-import { insertSeats } from '../models/copilot.seats.model';
+import SeatService from '../services/copilot.seats.service';
 import { insertMetrics } from '../models/metrics.model';
 import { CopilotMetrics } from '../models/metrics.model.interfaces';
 import { Member, Team, TeamMemberAssociation } from '../models/teams.model';
@@ -85,7 +85,7 @@ class QueryService {
         return;
       }
 
-      insertSeats(seatAssignments.seats);
+      SeatService.insertSeats(seatAssignments.seats);
 
       logger.info("Seat assignments successfully updated! 🪑");
     } catch (error) {

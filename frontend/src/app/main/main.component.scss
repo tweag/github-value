@@ -49,3 +49,19 @@ mat-sidenav {
 mat-divider {
   margin: 12px 0;
 }
+
+.date-selector {
+  caret-color: transparent;
+}
+::ng-deep {
+  .mat-form-field-no-outline {
+    .mat-mdc-form-field-infix {
+      padding-top: 7px !important;
+      padding-bottom: 0 !important;
+      min-height: 0 !important;
+    }
+    .mat-mdc-notch-piece {
+      border: none !important;
+    }
+  }
+}

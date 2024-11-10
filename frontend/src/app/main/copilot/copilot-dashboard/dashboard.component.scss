@@ -1,0 +1,16 @@
+@use '@angular/material' as mat;
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.dashboard-card {
+  // background: var(--sys-surface-container);
+  user-select: none;
+}
+
+.dashboard-card:hover {
+  @include mat.elevation(2);
+}

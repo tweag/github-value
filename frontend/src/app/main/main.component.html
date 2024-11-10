@@ -1,4 +1,4 @@
-<mat-sidenav-container class="sidenav-container" autosize>
+<mat-sidenav-container class="sidenav-container mat-typography" autosize>
   <mat-sidenav #drawer class="sidenav" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
     [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
     <mat-toolbar>
@@ -12,19 +12,31 @@
         'assets/images/GitHub_Logo.png'" alt="GitHub Copilot Logo" style="height: 50px;">
     </mat-toolbar>
     <mat-nav-list [ngClass]="{'hide-nav-text': hideNavText && (isHandset$ | async) === false }">
-      <a mat-list-item routerLink="/">
+      <a mat-list-item routerLink="/copilot">
         <mat-icon matListItemIcon>home</mat-icon>
         <span>Home</span>
       </a>
-      <mat-divider></mat-divider>
       <!-- <div mat-subheader>Pages</div> -->
-      <a mat-list-item routerLink="/copilot">
-        <mat-icon svgIcon="github-copilot" matListItemIcon></mat-icon>
-        <span>Copilot</span>
+      <a mat-list-item routerLink="/copilot/value">
+        <mat-icon matListItemIcon>star</mat-icon>
+        <span>Value</span>
       </a>
-      <a mat-list-item routerLink="/surveys">
-        <mat-icon matListItemIcon>feedback</mat-icon>
+      <a mat-list-item routerLink="/copilot/metrics">
+        <mat-icon matListItemIcon>assessment</mat-icon>
+        <span>Metrics</span>
+      </a>
+      <a mat-list-item routerLink="/copilot/seats">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span>Seats</span>
+      </a>
+      <a mat-list-item routerLink="/copilot/surveys">
+        <mat-icon matListItemIcon>merge</mat-icon>
+        <!-- <mat-icon matListItemIcon>feedback</mat-icon> -->
         <span>Surveys</span>
+      </a>
+      <a mat-list-item routerLink="/copilot/calculator">
+        <mat-icon matListItemIcon>calculate</mat-icon>
+        <span>Calculator</span>
       </a>
       <mat-divider></mat-divider>
       <a mat-list-item routerLink="/settings">
@@ -34,13 +46,44 @@
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
-    @if (isHandset$ | async) {
     <mat-toolbar color="primary">
+    @if (isHandset$ | async) {
       <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()">
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
-    </mat-toolbar>
     }
+    <h1>Octodemo</h1>
+    <span class="spacer"></span>
+    <div class="date-selector">
+      <mat-form-field appearance="outline" class="mat-form-field-no-outline" subscriptSizing="dynamic">
+        <mat-label>Date Range</mat-label>
+        <mat-select [(ngModel)]="selectedRange" (selectionChange)="onRangeChange($event)">
+          <mat-option value="week">Current Week</mat-option>
+          <mat-option value="month">Current Month</mat-option>
+          <mat-option value="lastMonth">Last Month</mat-option>
+          <mat-option value="30days">Last 30 Days</mat-option>
+          <mat-option value="90days">Last 90 Days</mat-option>
+          <mat-option value="year">Last Year</mat-option>
+          <mat-option value="custom">Custom Range</mat-option>
+        </mat-select>
+      </mat-form-field>
+    
+      <mat-form-field *ngIf="selectedRange === 'custom'" appearance="outline">
+        <mat-label>Choose a date range</mat-label>
+        <mat-date-range-input [rangePicker]="picker" [formGroup]="range" [min]="minDate" [max]="maxDate">
+          <input matStartDate placeholder="Start date" formControlName="start">
+          <input matEndDate placeholder="End date" formControlName="end">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+        <button *ngIf="range.controls.start.value !== minDate || range.controls.end.value !== maxDate" 
+                mat-icon-button matSuffix 
+                (click)="range.setValue({ start: minDate, end: maxDate })">
+          <mat-icon>close</mat-icon>
+        </button>
+      </mat-form-field>
+    </div>
+  </mat-toolbar>
     <div class="sidenav-content">
       <router-outlet />
     </div>

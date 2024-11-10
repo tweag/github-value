@@ -1,0 +1,14 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Dashboard</h1>
+    <span class="spacer"></span>
+  </div>
+  <div class="cards-grid">
+    <app-dashboard-card-value title="Seats" [value]="843" [change]="22"></app-dashboard-card-value>
+    <app-dashboard-card-value title="Active Users" [value]="4205" [change]="-12"></app-dashboard-card-value>
+    <app-dashboard-card-value title="Surveys Complete" icon="" [value]="43" [change]="14" changeSuffix="" changeDescription="This week"></app-dashboard-card-value>
+    <app-dashboard-card-bars style="grid-row: span 4;" title="Engagement" [sections]="engagementSections"></app-dashboard-card-bars>
+    <!-- Language Popularity -->
+     <!-- IDE Popularity -->
+  </div>
+</div>

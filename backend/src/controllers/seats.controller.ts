@@ -1,31 +1,26 @@
 import { Request, Response } from 'express';
-import { Assignee, getAssigneesActivity, AssigningTeam, Seat } from '../models/copilot.seats.model';
+import SeatsService from '../services/copilot.seats.service';
 
 class SeatsController {
   async getAllSeats(req: Request, res: Response): Promise<void> {
     try {
-      res.status(200).json(await Seat.findAll({
-        include: [
-          {
-            model: Assignee,
-            as: 'assignee',
-            required: false
-          },
-          {
-            model: AssigningTeam,
-            as: 'assigning_team',
-            required: false
-          }
-        ]
-      }));
+      const seats = await SeatsService.getAllSeats();
+      res.status(200).json(seats);
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   }
 
   async getActivity(req: Request, res: Response): Promise<void> {
-    try {      
-      const activityDays = await getAssigneesActivity(1);
+    const { daysInactive } = req.query;
+    const _daysInactive = Number(daysInactive);
+    if (!daysInactive || isNaN(_daysInactive)) {
+      res.status(400).json({ error: 'daysInactive query parameter is required' });
+      return;
+    }
+    try {
+      const activityDays = await SeatsService.getAssigneesActivity(_daysInactive);
       res.status(200).json(activityDays);
     } catch (error) {
       res.status(500).json(error);
@@ -34,16 +29,18 @@ class SeatsController {
 
   async getActivityHighcharts(req: Request, res: Response): Promise<void> {
     try {
-      const activityDays = await getAssigneesActivity(1);
-      const series = Object.entries(activityDays).reduce((acc, [date, data]) => {
-        acc[0].data.push([new Date(date).getTime(), data.totalActive]);
-        acc[1].data.push([new Date(date).getTime(), data.totalInactive]);
+      const { daysInactive } = req.query;
+      const _daysInactive = Number(daysInactive);
+      if (!daysInactive || isNaN(_daysInactive)) {
+        res.status(400).json({ error: 'daysInactive query parameter is required' });
+        return;
+      }
+      const activityDays = await SeatsService.getAssigneesActivity(_daysInactive);
+      const activeData = Object.entries(activityDays).reduce((acc, [date, data]) => {
+        acc.push([new Date(date).getTime(), data.totalActive]);
         return acc;
-      }, [
-        { name: 'Active', data: [] as [number, number][], type: 'line' },
-        { name: 'Inactive', data: [] as [number, number][], type: 'line' }
-      ]);
-      res.status(200).json(series);
+      }, [] as [number, number][]);
+      res.status(200).json(activeData);
     } catch (error) {
       res.status(500).json(error);
     }

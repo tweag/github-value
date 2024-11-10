@@ -5,8 +5,58 @@
   </div>
   <form class="example-form" [formGroup]="form" (ngSubmit)="onSubmit()">
     <div class="settings-header">
+      <h3>Assumptions</h3>
+    </div>
+    <div class="settings-content">
+      <mat-form-field>
+        <mat-label>Number of Developers</mat-label>
+        <input type="number" matInput formControlName="developerCount" placeholder="Ex: 100">
+        <mat-error *ngIf="form.controls.developerCount.hasError('required')">
+          Number of developers is <strong>required</strong>
+        </mat-error>
+      </mat-form-field>
+    
+      <mat-form-field>
+        <mat-label>Total Loaded Cost per Developer per Year ($)</mat-label>
+        <input type="number" matInput formControlName="devCostPerYear" placeholder="Ex: 150000">
+        <mat-error *ngIf="form.controls.devCostPerYear.hasError('required')">
+          Developer cost is <strong>required</strong>
+        </mat-error>
+      </mat-form-field>
+    
+      <mat-form-field>
+        <mat-label>Total Hours Available per Developer per Year</mat-label>
+        <input type="number" matInput formControlName="hoursPerYear" placeholder="Ex: 2080">
+        <mat-error *ngIf="form.controls.hoursPerYear.hasError('required')">
+          Hours per year is <strong>required</strong>
+        </mat-error>
+        <mat-hint>Standard work year is 2080 hours (52 weeks × 40 hours)</mat-hint>
+      </mat-form-field>
+    
+      <mat-form-field>
+        <mat-label>Percent of Time Spent Coding (%)</mat-label>
+        <input type="number" matInput formControlName="percentCoding" placeholder="Ex: 60" min="0" max="100">
+        <mat-error *ngIf="form.controls.percentCoding.hasError('required')">
+          Coding percentage is <strong>required</strong>
+        </mat-error>
+        <mat-error *ngIf="form.controls.percentCoding.hasError('min') || form.controls.percentCoding.hasError('max')">
+          Must be between 0 and 100
+        </mat-error>
+      </mat-form-field>
+    
+      <mat-form-field>
+        <mat-label>Expected Time Savings per Task (%)</mat-label>
+        <input type="number" matInput formControlName="percentTimeSaved" placeholder="Ex: 20" min="0" max="100">
+        <mat-error *ngIf="form.controls.percentTimeSaved.hasError('required')">
+          Time savings is <strong>required</strong>
+        </mat-error>
+        <mat-error *ngIf="form.controls.percentTimeSaved.hasError('min') || form.controls.percentTimeSaved.hasError('max')">
+          Must be between 0 and 100
+        </mat-error>
+      </mat-form-field>
+    </div>
+    <div class="settings-header">
       <h3>Metrics</h3>
-      <!-- <p>Learn more</p> -->
     </div>
     <div class="settings-content">
       <mat-form-field>
@@ -20,7 +70,6 @@
 
     <div class="settings-header">
       <h3>Theme</h3>
-      <!-- <p>Learn more</p> -->
     </div>
     <div class="settings-content">
       <mat-form-field>

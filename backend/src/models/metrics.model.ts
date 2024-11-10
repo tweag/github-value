@@ -7,6 +7,10 @@ export class MetricDaily extends Model {
   public date!: Date;
   public total_active_users!: number;
   public total_engaged_users!: number;
+  copilot_ide_code_completions?: MetricIdeCompletions;
+  copilot_ide_chat?: MetricIdeChatMetrics;
+  copilot_dotcom_chat?: MetricDotcomChatMetrics;
+  copilot_dotcom_pull_requests?: MetricPrMetrics;
 }
 export class MetricIdeCompletions extends Model {
   public id!: number;
@@ -16,6 +20,7 @@ export class MetricIdeCompletions extends Model {
   public total_code_lines_accepted!: number;
   public total_code_lines_suggested!: number;
   public daily_metric_id!: Date;
+  editors?: MetricEditor[];
 }
 export class MetricEditor extends Model {
   public id!: number;
@@ -26,6 +31,7 @@ export class MetricEditor extends Model {
   public total_code_lines_accepted!: number;
   public total_code_lines_suggested!: number;
   public ide_completion_id!: number;
+  models?: MetricModelStats[];
 }
 export class MetricModelStats extends Model {
   public id!: number;
@@ -37,6 +43,7 @@ export class MetricModelStats extends Model {
   public total_code_lines_accepted!: number;
   public total_code_lines_suggested!: number;
   public editor_id!: number;
+  languages?: MetricLanguageStats[];
 }
 export class MetricLanguageStats extends Model {
   public id!: number;
@@ -53,6 +60,7 @@ export class MetricPrRepository extends Model {
   public name!: string;
   public total_engaged_users!: number;
   public total_pr_summaries_created!: number;
+  models?: MetricPrModelStats[];
 }
 export class MetricPrModelStats extends Model {
   public id!: number;
@@ -65,11 +73,13 @@ export class MetricPrMetrics extends Model {
   public id!: number;
   public total_engaged_users!: number;
   public total_pr_summaries_created!: number;
+  repositories?: MetricPrRepository[];
 }
 export class MetricDotcomChatMetrics extends Model {
   public id!: number;
   public total_engaged_users!: number;
   public total_chats!: number;
+  models?: MetricDotcomChatModelStats[];
 }
 export class MetricDotcomChatModelStats extends Model {
   public id!: number;
@@ -84,6 +94,7 @@ export class MetricIdeChatMetrics extends Model {
   public total_chats!: number;
   public total_chat_copy_events!: number;
   public total_chat_insertion_events!: number;
+  editors?: MetricIdeChatEditor[];
 }
 export class MetricIdeChatEditor extends Model {
   public id!: number;
@@ -92,6 +103,7 @@ export class MetricIdeChatEditor extends Model {
   public total_chats!: number;
   public total_chat_copy_events!: number;
   public total_chat_insertion_events!: number;
+  models?: MetricIdeChatModelStats[];
 }
 export class MetricIdeChatModelStats extends Model {
   public id!: number;

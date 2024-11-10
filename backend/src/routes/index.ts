@@ -22,6 +22,7 @@ router.delete('/survey/:id', SurveyController.deleteSurvey);
 router.get('/usage', usageController.getUsage);
 
 router.get('/metrics', metricsController.getMetrics);
+router.get('/metrics/totals', metricsController.getMetricsTotals);
 
 router.get('/seats', SeatsController.getAllSeats);
 router.get('/seats/activity', SeatsController.getActivity);
