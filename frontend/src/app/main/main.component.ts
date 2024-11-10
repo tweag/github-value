@@ -7,7 +7,7 @@ import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { Observable } from 'rxjs';
-import { filter, map, shareReplay } from 'rxjs/operators';
+import { filter, map, shareReplay, tap } from 'rxjs/operators';
 import { AppModule } from '../app.module';
 import { MetricsService } from '../services/metrics.service';
 import { ThemeService } from '../services/theme.service';
@@ -32,6 +32,14 @@ export class MainComponent {
   private breakpointObserver = inject(BreakpointObserver);
   hideNavText = false;
   @ViewChild('drawer') drawer!: MatSidenav;
+  isHandset = false;
+  isHandset$: Observable<boolean> = this.breakpointObserver.observe([
+    '(max-width: 599px)'  // Standard mobile breakpoint
+  ]).pipe(
+    tap(result => this.isHandset = result.matches),
+    map(result => result.matches),
+    shareReplay()
+  );
 
   constructor(
     private metricsService: MetricsService,
@@ -50,20 +58,13 @@ export class MainComponent {
     });
   }
 
-  isHandset$: Observable<boolean> = this.breakpointObserver.observe([
-    '(max-width: 599px)'  // Standard mobile breakpoint
-  ]).pipe(
-    map(result => result.matches),
-    shareReplay()
-  );
-
   toggleNavText(): void {
     this.hideNavText = !this.hideNavText;
     localStorage.setItem('hideNavText', this.hideNavText.toString());
   }
 
   closeSidenav(): void {
-    if (this.isHandset$ && this.drawer) {
+    if (this.isHandset && this.drawer) {
       this.drawer.close();
     }
   }

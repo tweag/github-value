@@ -18,10 +18,10 @@ class QueryService {
   }
 
   private async task() {
-    this.queryCopilotUsageMetrics();
+    // this.queryCopilotUsageMetrics();
     this.queryCopilotUsageMetricsNew();
-    this.queryCopilotSeatAssignments();
-    this.queryTeamsAndMembers();
+    // this.queryCopilotSeatAssignments();
+    // this.queryTeamsAndMembers();
   }
 
   public static createInstance(cronExpression: string, timeZone: string) {

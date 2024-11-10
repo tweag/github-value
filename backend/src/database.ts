@@ -22,7 +22,7 @@ const sequelize = process.env.JAWSDB_URL ?
     password: process.env.MYSQL_PASSWORD || 'octocat',
     database: process.env.MYSQL_DATABASE || 'value',
     logging: (sql: string, timing?: number) => {
-      logger.info(sql);
+      logger.debug(sql);
     }
   });
 

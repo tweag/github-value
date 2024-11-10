@@ -116,7 +116,7 @@ export class MetricIdeChatModelStats extends Model {
 }
 MetricDaily.init({
   date: {
-    type: DataTypes.TIME,
+    type: DataTypes.DATEONLY,
     primaryKey: true,
     get() {
       const rawValue = this.getDataValue('date');
@@ -411,8 +411,10 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_active_users: day.total_active_users,
         total_engaged_users: day.total_engaged_users,
       });
-    } catch {
+    } catch (error) {
       logger.info(`Metrics for ${date.toLocaleDateString()} already exist. Skipping...`);
+      logger.error(error);
+      console.log(error);
       continue;
     }
 
