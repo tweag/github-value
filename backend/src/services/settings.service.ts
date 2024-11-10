@@ -1,5 +1,4 @@
 import { Settings } from '../models/settings.model';
-import logger from './logger';
 import { QueryService } from './query.service';
 import setup from './setup';
 import SmeeService from './smee';

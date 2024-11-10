@@ -2,29 +2,33 @@ import { Sequelize } from 'sequelize';
 import logger from './services/logger';
 import mysql2 from 'mysql2/promise';
 
-const sequelize = new Sequelize({
-  dialect: 'mysql',
-  host: process.env.MYSQL_HOST || 'localhost',
-  port: parseInt(process.env.MYSQL_PORT || '3306'),
-  username: process.env.MYSQL_USER || 'root',
-  password: process.env.MYSQL_PASSWORD || 'octocat',
-  database: process.env.MYSQL_DATABASE || 'value',
-  logging: (sql: string, timing?: number) => {
-    logger.info(sql);
-  }
-});
+const sequelize = process.env.JAWSDB_URL ?
+  new Sequelize(process.env.JAWSDB_URL) :
+  new Sequelize({
+    dialect: 'mysql',
+    host: process.env.MYSQL_HOST || 'localhost',
+    port: parseInt(process.env.MYSQL_PORT || '3306'),
+    username: process.env.MYSQL_USER || 'root',
+    password: process.env.MYSQL_PASSWORD || 'octocat',
+    database: process.env.MYSQL_DATABASE || 'value',
+    logging: (sql: string, timing?: number) => {
+      logger.info(sql);
+    }
+  });
 
 const dbConnect = async () => {
   try {
-    const connection = await mysql2.createConnection({
-      host: process.env.MYSQL_HOST || 'localhost',
-      port: parseInt(process.env.MYSQL_PORT || '3306'),
-      user: process.env.MYSQL_USER || 'root',
-      password: process.env.MYSQL_PASSWORD || 'octocat',
-    });
+    const connection = process.env.JAWSDB_URL ?
+      await mysql2.createConnection(process.env.JAWSDB_URL)
+      : await mysql2.createConnection({
+        host: process.env.MYSQL_HOST || 'localhost',
+        port: parseInt(process.env.MYSQL_PORT || '3306'),
+        user: process.env.MYSQL_USER || 'root',
+        password: process.env.MYSQL_PASSWORD || 'octocat',
+      });
 
     const query = await connection.query(`CREATE DATABASE IF NOT EXISTS \`value\`;`,);
-    
+
     console.log(query);
     await connection.end();
   } catch (error) {

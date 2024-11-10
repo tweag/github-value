@@ -9,11 +9,8 @@ build:
     DOCKER_BUILDKIT: 1
     NODE_ENV: production
     MYSQL_DATABASE: value
+release:
+  command:
+    - heroku config:set BASE_URL=$(heroku info -s | grep web_url | cut -d= -f2)
 run:
   web: node dist/app.js
-
-# These environment variables will need to be set in Heroku Config Vars:
-# MYSQL_HOST: From JAWSDB_URL
-# MYSQL_PORT: From JAWSDB_URL
-# MYSQL_USER: From JAWSDB_URL
-# MYSQL_PASSWORD: From JAWSDB_URL
