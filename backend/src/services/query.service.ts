@@ -47,7 +47,6 @@ class QueryService {
 
       logger.info("Metrics successfully updated! 📈");
     } catch (error) {
-      console.log(error);
       logger.error('Error querying copilot metrics', error);
     }
   }
@@ -166,8 +165,51 @@ class QueryService {
           }));
         }
       }
+
+      
+      await Team.upsert({
+        name: 'No Team',
+        slug: 'no-team',
+        description: 'No team assigned',
+        id: -1
+      });
+
+      const members = await octokit.paginate(octokit.rest.orgs.listMembers, {
+        org: setup.installation.owner?.login
+      });
+      console.log('members', members.length);
+      if (members?.length) {
+        await Promise.all(members.map(async member => {
+          const [dbMember] = await Member.upsert({
+            id: member.id,
+            login: member.login,
+            node_id: member.node_id,
+            avatar_url: member.avatar_url,
+            gravatar_id: member.gravatar_id || null,
+            url: member.url,
+            html_url: member.html_url,
+            followers_url: member.followers_url,
+            following_url: member.following_url,
+            gists_url: member.gists_url,
+            starred_url: member.starred_url,
+            subscriptions_url: member.subscriptions_url,
+            organizations_url: member.organizations_url,
+            repos_url: member.repos_url,
+            events_url: member.events_url,
+            received_events_url: member.received_events_url,
+            type: member.type,
+            site_admin: member.site_admin
+          });
+        
+          // Create team-member association 🤝
+          await TeamMemberAssociation.upsert({
+            TeamId: -1,
+            MemberId: dbMember.id
+          });
+        }));
+      }
   
-      logger.info("Teams successfully updated! 🧑‍🤝‍🧑");
+      logger.info("Members successfully updated! 🧑‍🤝‍🧑");
     } catch (error) {
       logger.error('Error querying teams', error);
     }

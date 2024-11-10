@@ -101,7 +101,8 @@ Highcharts.theme = {
         x: -10,
         y: 10
       }
-    }
+    },
+    width: null, // Let chart size flexibly
   },
   drilldown: {
     breadcrumbs: {

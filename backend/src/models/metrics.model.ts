@@ -405,7 +405,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
   for (const day of data) {
     const date = new Date(day.date);
     let metric: MetricDaily;
-    console.log(date);
     try {
       metric = await MetricDaily.create({
         date: date,
@@ -572,7 +571,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_engaged_users: day.copilot_dotcom_pull_requests.total_engaged_users
       });
 
-      console.log(day.copilot_dotcom_pull_requests)
       if (day.copilot_dotcom_pull_requests.repositories) {
         for (const repo of day.copilot_dotcom_pull_requests.repositories) {
           let totalPrSummariesRepo = 0;

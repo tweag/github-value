@@ -35,14 +35,14 @@ export class CopilotSeatsComponent {
       cell: (element: Seat) => `${element.plan_type}`
     },
     { 
-      columnDef: 'created_at', 
-      header: 'Created', 
-      cell: (element: Seat) => new Date(element.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
-    },
-    { 
       columnDef: 'last_activity_at', 
       header: 'Last Active', 
       cell: (element: Seat) => new Date(element.last_activity_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
+    },
+    { 
+      columnDef: 'created_at', 
+      header: 'Created', 
+      cell: (element: Seat) => new Date(element.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
     },
     { 
       columnDef: 'last_activity_editor', 

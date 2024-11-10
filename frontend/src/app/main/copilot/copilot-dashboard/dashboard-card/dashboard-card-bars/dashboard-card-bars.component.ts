@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { CopilotMetrics } from '../../../../../services/metrics.service.interfaces';
+import { HighchartsService } from '../../../../../services/highcharts.service';
 
 export interface DashboardCardBarsInput {
   value: number;
@@ -28,17 +30,27 @@ export interface DashboardCardBarsInput {
     '../dashboard-card.scss'
   ]
 })
-export class DashboardCardBarsComponent implements OnInit {
+export class DashboardCardBarsComponent implements OnChanges {
   @Input() title?: string;
-  @Input() sections?: DashboardCardBarsInput[];
+  @Input() data?: CopilotMetrics;
+  @Input() totalSeats?: number;
+  sections?: DashboardCardBarsInput[];
   percentages: number[] = []
   Math = Math;
 
-  ngOnInit() {
-    if (this.sections) {
-      this.sections.forEach((row) => {
-        row.percentage = (row.value / (row.maxValue || 100)) * 100;
-      })
+  constructor(
+    private highchartsService: HighchartsService
+  ) {}
+
+  ngOnChanges() {
+    if (this.data && this.totalSeats) {
+      this.sections = this.highchartsService.transformCopilotMetricsToBars(this.data, this.totalSeats);
+      if (this.sections) {
+        this.sections.forEach((row) => {
+          row.percentage = (row.value / (row.maxValue || 100)) * 100;
+        })
+      }
     }
   }
+  
 }

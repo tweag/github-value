@@ -29,6 +29,7 @@ router.get('/seats/activity', SeatsController.getActivity);
 router.get('/seats/activity/highcharts', SeatsController.getActivityHighcharts);
 
 router.get('/teams', TeamsController.getAllTeams);
+router.get('/members', TeamsController.getAllMembers);
 
 router.get('/settings', settingsController.getAllSettings);
 router.post('/settings', settingsController.createSettings);

@@ -6,7 +6,7 @@ import 'highcharts/es-modules/masters/modules/drilldown.src';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { CommonModule } from '@angular/common';
 import { HighchartsService } from '../../../../../services/highcharts.service';
-import { MetricsService } from '../../../../../services/metrics.service';
+import { CopilotMetrics } from '../../../../../services/metrics.service.interfaces';
 
 @Component({
   selector: 'app-dashboard-card-drilldown-bar-chart',
@@ -26,7 +26,7 @@ import { MetricsService } from '../../../../../services/metrics.service';
 export class DashboardCardDrilldownBarChartComponent implements OnChanges {
   @Input() title?: string;
   Highcharts: typeof Highcharts = Highcharts;
-  @Input() data: Highcharts.PointOptionsObject[] = [];
+  @Input() data?: CopilotMetrics[] = [];
   chartOptions: Highcharts.Options = {
     chart: {
       type: 'column'
@@ -54,33 +54,15 @@ export class DashboardCardDrilldownBarChartComponent implements OnChanges {
   updateFlag = false;
 
   constructor(
-    private highchartsService: HighchartsService,
-    private metricsService: MetricsService
+    private highchartsService: HighchartsService
   ) { }
 
-  ngOnInit() {
-    const since = new Date();
-    since.setDate(since.getDate() - 30);
-    const formattedSince = since.toISOString().split('T')[0];
-    
-    this.metricsService.getMetrics({
-      since: formattedSince,
-    }).subscribe(data => {
-      console.log(data);
-      const result = this.highchartsService.transformCopilotDataToDrilldown(data);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['data'] && this.data) {
+      const result = this.highchartsService.transformCopilotMetricsToBarChatDrilldown(this.data);
       this.chartOptions.series = result.series;
       this.chartOptions.drilldown = result.drilldown;
-      console.log(this.chartOptions);
       this.updateFlag = true;
-    });
-  }
-
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['data']) {
-      if (this.chartOptions.series && this.chartOptions.series[0]) {
-        (this.chartOptions.series[0] as any).data = this.data;
-        this.updateFlag = true;
-      }
     }
   }
 }

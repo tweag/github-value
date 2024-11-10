@@ -1,4 +1,6 @@
 import { Injectable } from '@angular/core';
+import { CopilotMetrics } from './metrics.service.interfaces';
+import { DashboardCardBarsInput } from '../main/copilot/copilot-dashboard/dashboard-card/dashboard-card-bars/dashboard-card-bars.component';
 
 @Injectable({
   providedIn: 'root'
@@ -88,7 +90,7 @@ export class HighchartsService {
     return result;
   }
 
-  transformCopilotDataToDrilldown(data: any[]) {
+  transformCopilotMetricsToBarChatDrilldown(data: any[]) {
     data.map(dateData => {
       const date = new Date(dateData.date);
       dateData.date = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
@@ -239,5 +241,14 @@ export class HighchartsService {
         series: drilldownSeries
       }
     };
+  }
+
+  transformCopilotMetricsToBars(data: CopilotMetrics, totalSeats: number): DashboardCardBarsInput[] {
+    return [
+      { name: 'IDE Code Completion', icon: 'code', value: data.copilot_ide_code_completions?.total_engaged_users || 0, maxValue: totalSeats },
+      { name: 'IDE Chat', icon: 'chat', value: data.copilot_ide_chat?.total_engaged_users || 0, maxValue: totalSeats },
+      { name: '.COM Chat', icon: 'public', value: data.copilot_dotcom_chat?.total_engaged_users || 0, maxValue: totalSeats },
+      { name: '.COM PRs', icon: 'merge', value: data.copilot_dotcom_pull_requests?.total_engaged_users || 0, maxValue: totalSeats },
+    ];
   }
 }

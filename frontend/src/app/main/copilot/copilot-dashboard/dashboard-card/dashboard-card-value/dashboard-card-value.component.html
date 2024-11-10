@@ -9,8 +9,7 @@
         <mat-icon *ngIf="icon === undefined" [class]="change > 0 ? 'positive' : 'negative'">{{change > 0 ? 'trending_up' :
           'trending_down'}}</mat-icon>
         <mat-icon *ngIf="icon?.length">{{icon}}</mat-icon>
-        <span>{{Math.abs(change)}}{{changeSuffix}}</span>
-        <span *ngIf="changeDescription">{{changeDescription}}</span>
+        <span>{{Math.abs(change)}}{{changeSuffix}}{{changeDescription ? changeDescription : ''}}</span>
       </div>
     </div>
   </mat-card-content>

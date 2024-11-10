@@ -18,8 +18,8 @@ export class SeatService {
 
   constructor(private http: HttpClient) { }
 
-  getAllSeats(): Observable<seatsResponse> {
-    return this.http.get<seatsResponse>(`${this.apiUrl}`);
+  getAllSeats(): Observable<NonNullable<seatsResponse>> {
+    return this.http.get<NonNullable<seatsResponse>>(`${this.apiUrl}`);
   }
 
   getSeatByLogin(login: string): Observable<any> {

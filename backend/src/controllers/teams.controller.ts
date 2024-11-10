@@ -41,6 +41,22 @@ class TeamsController {
       res.status(500).json(error);
     }
   }
+
+  async getAllMembers(req: Request, res: Response): Promise<void> {
+    try {
+      const members = await Member.findAll({
+        attributes: ['login', 'name', 'url', 'avatar_url'],
+        order: [
+          ['login', 'ASC']
+        ]
+      });
+  
+      res.json(members);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
+    }
+  }
 }
 
 export default new TeamsController();

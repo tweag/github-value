@@ -1,0 +1,18 @@
+setup:
+  addons:
+    - plan: jawsdb:kitefin  # MySQL addon for Heroku
+      as: DATABASE
+build:
+  docker:
+    web: Dockerfile
+  config:
+    NODE_ENV: production
+    MYSQL_DATABASE: value
+run:
+  web: node backend/dist/app.js
+
+# These environment variables will need to be set in Heroku Config Vars:
+# MYSQL_HOST: From JAWSDB_URL
+# MYSQL_PORT: From JAWSDB_URL
+# MYSQL_USER: From JAWSDB_URL
+# MYSQL_PASSWORD: From JAWSDB_URL
