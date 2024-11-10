@@ -18,7 +18,7 @@ const sequelize = process.env.JAWSDB_URL ?
 
 const dbConnect = async () => {
   try {
-    if (process.env.JAWSDB_URL) {
+    if (!process.env.JAWSDB_URL) { // If we are not using JAWSDB, we need to create the database
       const connection = await mysql2.createConnection({
         host: process.env.MYSQL_HOST || 'localhost',
         port: parseInt(process.env.MYSQL_PORT || '3306'),
