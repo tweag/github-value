@@ -10,8 +10,8 @@ build:
     NODE_ENV: production
     MYSQL_DATABASE: value
 release:
-  image: release
   command:
+    - echo "Setting BASE_URL..." 
     - heroku config:set BASE_URL=$(heroku info -s | grep web_url | cut -d= -f2)
 run:
   web: node dist/app.js
