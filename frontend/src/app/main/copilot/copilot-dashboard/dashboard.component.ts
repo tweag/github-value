@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { AppModule } from '../../../app.module';
 import { DashboardCardBarsComponent, DashboardCardBarsInput } from "./dashboard-card/dashboard-card-bars/dashboard-card-bars.component";
 import { DashboardCardValueComponent } from './dashboard-card/dashboard-card-value/dashboard-card-value.component';
+import { DashboardCardSunburstComponent } from "./dashboard-card/dashboard-card-sunburst/dashboard-card-sunburst.component";
+import { DashboardCardDrilldownBarChartComponent } from './dashboard-card/dashboard-card-drilldown-bar-chart/dashboard-card-drilldown-bar-chart.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -9,8 +11,10 @@ import { DashboardCardValueComponent } from './dashboard-card/dashboard-card-val
   imports: [
     AppModule,
     DashboardCardValueComponent,
-    DashboardCardBarsComponent
-  ],
+    DashboardCardBarsComponent,
+    DashboardCardSunburstComponent,
+    DashboardCardDrilldownBarChartComponent
+],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })

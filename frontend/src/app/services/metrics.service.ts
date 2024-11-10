@@ -19,7 +19,7 @@ export class MetricsService {
     language?: string;
     model?: 'default' | string;
   }) {
-    return this.http.get<CopilotMetrics>(this.apiUrl, {
+    return this.http.get<CopilotMetrics[]>(this.apiUrl, {
       params: queryParams
     });
   }

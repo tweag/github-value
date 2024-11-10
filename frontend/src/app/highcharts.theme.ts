@@ -13,7 +13,7 @@ const xAxisConfig: Highcharts.XAxisOptions = {
   lineWidth: 0,
   gridLineColor: 'var(--sys-outline)',
   gridLineDashStyle: 'Dot',
-  lineColor: 'var(--sys-outline)',
+  // lineColor: 'var(--sys-outline)',
   labels: {
     style: {
       color: 'var(--sys-on-surface)',
@@ -21,11 +21,14 @@ const xAxisConfig: Highcharts.XAxisOptions = {
     }
   },
   title: {
+    text: undefined,
     style: {
       color: 'var(--sys-on-surface-variant)',
       font: 'var(--sys-body-large)'
     }
-  }
+  },
+  lineColor: 'var(--sys-outline-variant)',
+  tickColor: 'var(--sys-outline-variant)'
 };
 
 const yAxisConfig: Highcharts.YAxisOptions = {
@@ -99,6 +102,78 @@ Highcharts.theme = {
         y: 10
       }
     }
+  },
+  drilldown: {
+    breadcrumbs: {
+      position: {
+          align: 'right'
+      },
+      buttonTheme: {
+        // fill: 'var(--sys-surface-container)',
+        style: {
+          color: 'var(--sys-primary)',
+          fontFamily: 'var(--sys-body-large-font)',
+          fontWeight: 'var(--sys-body-large-weight)'
+        },
+        // stroke: 'var(--sys-outline)',
+        // 'stroke-width': 1,
+        states: {
+          hover: {
+            fill: 'var(--sys-surface-container)',
+            style: {
+              color: 'var(--sys-on-surface)'
+            }
+          },
+          select: {
+            // fill: 'var(--sys-surface-container-highest)',
+            style: {
+              color: 'var(--sys-on-surface)'
+            }
+          }
+        },
+        borderRadius: 4
+      },
+      separator: {
+        style: {
+          color: 'var(--sys-on-surface-variant)',
+        }
+      }
+    },
+    activeAxisLabelStyle: {
+      color: 'var(--sys-primary)',
+      textDecoration: 'none',
+      fontWeight: 'var(--sys-title-medium-weight)',
+      textOutline: 'none',
+      cursor: 'pointer'
+    },
+    activeDataLabelStyle: {
+      color: 'var(--sys-primary)',
+      textDecoration: 'none',
+      fontWeight: 'var(--sys-title-medium-weight)',
+      textOutline: 'none',
+      cursor: 'pointer'
+    },
+    // drillUpButton: {
+    //   relativeTo: 'spacingBox',
+    //   position: {
+    //     y: 0,
+    //     x: 0
+    //   },
+    //   theme: {
+    //     fill: 'var(--sys-surface-container)',
+    //     'stroke-width': 1,
+    //     stroke: 'var(--sys-outline)',
+    //     r: 4,
+    //     states: {
+    //       hover: {
+    //         fill: 'var(--sys-surface-container-high)'
+    //       }
+    //     }
+    //   }
+    // }
+  },
+  lang: {
+    thousandsSep: ',',
   },
   title: {
     text: undefined,

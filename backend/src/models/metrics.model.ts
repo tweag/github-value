@@ -116,8 +116,12 @@ export class MetricIdeChatModelStats extends Model {
 }
 MetricDaily.init({
   date: {
-    type: DataTypes.DATEONLY,
-    primaryKey: true
+    type: DataTypes.TIME,
+    primaryKey: true,
+    get() {
+      const rawValue = this.getDataValue('date');
+      return rawValue ? new Date(rawValue).toISOString().split('T')[0] : null;
+    }
   },
   total_active_users: DataTypes.INTEGER,
   total_engaged_users: DataTypes.INTEGER
@@ -401,6 +405,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
   for (const day of data) {
     const date = new Date(day.date);
     let metric: MetricDaily;
+    console.log(date);
     try {
       metric = await MetricDaily.create({
         date: date,

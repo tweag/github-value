@@ -4,6 +4,7 @@
   @include mat.elevation-transition();
   // background: var(--sys-surface-container);
   user-select: none;
+  height: 100%;
 }
 
 .dashboard-card:hover {
