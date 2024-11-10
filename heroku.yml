@@ -1,6 +1,6 @@
 setup:
   addons:
-    - plan: jawsdb:kitefin  # MySQL addon for Heroku
+    - plan: jawsdb:leopard  # MySQL addon for Heroku
       as: DATABASE
 build:
   docker:

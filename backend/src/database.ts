@@ -3,7 +3,17 @@ import logger from './services/logger';
 import mysql2 from 'mysql2/promise';
 
 const sequelize = process.env.JAWSDB_URL ?
-  new Sequelize(process.env.JAWSDB_URL) :
+  new Sequelize(process.env.JAWSDB_URL, {
+    dialect: 'mysql',
+    pool: {
+      max: 10,
+      acquire: 30000,
+      idle: 10000
+    },
+    logging: (sql: string, timing?: number) => {
+      logger.info(sql);
+    }
+  }) :
   new Sequelize({
     dialect: 'mysql',
     host: process.env.MYSQL_HOST || 'localhost',
@@ -27,7 +37,6 @@ const dbConnect = async () => {
       });
   
       await connection.query(`CREATE DATABASE IF NOT EXISTS \`value\`;`,);
-  
       await connection.end();
     }
   } catch (error) {
