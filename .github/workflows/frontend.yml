@@ -33,5 +33,6 @@ jobs:
           npm i eslint
           npm i @microsoft/eslint-formatter-sarif
         working-directory: ./frontend
+        continue-on-error: true
       - run: npm run lint
         working-directory: ./frontend
