@@ -1,8 +1,19 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { Survey } from '../models/survey';
 import { serverUrl } from './server.service';
+export interface Survey {
+  id?: number;
+  dateTime: Date;
+  userId: number;
+  usedCopilot: boolean;
+  percentTimeSaved: number;
+  owner: string,
+  repo: string,
+  prNumber: number,
+  reason: string;
+  timeUsedFor: string;
+}
 
 @Injectable({
   providedIn: 'root'

@@ -13,9 +13,8 @@ on:
       - main
 
 jobs:
-  frontend-build:
+  build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v4
@@ -25,3 +24,20 @@ jobs:
         working-directory: ./frontend
       - run: npm run build
         working-directory: ./frontend
+        
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm i @microsoft/eslint-formatter-sarif
+        working-directory: ./frontend
+      - run: npx eslint@8.9.0
+          --format @microsoft/eslint-formatter-sarif
+          --output-file eslint-results.sarif
+        working-directory: ./frontend
+        continue-on-error: true
+      - name: Upload analysis results to GitHub
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: ./frontend/eslint-results.sarif
+          wait-for-processing: true

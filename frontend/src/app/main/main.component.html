@@ -1,46 +1,42 @@
-<mat-sidenav-container class="sidenav-container" autosize>
-  <mat-sidenav #drawer class="sidenav" fixedInViewport
-      [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
-      [mode]="(isHandset$ | async) ? 'over' : 'side'"
-      [opened]="(isHandset$ | async) === false">
+<mat-sidenav-container class="sidenav-container mat-typography" autosize>
+  <mat-sidenav #drawer class="sidenav" [class.full-width]="isHandset$ | async" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
     <mat-toolbar>
       @if ((isHandset$ | async) === false) {
-        <button mat-icon-button (click)="toggleNavText();" aria-label="Toggle sidebar navigation">
-          <mat-icon>menu</mat-icon>
-        </button>
+      <button mat-icon-button (click)="toggleNavText();" aria-label="Toggle sidebar navigation">
+        <mat-icon>menu</mat-icon>
+      </button>
       }
-      <img *ngIf="!hideNavText || (isHandset$ | async)" routerLink="/" src="assets/images/GitHub_Logo_nopadding.png" alt="GitHub Copilot Logo" style="height: 25px;">
+      <img *ngIf="!hideNavText || (isHandset$ | async)" routerLink="/" [src]="(themeService.isDarkTheme() | async) ? 
+        'assets/images/GitHub_Logo_White.png' : 
+        'assets/images/GitHub_Logo.png'" alt="GitHub Copilot Logo" style="height: 50px;">
     </mat-toolbar>
     <mat-nav-list [ngClass]="{'hide-nav-text': hideNavText && (isHandset$ | async) === false }">
-      <a mat-list-item routerLink="/">
+      <a mat-list-item routerLink="/copilot">
         <mat-icon matListItemIcon>home</mat-icon>
         <span>Home</span>
       </a>
-      <mat-divider></mat-divider>
       <!-- <div mat-subheader>Pages</div> -->
-      <a mat-list-item routerLink="/surveys">
-        <mat-icon matListItemIcon>assignment</mat-icon>
+      <a mat-list-item routerLink="/copilot/value">
+        <mat-icon matListItemIcon>star</mat-icon>
+        <span>Value</span>
+      </a>
+      <a mat-list-item routerLink="/copilot/metrics">
+        <mat-icon matListItemIcon>assessment</mat-icon>
+        <span>Metrics</span>
+      </a>
+      <a mat-list-item routerLink="/copilot/seats">
+        <mat-icon matListItemIcon>people</mat-icon>
+        <span>Seats</span>
+      </a>
+      <a mat-list-item routerLink="/copilot/surveys">
+        <mat-icon matListItemIcon>merge</mat-icon>
+        <!-- <mat-icon matListItemIcon>feedback</mat-icon> -->
         <span>Surveys</span>
       </a>
-      <a mat-list-item routerLink="/surveys">
-        <mat-icon matListItemIcon>query_stats</mat-icon>
-        <span>Surveys</span>
-      </a>
-      <a mat-list-item routerLink="/surveys">
-        <mat-icon matListItemIcon>bar_chart</mat-icon>
-        <span>Surveys</span>
-      </a>
-      <a mat-list-item routerLink="/surveys">
-        <mat-icon matListItemIcon>table</mat-icon>
-        <span>Surveys</span>
-      </a>
-      <a mat-list-item routerLink="/surveys">
-        <mat-icon matListItemIcon>data_usage</mat-icon>
-        <span>Surveys</span>
-      </a>
-      <a mat-list-item routerLink="/surveys">
-        <mat-icon matListItemIcon>table_chart</mat-icon>
-        <span>Surveys</span>
+      <a mat-list-item routerLink="/copilot/calculator">
+        <mat-icon matListItemIcon>calculate</mat-icon>
+        <span>Calculator</span>
       </a>
       <mat-divider></mat-divider>
       <a mat-list-item routerLink="/settings">
@@ -51,16 +47,14 @@
   </mat-sidenav>
   <mat-sidenav-content>
     <mat-toolbar color="primary">
-      @if (isHandset$ | async) {
-        <button
-          type="button"
-          aria-label="Toggle sidenav"
-          mat-icon-button
-          (click)="drawer.toggle()">
-          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-        </button>
-      }
-    </mat-toolbar>
+    @if (isHandset$ | async) {
+      <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()">
+        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+      </button>
+    }
+    <h1>Octodemo</h1>
+    <span class="spacer"></span>
+  </mat-toolbar>
     <div class="sidenav-content">
       <router-outlet />
     </div>

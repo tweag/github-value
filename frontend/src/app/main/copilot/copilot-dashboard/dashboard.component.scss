@@ -1,0 +1,36 @@
+@use '@angular/material' as mat;
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+
+  app-dashboard-card-drilldown-bar-chart {
+    grid-row: span 4; grid-column: span 2;
+  }
+  app-dashboard-card-bars {
+    grid-row: span 4;
+  }
+}
+
+/* Add media query for smaller screens */
+@media (max-width: 768px) {
+  .cards-grid {
+    grid-template-columns: 1fr; /* Force single column */
+  }
+  
+  /* Reset the grid spans on mobile */
+  .cards-grid>* {
+    grid-row: auto !important;
+    grid-column: auto !important;
+  }
+}
+
+.dashboard-card {
+  // background: var(--sys-surface-container);
+  user-select: none;
+}
+
+.dashboard-card:hover {
+  @include mat.elevation(2);
+}

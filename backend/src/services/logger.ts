@@ -32,8 +32,14 @@ const logger = bunyan.createLogger({
       stream: process.stdout
     },
     {
+      level: 'error',
+      stream: process.stderr
+    },
+    {
       path: `${logsDir}/app.log`,
-      period: '1d',        count: 14          }
+      period: '1d',
+      count: 14
+    }
   ]
 });
 

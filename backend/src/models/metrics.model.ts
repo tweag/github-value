@@ -2,10 +2,15 @@ import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database';
 import { CopilotMetrics } from './metrics.model.interfaces';
 import logger from '../services/logger';
+
 export class MetricDaily extends Model {
   public date!: Date;
   public total_active_users!: number;
   public total_engaged_users!: number;
+  copilot_ide_code_completions?: MetricIdeCompletions;
+  copilot_ide_chat?: MetricIdeChatMetrics;
+  copilot_dotcom_chat?: MetricDotcomChatMetrics;
+  copilot_dotcom_pull_requests?: MetricPrMetrics;
 }
 export class MetricIdeCompletions extends Model {
   public id!: number;
@@ -15,6 +20,7 @@ export class MetricIdeCompletions extends Model {
   public total_code_lines_accepted!: number;
   public total_code_lines_suggested!: number;
   public daily_metric_id!: Date;
+  editors?: MetricEditor[];
 }
 export class MetricEditor extends Model {
   public id!: number;
@@ -25,6 +31,7 @@ export class MetricEditor extends Model {
   public total_code_lines_accepted!: number;
   public total_code_lines_suggested!: number;
   public ide_completion_id!: number;
+  models?: MetricModelStats[];
 }
 export class MetricModelStats extends Model {
   public id!: number;
@@ -36,6 +43,7 @@ export class MetricModelStats extends Model {
   public total_code_lines_accepted!: number;
   public total_code_lines_suggested!: number;
   public editor_id!: number;
+  languages?: MetricLanguageStats[];
 }
 export class MetricLanguageStats extends Model {
   public id!: number;
@@ -52,6 +60,7 @@ export class MetricPrRepository extends Model {
   public name!: string;
   public total_engaged_users!: number;
   public total_pr_summaries_created!: number;
+  models?: MetricPrModelStats[];
 }
 export class MetricPrModelStats extends Model {
   public id!: number;
@@ -64,11 +73,13 @@ export class MetricPrMetrics extends Model {
   public id!: number;
   public total_engaged_users!: number;
   public total_pr_summaries_created!: number;
+  repositories?: MetricPrRepository[];
 }
 export class MetricDotcomChatMetrics extends Model {
   public id!: number;
   public total_engaged_users!: number;
   public total_chats!: number;
+  models?: MetricDotcomChatModelStats[];
 }
 export class MetricDotcomChatModelStats extends Model {
   public id!: number;
@@ -83,6 +94,7 @@ export class MetricIdeChatMetrics extends Model {
   public total_chats!: number;
   public total_chat_copy_events!: number;
   public total_chat_insertion_events!: number;
+  editors?: MetricIdeChatEditor[];
 }
 export class MetricIdeChatEditor extends Model {
   public id!: number;
@@ -91,6 +103,7 @@ export class MetricIdeChatEditor extends Model {
   public total_chats!: number;
   public total_chat_copy_events!: number;
   public total_chat_insertion_events!: number;
+  models?: MetricIdeChatModelStats[];
 }
 export class MetricIdeChatModelStats extends Model {
   public id!: number;
@@ -104,7 +117,11 @@ export class MetricIdeChatModelStats extends Model {
 MetricDaily.init({
   date: {
     type: DataTypes.DATEONLY,
-    primaryKey: true
+    primaryKey: true,
+    get() {
+      const rawValue = this.getDataValue('date');
+      return rawValue ? new Date(rawValue).toISOString().split('T')[0] : null;
+    }
   },
   total_active_users: DataTypes.INTEGER,
   total_engaged_users: DataTypes.INTEGER
@@ -394,13 +411,15 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_active_users: day.total_active_users,
         total_engaged_users: day.total_engaged_users,
       });
-    } catch {
+    } catch (error) {
       logger.info(`Metrics for ${date.toLocaleDateString()} already exist. Skipping...`);
+      logger.error(error);
+      console.log(error);
       continue;
     }
 
     if (day.copilot_ide_chat) {
-      let chatTotals = {
+      const chatTotals = {
         chats: 0,
         copyEvents: 0,
         insertionEvents: 0
@@ -412,7 +431,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
       });
 
       for (const editor of day.copilot_ide_chat.editors) {
-        let chatTotalsEditor = {
+        const chatTotalsEditor = {
           chats: 0,
           copyEvents: 0,
           insertionEvents: 0
@@ -465,7 +484,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_code_lines_suggested: 0
       });
 
-      let dailyTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
+      const dailyTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
       for (const editor of day.copilot_ide_code_completions.editors) {
         const editorRecord = await MetricEditor.create({
@@ -478,7 +497,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
           total_code_lines_suggested: 0
         });
 
-        let editorTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
+        const editorTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
         for (const model of editor.models) {
           const modelRecord = await MetricModelStats.create({
@@ -492,7 +511,7 @@ export async function insertMetrics(data: CopilotMetrics[]) {
             total_code_lines_suggested: 0
           });
 
-          let modelTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
+          const modelTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
           if ('languages' in model) {
             for (const lang of model.languages) {
@@ -554,28 +573,30 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_engaged_users: day.copilot_dotcom_pull_requests.total_engaged_users
       });
 
-      for (const repo of day.copilot_dotcom_pull_requests.repositories) {
-        let totalPrSummariesRepo = 0;
-        const repository = await MetricPrRepository.create({
-          pr_metrics_id: prMetrics.id,
-          name: repo.name,
-          total_engaged_users: repo.total_engaged_users
-        });
+      if (day.copilot_dotcom_pull_requests.repositories) {
+        for (const repo of day.copilot_dotcom_pull_requests.repositories) {
+          let totalPrSummariesRepo = 0;
+          const repository = await MetricPrRepository.create({
+            pr_metrics_id: prMetrics.id,
+            name: repo.name,
+            total_engaged_users: repo.total_engaged_users
+          });
 
-        await Promise.all(repo.models.map(model => {
-          totalPrSummaries += model.total_pr_summaries_created || 0; totalPrSummariesRepo += model.total_pr_summaries_created || 0;
+          await Promise.all(repo.models.map(model => {
+            totalPrSummaries += model.total_pr_summaries_created || 0; totalPrSummariesRepo += model.total_pr_summaries_created || 0;
 
-          MetricPrModelStats.create({
-            repository_id: repository.id,
-            name: model.name,
-            is_custom_model: model.is_custom_model,
-            total_engaged_users: model.total_engaged_users,
-            total_pr_summaries_created: model.total_pr_summaries_created
-          })
-        }));
-        repository.update({
-          total_pr_summaries_created: totalPrSummariesRepo
-        });
+            MetricPrModelStats.create({
+              repository_id: repository.id,
+              name: model.name,
+              is_custom_model: model.is_custom_model,
+              total_engaged_users: model.total_engaged_users,
+              total_pr_summaries_created: model.total_pr_summaries_created
+            })
+          }));
+          repository.update({
+            total_pr_summaries_created: totalPrSummariesRepo
+          });
+        }
       }
 
       await prMetrics.update({

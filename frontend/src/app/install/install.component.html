@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="intro noselect">
+    <mat-card-header>
+      <!-- <div mat-card-avatar class="example-header-image"></div> -->
+      <!-- <mat-card-title>Welcome to the GitHub Value App</mat-card-title> -->
+      <!-- <mat-card-subtitle></mat-card-subtitle> -->
+    </mat-card-header>
+    <h3>GitHub Value App</h3>
+    <div class="img-container">
+      <img mat-card-image [src]="(themeService.isDarkTheme() | async) ? 
+      'assets/images/github-mark-white.png' : 
+      'assets/images/github-mark.png'" alt="GitHub Mark" draggable="false">
+    </div>
+    <mat-card-content>
+      <p>
+        To get started you'll need a GitHub App.
+      </p>
+    </mat-card-content>
+    <mat-card-actions>
+      <button (click)="openDialog(false)" mat-flat-button color="primary">Register GitHub App</button>
+      <button (click)="openDialog(true)" mat-button>or use an existing GitHub App</button>
+    </mat-card-actions>
+  </div>
+</div>
+https://github.com/settings/apps/manifest

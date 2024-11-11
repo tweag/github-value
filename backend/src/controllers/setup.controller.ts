@@ -64,6 +64,26 @@ class SetupController {
     }
   }
 
+  setupStatus(req: Request, res: Response) {
+    try {
+         const requestedFields = req.query.fields ? (req.query.fields as string).split(',') : [];
+         const fullStatus = setup.getSetupStatus();
+         if (!requestedFields.length) {
+             return res.json(fullStatus);
+         }
+         const filteredStatus: Record<string, any> = {};
+         requestedFields.forEach(field => {
+             if (field in fullStatus) {
+                 filteredStatus[field] = (fullStatus as any)[field];
+             }
+         });
+ 
+         return res.json(filteredStatus);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
   getInstall(req: Request, res: Response) {
     try {
       if (!setup.installation) {

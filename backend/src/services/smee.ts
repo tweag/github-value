@@ -3,7 +3,8 @@ import settingsService from "./settings.service";
 
 class SmeeService {
   private static instance: SmeeService;
-  private webhookProxyUrl: string | undefined;
+  private webhookProxyUrl?: string;
+  private port?: number;
 
   private constructor() { }
 
@@ -31,7 +32,8 @@ class SmeeService {
     return webhookProxyUrl;
   }
 
-  public async createSmeeWebhookProxy(port: number) {
+  public async createSmeeWebhookProxy(port?: number) {
+    if (!port) port = this.port;
     try {
       this.webhookProxyUrl = await settingsService.getSettingsByName('webhookProxyUrl');
     } catch {
@@ -54,6 +56,7 @@ class SmeeService {
       });
       if (!eventSource) throw new Error('Unable to connect to smee.io');
     }
+    this.port = port;
     return { url: this.webhookProxyUrl, eventSource };
   }
 

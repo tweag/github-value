@@ -20,13 +20,12 @@ app.use(expressLoggerMiddleware);
 (async () => {
   await dbConnect();
   await settingsService.initializeSettings();
-
-  const { url: webhookProxyUrl } = await SmeeService.createSmeeWebhookProxy(PORT);
+  await SmeeService.createSmeeWebhookProxy(PORT);
 
   try {
     await setup.createAppFromEnv();
   } catch (error) {
-    logger.info('Failed to create app from environment. This is expected if the app is not yet installed.');
+    logger.info('Failed to create app from environment. This is expected if the app is not yet installed.', error);
   }
 
   app.use((req, res, next) => {
@@ -34,13 +33,14 @@ app.use(expressLoggerMiddleware);
       return next();
     }
     bodyParser.json()(req, res, next);
-  }, bodyParser.urlencoded({ extended: true }));  
+  }, bodyParser.urlencoded({ extended: true }));
   app.use('/api', apiRoutes);
 
-   const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
+  const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
   app.use(express.static(frontendPath));
   app.get('*', rateLimit({
-    windowMs: 15 * 60 * 1000,    max: 5000,  }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
+    windowMs: 15 * 60 * 1000, max: 5000,
+  }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
   app.listen(PORT, () => {
     logger.info(`Server is running at http://localhost:${PORT} 🚀`);

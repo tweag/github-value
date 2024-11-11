@@ -1,0 +1,44 @@
+table {
+  width: 100%;
+}
+
+.mat-mdc-form-field {
+  width: 100%;
+}
+
+td, th {
+  // width: 25%;
+}
+
+.table-avatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.loading-shade {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mat-elevation-z4 {
+  position: relative;
+}
+
+.filter-not-found-row {
+  text-align: center;
+  td {
+    padding: 20px;
+  }
+}

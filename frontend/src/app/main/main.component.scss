@@ -5,6 +5,9 @@
 .sidenav {
   width: auto;
   padding: 0 12px;
+  &.full-width {
+    width: 100vw !important; // full viewport width on mobile
+  }
 }
 
 .sidenav .mat-toolbar {
@@ -39,12 +42,17 @@ mat-sidenav {
 }
 
 .sidenav-content {
+  position: relative;
+  flex: 0 0 auto;
+  flex-grow: 1;
   display: flex;
-  width: 100%;
-  justify-content: center;
-  height: calc(100vh - 64px);
+  flex-direction: column;
 }
 
 mat-divider {
   margin: 12px 0;
+}
+
+.date-selector {
+  caret-color: transparent;
 }

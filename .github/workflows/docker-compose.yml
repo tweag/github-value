@@ -1,4 +1,4 @@
-name: Compose
+name: Docker Compose
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  docker-compose-build:
+  build:
     runs-on: ubuntu-latest
 
     steps:

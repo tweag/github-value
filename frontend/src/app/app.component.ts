@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { MatIconRegistry } from '@angular/material/icon';
 import { DomSanitizer } from '@angular/platform-browser';
 import { AppModule } from './app.module';
+import './highcharts.theme';
 
 const GITHUB_MARK = `
 <svg viewBox="0 0 100 100" width="24px" height="24px" xmlns="http://www.w3.org/2000/svg">

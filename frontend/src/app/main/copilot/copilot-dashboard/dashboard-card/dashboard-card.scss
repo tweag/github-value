@@ -1,0 +1,14 @@
+@use '@angular/material' as mat;
+
+.dashboard-card {
+  @include mat.elevation-transition();
+  // background: var(--sys-surface-container);
+  user-select: none;
+  height: 100%;
+}
+
+.dashboard-card:hover {
+  @include mat.elevation(2);
+  // background: var(--sys-surface-container);
+  cursor: pointer;
+}
