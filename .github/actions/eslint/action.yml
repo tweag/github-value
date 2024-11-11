@@ -10,7 +10,6 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v4
     - name: Install ESLint and SARIF formatter
       shell: bash
       run: |
