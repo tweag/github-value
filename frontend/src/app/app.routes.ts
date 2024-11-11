@@ -14,7 +14,7 @@ import { DbLoadingComponent } from './install/db-loading/db-loading.component';
 
 export const routes: Routes = [
   { path: 'setup', component: InstallComponent },
-  { path: 'setup/loading', component: DbLoadingComponent, canActivate: [SetupGuard] },
+  { path: 'setup/loading', component: DbLoadingComponent },
   {
     path: '',
     component: MainComponent,
@@ -32,5 +32,5 @@ export const routes: Routes = [
       { path: '', redirectTo: 'copilot', pathMatch: 'full' }
     ]
   },
-  { path: '**', component: MainComponent }
+  { path: '**', redirectTo: '' }
 ];
