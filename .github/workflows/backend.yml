@@ -32,8 +32,8 @@ jobs:
       - run: npm i @microsoft/eslint-formatter-sarif
         working-directory: ./backend
       - run: |
-          npx eslint
-          -f @microsoft/eslint-formatter-sarif
+          npx eslint \
+          -f @microsoft/eslint-formatter-sarif \
           -o eslint-results.sarif
         working-directory: ./backend
         continue-on-error: true
