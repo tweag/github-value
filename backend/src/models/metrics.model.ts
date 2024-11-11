@@ -118,10 +118,6 @@ MetricDaily.init({
   date: {
     type: DataTypes.DATEONLY,
     primaryKey: true,
-    get() {
-      const rawValue = this.getDataValue('date');
-      return rawValue ? new Date(rawValue).toISOString().split('T')[0] : null;
-    }
   },
   total_active_users: DataTypes.INTEGER,
   total_engaged_users: DataTypes.INTEGER
@@ -403,7 +399,9 @@ MetricDotcomChatModelStats.belongsTo(MetricDotcomChatMetrics, {
 
 export async function insertMetrics(data: CopilotMetrics[]) {
   for (const day of data) {
-    const date = new Date(day.date);
+    const parts = day.date.split('-').map(Number);
+    const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2] + 1));
+    console.log({parts, active: day.total_active_users, engaged: day.total_engaged_users});
     let metric: MetricDaily;
     try {
       metric = await MetricDaily.create({
@@ -411,9 +409,10 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_active_users: day.total_active_users,
         total_engaged_users: day.total_engaged_users,
       });
+      logger.info(`Metrics for ${day.date} inserted successfully! ✅`);
     } catch (error) {
       if (error instanceof BaseError && error.name === 'SequelizeUniqueConstraintError') {
-        logger.info(`Metrics for ${date.toLocaleDateString()} already exist. Skipping... ⏭️`);
+        logger.info(`Metrics for ${day.date} already exist. Skipping... ⏭️`);
       } else {
         logger.error(error);
       }
