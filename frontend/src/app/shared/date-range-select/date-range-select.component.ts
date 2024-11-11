@@ -56,7 +56,6 @@ export class DateRangeSelectComponent implements OnDestroy {
     });
     this.subscriptions.push(
       this.type.valueChanges.subscribe((value: DateRangeOption) => {
-        console.log(value);
         this.onRangeChange(value);
       })
     );

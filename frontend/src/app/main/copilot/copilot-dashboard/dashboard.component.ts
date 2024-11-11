@@ -78,7 +78,6 @@ export class CopilotDashboardComponent implements OnInit {
         ? 100 // If last week was 0, treat as 100% increase
         : ((this.activeToday - lastWeekUsers) / lastWeekUsers) * 100;
       this.activeWeeklyChangePercent = Math.round(percentChange * 10) / 10;
-      console.log(this.activeWeeklyChangePercent);
     });
   }
 }

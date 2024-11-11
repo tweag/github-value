@@ -7,7 +7,6 @@ class MetricsController {
       const metrics = await MetricsService.queryMetrics(req.query)
       res.status(200).json(metrics);
     } catch (error) {
-      console.log(error)
       res.status(500).json(error);
     }
   }
@@ -17,7 +16,6 @@ class MetricsController {
       const metrics = await MetricsService.queryMetricsTotals(req.query)
       res.status(200).json(metrics);
     } catch (error) {
-      console.log(error)
       res.status(500).json(error);
     }
   }

@@ -47,8 +47,6 @@ class SetupController {
       }
 
       const installUrl = await setup.createAppFromExisting(appId, privateKey, webhookSecret);
-      
-      console.log('installUrl', installUrl  );
 
       res.json({ installUrl });
     } catch (error) {

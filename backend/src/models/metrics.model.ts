@@ -1,4 +1,4 @@
-import { Model, DataTypes } from 'sequelize';
+import { Model, DataTypes, BaseError } from 'sequelize';
 import { sequelize } from '../database';
 import { CopilotMetrics } from './metrics.model.interfaces';
 import logger from '../services/logger';
@@ -412,9 +412,11 @@ export async function insertMetrics(data: CopilotMetrics[]) {
         total_engaged_users: day.total_engaged_users,
       });
     } catch (error) {
-      logger.info(`Metrics for ${date.toLocaleDateString()} already exist. Skipping...`);
-      logger.error(error);
-      console.log(error);
+      if (error instanceof BaseError && error.name === 'SequelizeUniqueConstraintError') {
+        logger.info(`Metrics for ${date.toLocaleDateString()} already exist. Skipping... ⏭️`);
+      } else {
+        logger.error(error);
+      }
       continue;
     }
 

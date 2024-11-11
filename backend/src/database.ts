@@ -48,7 +48,6 @@ const dbConnect = async () => {
     await sequelize.sync({ force: false }).then(() => {
       logger.info('All models were synchronized successfully. 🚀');
     }).catch((error) => {
-      console.log(error);
       logger.error('Error synchronizing models', error);
     });
   } catch (error) {

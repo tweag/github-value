@@ -20,9 +20,5 @@ import { TimeSavedChartComponent } from './time-saved-chart/time-saved-chart.com
 export class CopilotValueComponent {
   constructor(
     private seatService: SeatService,
-  ) {
-    this.seatService.getActivity().subscribe(seats => {
-      console.log(seats);
-    });
-  }
+  ) { }
 }

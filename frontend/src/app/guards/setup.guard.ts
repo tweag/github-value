@@ -14,7 +14,6 @@ export class SetupGuard implements CanActivate, CanActivateChild {
   ) { }
 
   canActivate(): MaybeAsync<GuardResult> {
-    console.log('SetupGuard');
     return this.setupService.getSetupStatus(['isSetup', 'dbInitialized']).pipe(
       map((response) => {
         if (response.isSetup) {
