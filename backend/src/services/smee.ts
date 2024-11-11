@@ -35,7 +35,7 @@ class SmeeService {
   public async createSmeeWebhookProxy(port?: number) {
     if (!port) port = this.port;
     try {
-      this.webhookProxyUrl = await settingsService.getSettingsByName('webhookProxyUrl');
+      this.webhookProxyUrl = process.env.WEBHOOK_PROXY_URL || await settingsService.getSettingsByName('webhookProxyUrl');
     } catch {
       this.webhookProxyUrl = await this.createSmeeWebhookUrl();
     }
