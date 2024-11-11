@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
 import {MatPaginator, MatPaginatorModule} from '@angular/material/paginator';
 import {MatSort, MatSortable, MatSortModule} from '@angular/material/sort';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
@@ -37,7 +37,7 @@ export interface ColumnOptions {
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss'
 })
-export class TableComponent implements OnChanges, AfterViewInit  {
+export class TableComponent implements OnChanges  {
   dataSource!: MatTableDataSource<any>;
   @Input() data?: any[] = [];
   @Input() columns: ColumnOptions[] = [];
@@ -87,10 +87,6 @@ export class TableComponent implements OnChanges, AfterViewInit  {
     } finally {
       this.isLoadingResults = false;
     }
-  }
-
-  ngAfterViewInit() {
-    console.log(this.data);
   }
 
   applyFilter(event: Event) {

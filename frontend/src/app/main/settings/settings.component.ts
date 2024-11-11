@@ -85,7 +85,6 @@ export class SettingsComponent implements OnInit {
 
     this.setupService.getInstall().subscribe((install) => {
       this.install = install;
-      console.log(install);
     });
   }
 

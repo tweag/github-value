@@ -33,7 +33,6 @@ export class CopilotSurveysComponent implements OnInit {
 
   ngOnInit() {
     this.copilotSurveyService.getAllSurveys().subscribe((surveys) => {
-      console.log(surveys);
       this.surveys = surveys;
     });
   }

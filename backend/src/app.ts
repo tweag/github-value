@@ -19,11 +19,15 @@ app.use(expressLoggerMiddleware);
 
 (async () => {
   await dbConnect();
+  logger.info('DB Connected ✅');
   await settingsService.initializeSettings();
+  logger.info('Settings loaded ✅');
   await SmeeService.createSmeeWebhookProxy(PORT);
+  logger.info('Created Smee webhook proxy ✅');
 
   try {
     await setup.createAppFromEnv();
+    logger.info('App created from environment ✅');
   } catch (error) {
     logger.info('Failed to create app from environment. This is expected if the app is not yet installed.', error);
   }

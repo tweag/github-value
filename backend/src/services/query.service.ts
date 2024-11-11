@@ -69,7 +69,7 @@ class QueryService {
 
       insertUsage(response.data);
 
-      logger.info("Usage successfully updated! 👤");
+      logger.info("Usage successfully updated! 📈");
     } catch (error) {
       logger.error('Error querying copilot metrics', error);
     }
@@ -173,6 +173,8 @@ class QueryService {
             });
           }));
         }
+
+        logger.info(`Team ${team.name} successfully updated! ✏️`);
       }
 
       
@@ -186,7 +188,6 @@ class QueryService {
       const members = await octokit.paginate(octokit.rest.orgs.listMembers, {
         org: setup.installation.owner?.login
       });
-      console.log('members', members.length);
       if (members?.length) {
         await Promise.all(members.map(async member => {
           const [dbMember] = await Member.upsert({
@@ -218,7 +219,7 @@ class QueryService {
         }));
       }
   
-      logger.info("Members successfully updated! 🧑‍🤝‍🧑");
+      logger.info("Teams & Members successfully updated! 🧑‍🤝‍🧑");
     } catch (error) {
       logger.error('Error querying teams', error);
     }

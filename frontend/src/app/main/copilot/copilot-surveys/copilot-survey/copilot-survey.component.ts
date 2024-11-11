@@ -58,7 +58,6 @@ export class CopilotSurveyComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.surveyForm.value);
     const { owner, repo, prNumber } = this.parseGitHubPRUrl(this.params['url']);
     this.copilotSurveyService.createSurvey({
       dateTime: new Date(),

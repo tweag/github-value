@@ -37,7 +37,6 @@ class TeamsController {
   
       res.json(teams);
     } catch (error) {
-      console.log(error);
       res.status(500).json(error);
     }
   }
@@ -53,7 +52,6 @@ class TeamsController {
   
       res.json(members);
     } catch (error) {
-      console.log(error);
       res.status(500).json(error);
     }
   }

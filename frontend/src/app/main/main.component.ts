@@ -47,9 +47,6 @@ export class MainComponent {
     private router: Router
   ) {
     this.hideNavText = localStorage.getItem('hideNavText') === 'true';
-    this.metricsService.getMetrics().subscribe(data => {
-      console.log(data);
-    });
 
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
