@@ -31,8 +31,7 @@ jobs:
       - uses: actions/checkout@v3
       - run: npm i @microsoft/eslint-formatter-sarif
         working-directory: ./frontend
-      - run: |
-          npx eslint@8.57.1
+      - run: npx eslint@8.9.0
           --format @microsoft/eslint-formatter-sarif
           --output-file eslint-results.sarif
         working-directory: ./frontend
