@@ -15,4 +15,4 @@ release:
     - echo "Setting BASE_URL..." 
     - heroku config:set BASE_URL=$(heroku info -s | grep web_url | cut -d= -f2)
 run:
-  web: node dist/app.js
+  web: npm run start
