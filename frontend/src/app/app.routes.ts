@@ -32,5 +32,5 @@ export const routes: Routes = [
       { path: '', redirectTo: 'copilot', pathMatch: 'full' }
     ]
   },
-  { path: '**', component: MainComponent }
+  { path: '**', redirectTo: '' }
 ];
