@@ -36,7 +36,7 @@ const dbConnect = async () => {
         password: process.env.MYSQL_PASSWORD || 'octocat',
       });
   
-      await connection.query(`CREATE DATABASE IF NOT EXISTS \`value\`;`,);
+      await connection.query(`CREATE DATABASE IF NOT EXISTS \`${process.env.MYSQL_DATABASE}\`;`,);
       await connection.end();
     }
   } catch (error) {

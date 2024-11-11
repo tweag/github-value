@@ -40,7 +40,7 @@ router.delete('/settings/:name', settingsController.deleteSettings);
 router.get('/setup/registration/complete', setupController.registrationComplete);
 router.get('/setup/install/complete', setupController.installComplete);
 router.get('/setup/install', setupController.getInstall);
-router.get('/setup/status', setupController.isSetup);
+router.get('/setup/status', setupController.setupStatus);
 router.get('/setup/manifest', setupController.getManifest);
 router.post('/setup/existing-app', setupController.addExistingApp);
 

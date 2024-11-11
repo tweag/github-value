@@ -6,6 +6,7 @@ import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dial
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ClipboardModule } from '@angular/cdk/clipboard';
+import { ThemeService } from '../services/theme.service';
 
 
 @Component({
@@ -13,7 +14,8 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
   standalone: true,
   imports: [
     MaterialModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    CommonModule
   ],
   templateUrl: './install.component.html',
   styleUrl: './install.component.scss'
@@ -21,6 +23,7 @@ import { ClipboardModule } from '@angular/cdk/clipboard';
 export class InstallComponent implements OnInit {
 
   constructor(
+    public themeService: ThemeService,
     public dialog: MatDialog,
     private router: Router,
     private setupService: SetupService

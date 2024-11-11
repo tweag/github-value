@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, isDevMode } from '@angular/core';
 import { ActivatedRouteSnapshot, CanActivate, CanActivateChild, GuardResult, MaybeAsync, Router, RouterStateSnapshot } from '@angular/router';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -15,9 +15,15 @@ export class SetupGuard implements CanActivate, CanActivateChild {
 
   canActivate(): MaybeAsync<GuardResult> {
     console.log('SetupGuard');
-    return this.setupService.getSetupStatus().pipe(
-      map((response: any) => {
+    return this.setupService.getSetupStatus(['isSetup', 'dbInitialized']).pipe(
+      map((response) => {
         if (response.isSetup) {
+          if (response.dbInitialized || isDevMode()) {
+            return true;
+          } else {
+            this.router.navigate(['/setup/loading']);
+            return false;
+          }
           return true;
         } else {
           this.router.navigate(['/setup']);
@@ -31,21 +37,7 @@ export class SetupGuard implements CanActivate, CanActivateChild {
     );
   }
 
-  canActivateChild(): Observable<boolean> {
-    console.log('SetupGuard');
-    return this.setupService.getSetupStatus().pipe(
-      map((response: any) => {
-        if (response.isSetup) {
-          return true;
-        } else {
-          this.router.navigate(['/setup']);
-          return false;
-        }
-      }),
-      catchError(() => {
-        this.router.navigate(['/setup']);
-        return of(false);
-      })
-    );
+  canActivateChild(): MaybeAsync<GuardResult> {
+    return this.canActivate();
   }
 }

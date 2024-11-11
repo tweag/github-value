@@ -67,6 +67,7 @@ export class ThemeService {
     document.body.classList.toggle('light-theme', !isDark);
 
     const theme = isDark ? 'dark-theme' : 'light-theme';
-    document.body.setAttribute('class', theme);
+    document.body.classList.remove('dark-theme', 'light-theme');
+    document.body.classList.add(theme);
   }
 }

@@ -18,10 +18,19 @@ class QueryService {
   }
 
   private async task() {
-    // this.queryCopilotUsageMetrics();
-    this.queryCopilotUsageMetricsNew();
-    // this.queryCopilotSeatAssignments();
-    // this.queryTeamsAndMembers();
+    await Promise.all([
+      this.queryCopilotUsageMetrics().then(() => 
+        setup.setSetupStatusDbInitialized({ usage: true })),
+      this.queryCopilotUsageMetricsNew().then(() => 
+        setup.setSetupStatusDbInitialized({ metrics: true })),
+      this.queryCopilotSeatAssignments().then(() => 
+        setup.setSetupStatusDbInitialized({ copilotSeats: true })),
+      this.queryTeamsAndMembers().then(() => 
+        setup.setSetupStatusDbInitialized({ teamsAndMembers: true })),
+    ]);
+    setup.setSetupStatus({
+      dbInitialized: true
+    })
   }
 
   public static createInstance(cronExpression: string, timeZone: string) {

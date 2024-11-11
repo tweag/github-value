@@ -10,12 +10,37 @@ import updateDotenv from 'update-dotenv';
 import settingsService from './settings.service';
 import { Express } from 'express';
 
+interface SetupStatusDbsInitalized {
+  usage?: boolean;
+  metrics?: boolean;
+  copilotSeats?: boolean;
+  teamsAndMembers?: boolean;
+  [key: string]: boolean | undefined;
+}
+export interface SetupStatus {
+  isSetup: boolean;
+  dbInitialized: boolean;
+  dbsInitalized: SetupStatusDbsInitalized,
+  installation: any;
+}
+
 class Setup {
   private static instance: Setup;
   app?: App;
   webhooks?: Express;
   installationId?: number;
   installation?: any;
+  setupStatus: SetupStatus = {
+    isSetup: false,
+    dbInitialized: false,
+    dbsInitalized: {
+      usage: false,
+      metrics: false,
+      copilotSeats: false,
+      teamsAndMembers: false
+    },
+    installation: undefined
+  };
 
   private constructor() { }
   public static getInstance(): Setup {
@@ -187,6 +212,29 @@ class Setup {
 
   isSetup = () => {
     return !!this.app;
+  }
+
+  getSetupStatus = (): SetupStatus => {
+    return {
+      ...this.setupStatus,
+      isSetup: this.isSetup(),
+      installation: this.installation
+    };
+  }
+
+  setSetupStatus = (obj: any) => {
+    this.setupStatus = {
+      ...this.setupStatus,
+      ...obj
+    };
+  }
+
+  setSetupStatusDbInitialized = (dbsInitalized: SetupStatusDbsInitalized) => {
+    Object.entries(dbsInitalized).forEach(([key, value]) => {
+      if (value) {
+        this.setupStatus.dbsInitalized[key] = value;
+      }
+    });
   }
 
   getManifest = (baseUrl: string) => {

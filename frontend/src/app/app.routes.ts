@@ -10,9 +10,12 @@ import { CopilotValueComponent } from './main/copilot/copilot-value/value.compon
 import { CopilotMetricsComponent } from './main/copilot/copilot-metrics/copilot-metrics.component';
 import { CopilotSeatsComponent } from './main/copilot/copilot-seats/copilot-seats.component';
 import { CopilotCalculatorComponent } from './main/copilot/copilot-calculator/copilot-calculator.component';
+import { DbLoadingComponent } from './install/db-loading/db-loading.component';
 
 export const routes: Routes = [
-  { path: 'setup', component: InstallComponent },  {
+  { path: 'setup', component: InstallComponent },
+  { path: 'setup/loading', component: DbLoadingComponent, canActivate: [SetupGuard] },
+  {
     path: '',
     component: MainComponent,
     canActivate: [SetupGuard],

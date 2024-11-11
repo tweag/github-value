@@ -7,7 +7,9 @@
     </mat-card-header>
     <h3>GitHub Value App</h3>
     <div class="img-container">
-      <img mat-card-image src="assets/images/github-mark.svg" alt="GitHub Mark" draggable="false">
+      <img mat-card-image [src]="(themeService.isDarkTheme() | async) ? 
+      'assets/images/github-mark-white.png' : 
+      'assets/images/github-mark.png'" alt="GitHub Mark" draggable="false">
     </div>
     <mat-card-content>
       <p>

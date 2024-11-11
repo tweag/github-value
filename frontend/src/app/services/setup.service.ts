@@ -1,9 +1,20 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { serverUrl } from './server.service';
 import { Endpoints } from '@octokit/types';
 
+export interface SetupStausResponse {
+  isSetup?: boolean;
+  dbInitialized?: boolean;
+  dbsInitalized?: {
+    usage: boolean;
+    metrics: boolean;
+    copilotSeats: boolean;
+    teamsAndMembers: boolean;
+  },
+  installation?: any;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -12,8 +23,11 @@ export class SetupService {
 
   constructor(private http: HttpClient) { }
 
-  getSetupStatus(): Observable<{ isSetup: boolean }> {
-    return this.http.get<any>(`${this.apiUrl}/status`);
+  getSetupStatus(fields?: string[]): Observable<SetupStausResponse> {
+    const params = fields ? new HttpParams().set('fields', fields.join(',')) : undefined;
+    return this.http.get<any>(`${this.apiUrl}/status`, {
+      params
+    });
   }
 
   getInstall() {
