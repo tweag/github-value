@@ -29,12 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - run: |
-          npm i eslint
-          npm i @microsoft/eslint-formatter-sarif
+      - run: npm i @microsoft/eslint-formatter-sarif
         working-directory: ./frontend
       - run: |
-          npx eslint
+          npx eslint@8.57.1
           --format @microsoft/eslint-formatter-sarif
           --output-file eslint-results.sarif
         working-directory: ./frontend
