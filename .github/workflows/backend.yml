@@ -15,7 +15,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v4
@@ -24,4 +23,15 @@ jobs:
       - run: npm ci
         working-directory: ./backend
       - run: npm run build
+        working-directory: ./backend
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          npm i eslint
+          npm i @microsoft/eslint-formatter-sarif
+        working-directory: ./backend
+      - run: npm run lint
         working-directory: ./backend

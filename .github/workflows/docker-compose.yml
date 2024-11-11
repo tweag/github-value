@@ -1,4 +1,4 @@
-name: Compose
+name: Docker Compose
 
 on:
   push:
