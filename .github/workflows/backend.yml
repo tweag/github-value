@@ -32,7 +32,7 @@ jobs:
       - run: npm i @microsoft/eslint-formatter-sarif
         working-directory: ./backend
       - run: |
-          npx eslint@8.57.1
+          npx eslint
           -f @microsoft/eslint-formatter-sarif
           -o eslint-results.sarif
         working-directory: ./backend
