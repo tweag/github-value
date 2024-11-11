@@ -13,7 +13,7 @@ runs:
     - name: Install ESLint and SARIF formatter
       shell: bash
       run: |
-        npm i eslint@8.9.0
+        npm i eslint
         npm i @microsoft/eslint-formatter-sarif
       working-directory: ${{ inputs.working-directory }}
 
