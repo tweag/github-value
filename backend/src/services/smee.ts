@@ -47,7 +47,7 @@ class SmeeService {
         path: '/api/github/webhooks'
       });
     } catch (error) {
-      logger.error('Unable to connect to smee.io. recreating webhook.', error);
+      logger.error(`Unable to connect to ${this.webhookProxyUrl}. recreating webhook.`, error);
       this.webhookProxyUrl = await this.createSmeeWebhookUrl();
       eventSource = await this.createWebhookProxy({
         url: this.webhookProxyUrl,
@@ -57,6 +57,7 @@ class SmeeService {
       if (!eventSource) throw new Error('Unable to connect to smee.io');
     }
     this.port = port;
+    await settingsService.updateSetting('webhookProxyUrl', this.webhookProxyUrl);
     return { url: this.webhookProxyUrl, eventSource };
   }
 
