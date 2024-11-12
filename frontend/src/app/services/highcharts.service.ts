@@ -93,7 +93,7 @@ export class HighchartsService {
   transformCopilotMetricsToBarChatDrilldown(data: any[]) {
     data.map(dateData => {
       const date = new Date(dateData.date);
-      dateData.date = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+      dateData.date = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       return data;
     })
     const engagedUsersSeries = {
@@ -118,12 +118,12 @@ export class HighchartsService {
         data: [
           {
             name: 'IDE Completions',
-            y: dateData.copilot_ide_code_completions.total_engaged_users,
+            y: dateData.copilot_ide_code_completions?.total_engaged_users || 0,
             drilldown: `ide_${dateData.date}`
           },
           {
             name: 'IDE Chat',
-            y: dateData.copilot_ide_chat.total_engaged_users,
+            y: dateData.copilot_ide_chat?.total_engaged_users || 0,
             drilldown: `chat_${dateData.date}`
           },
           {
@@ -133,7 +133,7 @@ export class HighchartsService {
           },
           {
             name: 'Pull Requests',
-            y: dateData.copilot_dotcom_pull_requests.total_engaged_users,
+            y: dateData.copilot_dotcom_pull_requests?.total_engaged_users || 0,
             drilldown: `pr_${dateData.date}`
           }
         ].sort((a: any, b: any) => b.y - a.y)
@@ -143,7 +143,7 @@ export class HighchartsService {
       drilldownSeries.push({
         name: 'IDE Completions',
         id: `ide_${dateData.date}`,
-        data: dateData.copilot_ide_code_completions.editors.map((editor: any) => ({
+        data: dateData.copilot_ide_code_completions?.editors.map((editor: any) => ({
           name: editor.name,
           y: editor.total_engaged_users,
           drilldown: `ide_${editor.name}_${dateData.date}`
@@ -151,7 +151,7 @@ export class HighchartsService {
       });
 
       // Editor language drilldowns
-      dateData.copilot_ide_code_completions.editors.forEach((editor: any) => {
+      dateData.copilot_ide_code_completions?.editors.forEach((editor: any) => {
         drilldownSeries.push({
           name: editor.name,
           id: `ide_${editor.name}_${dateData.date}`,
@@ -179,7 +179,7 @@ export class HighchartsService {
       drilldownSeries.push({
         name: 'IDE Chat',
         id: `chat_${dateData.date}`,
-        data: dateData.copilot_ide_chat.editors.map((editor: any) => ({
+        data: dateData.copilot_ide_chat?.editors?.map((editor: any) => ({
           name: editor.name,
           y: editor.total_engaged_users,
           drilldown: `chat_${editor.name}_${dateData.date}`
@@ -187,7 +187,7 @@ export class HighchartsService {
       });
 
       // Chat models drilldown
-      dateData.copilot_ide_chat.editors.forEach((editor: any) => {
+      dateData.copilot_ide_chat.editors?.forEach((editor: any) => {
         drilldownSeries.push({
           name: editor.name,
           id: `chat_${editor.name}_${dateData.date}`,
@@ -215,7 +215,7 @@ export class HighchartsService {
       drilldownSeries.push({
         name: 'Pull Requests',
         id: `pr_${dateData.date}`,
-        data: dateData.copilot_dotcom_pull_requests.repositories.map((repo: any) => ({
+        data: dateData.copilot_dotcom_pull_requests?.repositories.map((repo: any) => ({
           name: repo.name || 'Unknown',
           y: repo.total_engaged_users,
           drilldown: `pr_${repo.name}_${dateData.date}`
