@@ -62,7 +62,7 @@ export class DashboardCardDrilldownBarChartComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['data'] && this.data) {
-      this._chartOptions = this.highchartsService.transformCopilotMetricsToBarChatDrilldown(this.data);
+      this._chartOptions = this.highchartsService.transformCopilotMetricsToBarChartDrilldown(this.data);
       this.chartOptions = {
         ...this.chartOptions,
         ...this._chartOptions

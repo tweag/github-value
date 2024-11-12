@@ -72,22 +72,14 @@ export class CopilotDashboardComponent implements OnInit {
     }).subscribe(data => {
       this.metricsData = data;
       this.activeToday = data[data.length - 1].total_active_users;
-
-      // Get last 7 days (current week) 📅
       const currentWeekData = data.slice(-7);
       this.activeCurrentWeekAverage = currentWeekData.reduce((sum, day) => 
         sum + day.total_active_users, 0) / currentWeekData.length;
-      
-      // Get previous 7 days (last week) 📊
       const lastWeekData = data.slice(-14, -7);
       this.activeLastWeekAverage = lastWeekData.length > 0 
         ? lastWeekData.reduce((sum, day) => sum + day.total_active_users, 0) / lastWeekData.length 
         : 0;
-    
-      console.log('currentWeekAverage', this.activeCurrentWeekAverage);
-      console.log('lastWeekAverage', this.activeLastWeekAverage);
 
-      // Calculate percent change between weeks 📈
       const percentChange = this.activeLastWeekAverage === 0
         ? 100
         : ((this.activeCurrentWeekAverage - this.activeLastWeekAverage) / this.activeLastWeekAverage) * 100;

@@ -90,7 +90,7 @@ export class HighchartsService {
     return result;
   }
 
-  transformCopilotMetricsToBarChatDrilldown(data: any[]) {
+  transformCopilotMetricsToBarChartDrilldown(data: any[]) {
     const engagedUsersSeries = {
       name: 'Users',
       type: 'column' as 'column' | 'spline',
