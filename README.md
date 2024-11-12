@@ -66,10 +66,6 @@ GitHub Value is a free and open-source application designed to help measure the 
   # Check the status of the app
   heroku ps
   ```
-  ```bash
-  heroku create
-  git push heroku main
-  ```
 </details>
 
 ------------
