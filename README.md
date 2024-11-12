@@ -84,8 +84,6 @@ Start up the database. It's defined in the `docker-compose.yml` file.
 docker-compose up -d db
 ```
 
-Create and modify the [./backend/.env](./backend/.env.example) file to point to your local MySQL database.
-
 Then, you can run the server and the client separately.
 
 ```bash
