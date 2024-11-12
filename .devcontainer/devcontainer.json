@@ -1,45 +1,44 @@
 {
   "name": "Austen",
-  "build": {
-      "dockerfile": "Dockerfile",
-      "args": {
-          "VARIANT": "latest"
-      }
-  },
+  "dockerComposeFile": "./docker-compose.extend.yml",
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
   "forwardPorts": [
-      4200,
-      80
+    4200,
+    80
   ],
-  "postCreateCommand": "npm i",
+  "postCreateCommand": [],
   "customizations": {
-      "vscode": {
-          "settings": {
-              "terminal.integrated.profiles.linux": {
-                  "bash": {
-                      "path": "bash",
-                      "icon": "terminal-bash"
-                  }
-              },
-              "terminal.integrated.defaultProfile.linux": "bash",
-              "extensions.ignoreRecommendations": true,
-              "gitlens.showWelcomeOnInstall": false,
-              "gitlens.showWhatsNewAfterUpgrades": false
-          },
-          "extensions": [
-              "eamodio.gitlens",
-              "ms-vscode.vscode-typescript-next",
-              "dbaeumer.vscode-eslint",
-              "visualstudioexptteam.vscodeintellicode",
-              "Angular.ng-template",
-              "eg2.vscode-npm-script",
-              "sibiraj-s.vscode-scss-formatter",
-              "ms-azuretools.vscode-docker",
-              "ms-vsliveshare.vsliveshare",
-              "Github.vscode-github-actions",
-              "GitHub.copilot",
-              "GitHub.copilot-chat",
-              "GitHub.vscode-pull-request-github"
-          ]
-      }
+    "vscode": {
+      "settings": {
+        "terminal.integrated.profiles.linux": {
+          "bash": {
+            "path": "bash",
+            "icon": "terminal-bash"
+          }
+
+        },
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "extensions.ignoreRecommendations": true,
+        "gitlens.showWelcomeOnInstall": false,
+        "gitlens.showWhatsNewAfterUpgrades": false
+      },
+      "extensions": [
+        "eamodio.gitlens",
+        "ms-vscode.vscode-typescript-next",
+        "dbaeumer.vscode-eslint",
+        "visualstudioexptteam.vscodeintellicode",
+        "Angular.ng-template",
+        "sibiraj-s.vscode-scss-formatter",
+        "ms-azuretools.vscode-docker",
+        "ms-vsliveshare.vsliveshare",
+        "Github.vscode-github-actions",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "GitHub.vscode-pull-request-github",
+        "cweijan.vscode-mysql-client2"
+      ]
+    }
   }
 }
