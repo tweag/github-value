@@ -10,6 +10,8 @@ GitHub Value is a free and open-source application designed to help measure the 
 - Light/Dark theme support
 - Responsive Material Design UI
 
+------------
+
 ### Deployment
 
 #### Docker Compose (Quick Start)
@@ -69,6 +71,8 @@ heroku ps
 
 You can of course deploy this application however you'd like. All that's needed besides the Dockerfile is a MySQL database.
 
+------------
+
 ### Development Setup
 
 Pre-requisites:
@@ -106,6 +110,8 @@ Congratulations! You now have a fully functioning development environment! 🧑�
 ### Contributing
 
 Feel free to submit issues or pull requests! Contributions are welcome! 🤗
+
+------------
 
 ### License
 
