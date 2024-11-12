@@ -25,14 +25,16 @@ import { forkJoin } from 'rxjs';
   styleUrl: './dashboard.component.scss'
 })
 export class CopilotDashboardComponent implements OnInit {
-  totalMembers = 0;
-  totalSeats = 0;
-  totalSurveys = 0;
-  totalSurveysThisWeek = 0;
+  totalMembers?: number;
+  totalSeats?: number;
+  totalSurveys?: number;
+  totalSurveysThisWeek?: number;
   metricsData?: CopilotMetrics[];
-  seatPercentage = 0;
-  activeToday = 0;
-  activeWeeklyChangePercent = 0;
+  seatPercentage?: number;
+  activeToday?: number;
+  activeWeeklyChangePercent?: number;
+  activeCurrentWeekAverage?: number;
+  activeLastWeekAverage?: number;
 
   constructor(
     private metricsService: MetricsService,
@@ -71,12 +73,25 @@ export class CopilotDashboardComponent implements OnInit {
       this.metricsData = data;
       this.activeToday = data[data.length - 1].total_active_users;
 
-      const lastWeekIndex = data.length - 8; // 7 days ago
-      const lastWeekUsers = lastWeekIndex >= 0 ? data[lastWeekIndex].total_active_users : 0;
+      // Get last 7 days (current week) 📅
+      const currentWeekData = data.slice(-7);
+      this.activeCurrentWeekAverage = currentWeekData.reduce((sum, day) => 
+        sum + day.total_active_users, 0) / currentWeekData.length;
+      
+      // Get previous 7 days (last week) 📊
+      const lastWeekData = data.slice(-14, -7);
+      this.activeLastWeekAverage = lastWeekData.length > 0 
+        ? lastWeekData.reduce((sum, day) => sum + day.total_active_users, 0) / lastWeekData.length 
+        : 0;
+    
+      console.log('currentWeekAverage', this.activeCurrentWeekAverage);
+      console.log('lastWeekAverage', this.activeLastWeekAverage);
 
-      const percentChange = lastWeekUsers === 0
-        ? 100 // If last week was 0, treat as 100% increase
-        : ((this.activeToday - lastWeekUsers) / lastWeekUsers) * 100;
+      // Calculate percent change between weeks 📈
+      const percentChange = this.activeLastWeekAverage === 0
+        ? 100
+        : ((this.activeCurrentWeekAverage - this.activeLastWeekAverage) / this.activeLastWeekAverage) * 100;
+    
       this.activeWeeklyChangePercent = Math.round(percentChange * 10) / 10;
     });
   }

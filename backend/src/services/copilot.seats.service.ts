@@ -26,14 +26,15 @@ class SeatsService {
       },
       include: [{
         model: Assignee,
-        as: 'assignee'
+        as: 'assignee',
+        attributes: ['login', 'id']
       }],
       where: {
-        createdAt: {
+        id: {
           [Op.in]: Sequelize.literal(`(
-            SELECT MAX(createdAt)
-            FROM Seats
-            GROUP BY assignee_id
+              SELECT MAX(id)
+              FROM Seats
+              GROUP BY assignee_id
           )`)
         }
       },
@@ -65,7 +66,7 @@ class SeatsService {
           site_admin: seat.assignee.site_admin,
         }
       });
-  
+
       const assigningTeam = seat.assigning_team ? await AssigningTeam.findOrCreate({
         where: { id: seat.assigning_team.id },
         defaults: {
@@ -83,7 +84,7 @@ class SeatsService {
           parent: seat.assigning_team.parent,
         }
       }) : null;
-      
+
       await Seat.create({
         created_at: seat.created_at,
         updated_at: seat.updated_at,
@@ -96,7 +97,7 @@ class SeatsService {
       });
     }
   }
-  
+
   async getAssigneesActivity(daysInactive: number): Promise<AssigneeDailyActivity> {
     const assignees = await Assignee.findAll({
       attributes: ['login', 'id'],

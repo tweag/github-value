@@ -2,29 +2,27 @@
   <mat-card-header *ngIf="title">
     <mat-card-title>{{title}}</mat-card-title>
   </mat-card-header>
-  <mat-card-content>    
-    <!-- Bar items container -->
+  <mat-card-content>
+    <ng-container *ngIf="sections; else loading">
     <div class="bar-container">
-      <!-- Repeat for each bar item -->
       <div class="bar-item" *ngFor="let section of sections; let i = index">
-        <!-- Header with icon and title -->
         <div class="bar-header">
           <mat-icon>{{section.icon}}</mat-icon>
           <span class="bar-title">{{section.name}}</span>
         </div>
-        
-        <!-- Progress bar -->
         <mat-progress-bar 
           mode="determinate" 
           [value]="section.percentage">
         </mat-progress-bar>
-        
-        <!-- Footer with value and percentage -->
         <div class="bar-footer">
           <span class="value">{{section.value | number:'1.0-0'}}</span>
           <span class="percentage">{{section.percentage | number:'1.0-0'}}%</span>
         </div>
       </div>
     </div>
+    </ng-container>
+    <ng-template #loading>
+      <app-loading-spinner></app-loading-spinner>
+    </ng-template>
   </mat-card-content>
 </mat-card>
