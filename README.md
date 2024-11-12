@@ -70,7 +70,7 @@ GitHub Value is a free and open-source application designed to help measure the 
 
 ------------
 
-### Development Setup
+### Development
 
 Pre-requisites:
 
