@@ -71,7 +71,7 @@ You can of course deploy this application however you'd like. All that's needed 
 
 ### Development Setup
 
-First ensure
+Pre-requisites:
 
 - Docker and Docker Compose
 - MySQL (if not using Docker)
