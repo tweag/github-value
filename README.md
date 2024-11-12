@@ -1,6 +1,7 @@
 GitHub Value is a free and open-source application designed to help measure the adoption, value, and impact of GitHub features.
 
-![6016cbbdbfda8f8952cb67387a48871a3edaba83dd81e38dbd18e2b70169349a-1200x630](https://github.com/user-attachments/assets/09c494cd-fbdb-4b8e-9cb3-696371e9487a)
+[![Style](https://github.com/user-attachments/assets/09c494cd-fbdb-4b8e-9cb3-696371e9487a)](https://github.com/settings/appearance#gh-dark-mode-only)
+[![Style](https://github.com/user-attachments/assets/aca22119-b996-4bd4-b215-63874cce91c1)](https://github.com/settings/appearance#gh-light-mode-only)
 
 ### Core Features
 
