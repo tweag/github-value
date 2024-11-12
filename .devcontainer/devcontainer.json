@@ -5,10 +5,10 @@
   "shutdownAction": "stopCompose",
   "workspaceFolder": "/src",
   "postCreateCommand": "./postCreateCommand.sh",
-  "forwardPorts": [
-    4200,
-    80
-  ],
+  // "forwardPorts": [
+  //   4200,
+  //   80
+  // ],
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest",
@@ -34,8 +34,7 @@
         "Github.vscode-github-actions",
         "GitHub.copilot",
         "GitHub.copilot-chat",
-        "GitHub.vscode-pull-request-github",
-        "cweijan.vscode-mysql-client2"
+        "GitHub.vscode-pull-request-github"
       ]
     }
   }
