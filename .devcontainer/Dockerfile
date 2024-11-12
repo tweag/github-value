@@ -1,3 +1,3 @@
-FROM node:23-alpine
+FROM mcr.microsoft.com/devcontainers/typescript-node
 
 RUN npm i @angular/cli -g --verbose
