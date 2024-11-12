@@ -2,9 +2,9 @@
   <div class="page-header">
     <h1>Surveys</h1>
     <span class="spacer"></span>
-    <p>
-      <a mat-flat-button color="primary" routerLink="/surveys/new">New Survey</a>
-    </p>
+    <!-- <p>
+      <a mat-flat-button color="primary" routerLink="/copilot/surveys/new">New Survey</a>
+    </p> -->
   </div>
   <app-table [data]="surveys!" [columns]="surveysColumns" [defaultSort]="{id: 'dateTime', start: 'desc', disableClear: false}"></app-table>
 </div>
