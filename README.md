@@ -26,11 +26,10 @@ GitHub Value is a free and open-source application designed to help measure the 
 
 <details>
   <summary>Heroku</summary>
-  
+
   You can deploy the application to [Heroku](https://www.heroku.com/) using the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-with-an-installer).
 
-  > [!WARNING]
-  > Deploying to Heroku will cost you about $17/month.
+  <b>WARNING: Deploying to Heroku will cost you about $17/month.</b>
 
   You will need to manually add the [config vars](https://devcenter.heroku.com/articles/config-vars) to the Heroku app. You can also edit config vars from your app’s `Settings` tab in the [Heroku Dashboard](https://dashboard.heroku.com/).
 
