@@ -1,4 +1,3 @@
-ARG VARIANT=22-alpine
-FROM node:${VARIANT}
+FROM node:23-alpine
 
 RUN npm i @angular/cli -g --verbose
