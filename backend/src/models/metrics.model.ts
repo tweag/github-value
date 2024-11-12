@@ -401,7 +401,6 @@ export async function insertMetrics(data: CopilotMetrics[]) {
   for (const day of data) {
     const parts = day.date.split('-').map(Number);
     const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2], 12));
-    console.log({parts, active: day.total_active_users, engaged: day.total_engaged_users, date});
     let metric: MetricDaily;
     try {
       metric = await MetricDaily.create({
