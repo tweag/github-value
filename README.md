@@ -22,11 +22,9 @@ If you're running the application on your own machine, you can simply use [docke
 docker-compose up
 ```
 
-This will start the server along with the MySQL database.
-
 #### Heroku
 
-You can deploy the application to Heroku using the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-with-an-installer).
+You can deploy the application to [Heroku](https://www.heroku.com/) using the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-with-an-installer).
 
 > [!WARNING]
 > Deploying to Heroku will cost you about $17/month.
@@ -69,7 +67,7 @@ heroku ps
 
 #### Custom Deployment
 
-You can of course deploy this application however you'd like. All that's needed besides the Dockerfile is a MySQL database.
+You can deploy this application however you'd like. All that's needed besides the Dockerfile is a MySQL database.
 
 ------------
 
