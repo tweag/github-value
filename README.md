@@ -16,6 +16,7 @@ GitHub Value is a free and open-source application designed to help measure the 
 
 <details>
   <summary>Docker Compose</summary>
+
   Install [docker compose](https://docs.docker.com/compose/install/) and run one command.
 
   ```bash
@@ -25,7 +26,7 @@ GitHub Value is a free and open-source application designed to help measure the 
 
 <details>
   <summary>Heroku</summary>
-  Deploy to Heroku with one command.
+  
   You can deploy the application to [Heroku](https://www.heroku.com/) using the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-with-an-installer).
 
   > [!WARNING]
