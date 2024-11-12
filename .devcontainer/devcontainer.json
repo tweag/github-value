@@ -1,9 +1,9 @@
 {
   "name": "Austen",
-  "dockerComposeFile": "./docker-compose.extend.yml",
+  "dockerComposeFile": "./compose.yml",
   "service": "dev",
   "shutdownAction": "stopCompose",
-  "workspaceFolder": "/workspace",
+  "workspaceFolder": "/src",
   "forwardPorts": [
     4200,
     80

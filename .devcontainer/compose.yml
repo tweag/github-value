@@ -1,21 +1,18 @@
 services:
   dev:
-    # extends:
-    #   file: ../compose.yml
-    #   service: backend
+    extends:
+      file: ../compose.yml
+      service: backend
     build: .
+    ports:
+      - "4200:4200"
     volumes:
       # Mount the parent directory (project root) to /workspace
-      - ..:/workspace:cached
-      
-    # [Optional] Required for ptrace-based debuggers like C++, Go, and Rust
-    cap_add:
-      - SYS_PTRACE
-    security_opt:
-      - seccomp:unconfined
-
+      - ..:/src:cached
     # Overrides default command so things don't shut down after the process ends.
     command: /bin/sh -c "while sleep 1000; do :; done"
+    environment:
+      NODE_ENV: development
 
   db:
     extends:

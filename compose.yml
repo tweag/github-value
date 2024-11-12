@@ -2,7 +2,6 @@ services:
   backend:
     restart: always
     build:
-      context: ./
       dockerfile: Dockerfile
     ports:
       - "80:80"
