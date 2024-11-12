@@ -7,6 +7,7 @@ import { HighchartsChartModule } from 'highcharts-angular';
 import { CommonModule } from '@angular/common';
 import { HighchartsService } from '../../../../../services/highcharts.service';
 import { CopilotMetrics } from '../../../../../services/metrics.service.interfaces';
+import { LoadingSpinnerComponent } from '../../../../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-dashboard-card-drilldown-bar-chart',
@@ -15,7 +16,8 @@ import { CopilotMetrics } from '../../../../../services/metrics.service.interfac
     SunburstChartComponent,
     MatCardModule,
     CommonModule,
-    HighchartsChartModule
+    HighchartsChartModule,
+    LoadingSpinnerComponent
   ],
   templateUrl: './dashboard-card-drilldown-bar-chart.component.html',
   styleUrls: [
@@ -51,6 +53,7 @@ export class DashboardCardDrilldownBarChartComponent implements OnChanges {
       }]
     }
   };
+  _chartOptions?: Highcharts.Options;
   updateFlag = false;
 
   constructor(
@@ -59,9 +62,11 @@ export class DashboardCardDrilldownBarChartComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['data'] && this.data) {
-      const result = this.highchartsService.transformCopilotMetricsToBarChatDrilldown(this.data);
-      this.chartOptions.series = result.series;
-      this.chartOptions.drilldown = result.drilldown;
+      this._chartOptions = this.highchartsService.transformCopilotMetricsToBarChartDrilldown(this.data);
+      this.chartOptions = {
+        ...this.chartOptions,
+        ...this._chartOptions
+      };
       this.updateFlag = true;
     }
   }

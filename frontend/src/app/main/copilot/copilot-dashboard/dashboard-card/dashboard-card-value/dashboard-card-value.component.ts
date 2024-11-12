@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
+import { LoadingSpinnerComponent } from '../../../../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-dashboard-card-value',
@@ -9,7 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [
     MatCardModule,
     MatIconModule,
-    CommonModule
+    CommonModule,
+    LoadingSpinnerComponent
   ],
   templateUrl: './dashboard-card-value.component.html',
   styleUrls: [
@@ -25,5 +27,6 @@ export class DashboardCardValueComponent {
   @Input() changeSuffix?: string = '%';
   @Input() changeDescription?: string;
   @Input() icon?: string;
+  @Input() subtitle?: string;
   Math = Math;
 }

@@ -90,30 +90,28 @@ export class HighchartsService {
     return result;
   }
 
-  transformCopilotMetricsToBarChatDrilldown(data: any[]) {
-    data.map(dateData => {
-      const date = new Date(dateData.date);
-      dateData.date = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-      return data;
-    })
+  transformCopilotMetricsToBarChartDrilldown(data: any[]) {
     const engagedUsersSeries = {
       name: 'Users',
       type: 'column' as 'column' | 'spline',
-      data: data.map(dateData => ({
-        type: 'column',
-        name: dateData.date,
-        y: dateData.total_engaged_users,
-        drilldown: `date_${dateData.date}`,
-      }))
+      data: data.map(dateData => {
+        const date = new Date(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        return {
+          type: 'column',
+          name: date,
+          y: dateData.total_engaged_users,
+          date: new Date(dateData.date),
+          drilldown: `date_${dateData.date}`,
+        }
+      })
     } as any;
 
     const drilldownSeries: any[] = [];
 
     data.forEach(dateData => {
-      // First level drilldown - main categories
       const dateSeriesId = `date_${dateData.date}`;
       drilldownSeries.push({
-        name: dateData.date,
+        name: new Date(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'long' }),
         id: dateSeriesId,
         data: [
           {
@@ -239,6 +237,14 @@ export class HighchartsService {
       series: [engagedUsersSeries],
       drilldown: {
         series: drilldownSeries
+      },
+      tooltip: {
+        headerFormat: '<span>{series.name}</span><br>',
+        pointFormatter: function () {
+          const point: any = this;
+          const formatted = point.date ? point.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' }) : point.name;
+          return `<span style="color:${point.color}">${formatted}</span>: <b>${point.y}</b> users<br/>`;
+        }
       }
     };
   }
