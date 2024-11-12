@@ -8,18 +8,19 @@
     4200,
     80
   ],
-  "postCreateCommand": [],
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest",
+      "ppa": "false"
+    }
+  },
+  "postCreateCommand": [
+    "cd frontend && npm install",
+    "cd backend && npm install"
+  ],
   "customizations": {
     "vscode": {
       "settings": {
-        "terminal.integrated.profiles.linux": {
-          "bash": {
-            "path": "bash",
-            "icon": "terminal-bash"
-          }
-
-        },
-        "terminal.integrated.defaultProfile.linux": "bash",
         "extensions.ignoreRecommendations": true,
         "gitlens.showWelcomeOnInstall": false,
         "gitlens.showWhatsNewAfterUpgrades": false
