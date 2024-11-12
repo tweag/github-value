@@ -75,7 +75,6 @@ GitHub Value is a free and open-source application designed to help measure the 
 Pre-requisites:
 
 - [Docker and Docker Compose](https://docs.docker.com/compose/install/)
-- [MySQL](https://dev.mysql.com/doc/mysql-getting-started/en/) (if not using Docker)
 - [Node.js 23+](https://nodejs.org/en) (for local development)
 - [Angular CLI](https://angular.dev/tools/cli/setup-local#install-the-angular-cli) (`npm install -g @angular/cli`)
 
