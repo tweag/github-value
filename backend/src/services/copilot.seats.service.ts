@@ -22,7 +22,7 @@ class SeatsService {
   async getAllSeats() {
     return Seat.findAll({
       attributes: {
-        exclude: ['id', 'assignee_id', 'assigning_team_id']
+        exclude: ['id', 'assignee_id', 'assigning_team_id', 'avatar_url']
       },
       include: [{
         model: Assignee,
