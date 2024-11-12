@@ -1,13 +1,13 @@
 services:
   dev:
-    extends:
-      file: ../compose.yml
-      service: backend
+    # extends:
+    #   file: ../compose.yml
+    #   service: backend
+    build: .
     volumes:
-      # Mounts the project folder to '/workspace'. While this file is in .devcontainer,
-      # mounts are relative to the first file in the list, which is a level up.
-      - .:/workspace:cached
-
+      # Mount the parent directory (project root) to /workspace
+      - ..:/workspace:cached
+      
     # [Optional] Required for ptrace-based debuggers like C++, Go, and Rust
     cap_add:
       - SYS_PTRACE
@@ -21,6 +21,6 @@ services:
     extends:
       file: ../compose.yml
       service: db
-      
+
 volumes:
   db:
