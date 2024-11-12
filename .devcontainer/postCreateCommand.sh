@@ -1,2 +1,5 @@
-cd /src/frontend && npm install
-cd /src/backend && npm install
+cd ../frontend && npm install
+cd ../backend && npm install
+
+RUN npm i @angular/cli -g --verbose
+RUN source <(ng completion script)
