@@ -28,8 +28,8 @@ This will start the server along with the MySQL database.
 
 You can deploy the application to Heroku using the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-with-an-installer).
 
-> [!CAUTION]
-> This will cost you about $17/month.
+> [!WARNING]
+> Deploying to Heroku will cost you about $17/month.
 
 You will need to manually add the [config vars](https://devcenter.heroku.com/articles/config-vars) to the Heroku app. You can also edit config vars from your app’s `Settings` tab in the [Heroku Dashboard](https://dashboard.heroku.com/).
 
