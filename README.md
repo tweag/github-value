@@ -14,60 +14,63 @@ GitHub Value is a free and open-source application designed to help measure the 
 
 ### Deployment
 
-#### Docker Compose (Quick Start)
+<details>
+  <summary>Docker Compose</summary>
+  Install [docker compose](https://docs.docker.com/compose/install/) and run one command.
 
-If you're running the application on your own machine, you can simply use [docker compose](https://docs.docker.com/compose/install/).
+  ```bash
+  docker-compose up
+  ```
+</details>
 
-```
-docker-compose up
-```
+<details>
+  <summary>Heroku</summary>
+  Deploy to Heroku with one command.
+  You can deploy the application to [Heroku](https://www.heroku.com/) using the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-with-an-installer).
 
-#### Heroku
+  > [!WARNING]
+  > Deploying to Heroku will cost you about $17/month.
 
-You can deploy the application to [Heroku](https://www.heroku.com/) using the [Heroku CLI](https://devcenter.heroku.com/articles/heroku-cli#install-with-an-installer).
+  You will need to manually add the [config vars](https://devcenter.heroku.com/articles/config-vars) to the Heroku app. You can also edit config vars from your app’s `Settings` tab in the [Heroku Dashboard](https://dashboard.heroku.com/).
 
-> [!WARNING]
-> Deploying to Heroku will cost you about $17/month.
+  ```bash
+  # Set all config vars
+  heroku config:set BASE_URL="https://octodemo-9e26d32b64b8.herokuapp.com"
+  heroku config:set GITHUB_APP_ID="1234567"
+  heroku config:set GITHUB_APP_INSTALLATION_ID="12345678"
+  heroku config:set GITHUB_APP_PRIVATE_KEY="$(cat path/to/secret.key)"
+  heroku config:set GITHUB_WEBHOOK_SECRET="secret"
+  heroku config:set WEBHOOK_PROXY_URL="https://smee.io/123"
 
-You will need to manually add the [config vars](https://devcenter.heroku.com/articles/config-vars) to the Heroku app. You can also edit config vars from your app’s `Settings` tab in the [Heroku Dashboard](https://dashboard.heroku.com/).
+  # Verify that the config vars are set correctly
+  heroku config
+  ```
 
-```bash
-# Set all config vars
-heroku config:set BASE_URL="https://octodemo-9e26d32b64b8.herokuapp.com"
-heroku config:set GITHUB_APP_ID="1234567"
-heroku config:set GITHUB_APP_INSTALLATION_ID="12345678"
-heroku config:set GITHUB_APP_PRIVATE_KEY="$(cat path/to/secret.key)"
-heroku config:set GITHUB_WEBHOOK_SECRET="secret"
-heroku config:set WEBHOOK_PROXY_URL="https://smee.io/123"
+  Now login, create a new app, and deploy the application.
 
-# Verify that the config vars are set correctly
-heroku config
-```
+  ```bash
+  heroku login
 
-Now login, create a new app, and deploy the application.
+  # Set stack to container
+  heroku stack:set container -a your-app-name
 
-```bash
-heroku login
+  # If new app
+  heroku create your-app-name
 
-# Set stack to container
-heroku stack:set container -a your-app-name
+  # Push and deploy
+  git push heroku main
 
-# If new app
-heroku create your-app-name
+  # Check the logs
+  heroku logs --tail
 
-# Push and deploy
-git push heroku main
-
-# Check the logs
-heroku logs --tail
-
-# Check the status of the app
-heroku ps
-```
-
-#### Custom Deployment
-
-You can deploy this application however you'd like. All that's needed besides the Dockerfile is a MySQL database.
+  # Check the status of the app
+  heroku ps
+  ```
+  ```bash
+  heroku create
+  git push heroku main
+  ```
+</details>
 
 ------------
 
