@@ -12,8 +12,6 @@ GitHub Value is a free and open-source application designed to help measure the 
 
 ### Deployment
 
-Here are the few ways you can deploy the application...
-
 #### Docker Compose (Quick Start)
 
 If you're running the application on your own machine, you can simply use [docker compose](https://docs.docker.com/compose/install/).
@@ -46,6 +44,8 @@ heroku config:set WEBHOOK_PROXY_URL="https://smee.io/123"
 heroku config
 ```
 
+Now login, create a new app, and deploy the application.
+
 ```bash
 heroku login
 
@@ -73,15 +73,15 @@ You can of course deploy this application however you'd like. All that's needed 
 
 Pre-requisites:
 
-- Docker and Docker Compose
-- MySQL (if not using Docker)
+- [Docker and Docker Compose](https://docs.docker.com/compose/install/)
+- [MySQL](https://dev.mysql.com/doc/mysql-getting-started/en/) (if not using Docker)
 - [Node.js 23+](https://nodejs.org/en) (for local development)
-- Angular CLI 18+ (`npm install -g @angular/cli`)
+- [Angular CLI](https://angular.dev/tools/cli/setup-local#install-the-angular-cli) (`npm install -g @angular/cli`)
 
-Spin up a database. It's defined in the `docker-compose.yml` file.
+Start up the database. It's defined in the `docker-compose.yml` file.
 
 ```bash
-docker-compose up -d client
+docker-compose up -d db
 ```
 
 Create and modify the [./backend/.env](./backend/.env.example) file to point to your local MySQL database.
