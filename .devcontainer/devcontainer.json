@@ -3,7 +3,7 @@
   "dockerComposeFile": "./compose.yml",
   "service": "dev",
   "shutdownAction": "stopCompose",
-  "workspaceFolder": "/src",
+  "workspaceFolder": "/workspaces/github-value",
   "postCreateCommand": "./postCreateCommand.sh",
   "forwardPorts": [
     4200,
