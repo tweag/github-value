@@ -4,6 +4,7 @@
   "service": "dev",
   "shutdownAction": "stopCompose",
   "workspaceFolder": "/src",
+  "postCreateCommand": "./postCreateCommand.sh",
   "forwardPorts": [
     4200,
     80
@@ -14,12 +15,6 @@
       "ppa": "false"
     }
   },
-  "postCreateCommand": [
-    "pwd",
-    "ls -al",
-    "cd frontend && npm install",
-    "cd backend && npm install"
-  ],
   "customizations": {
     "vscode": {
       "settings": {
