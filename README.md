@@ -72,6 +72,9 @@ GitHub Value is a free and open-source application designed to help measure the 
 
 ### Development
 
+> [!TIP]
+> This repository is Codespaces and DevContainers ready! Just open the repository in GitHub Codespaces or in Visual Studio Code and you're good to go! 🚀
+
 Pre-requisites:
 
 - [Docker and Docker Compose](https://docs.docker.com/compose/install/)
