@@ -6,10 +6,8 @@
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "cd /workspaces/${localWorkspaceFolderBasename}/frontend && npm install && cd /workspaces/${localWorkspaceFolderBasename}/backend && npm install",
   "features": {
-    "ghcr.io/devcontainers/features/git:1": {
-      "version": "latest",
-      "ppa": "false"
-    }
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
   "customizations": {
     "vscode": {
