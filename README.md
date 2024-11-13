@@ -31,22 +31,7 @@ GitHub Value is a free and open-source application designed to help measure the 
 
   <b>WARNING: Deploying to Heroku will cost you about $17/month.</b>
 
-  You will need to manually add the [config vars](https://devcenter.heroku.com/articles/config-vars) to the Heroku app. You can also edit config vars from your app’s `Settings` tab in the [Heroku Dashboard](https://dashboard.heroku.com/).
-
-  ```bash
-  # Set all config vars
-  heroku config:set BASE_URL="https://octodemo-9e26d32b64b8.herokuapp.com"
-  heroku config:set GITHUB_APP_ID="1234567"
-  heroku config:set GITHUB_APP_INSTALLATION_ID="12345678"
-  heroku config:set GITHUB_APP_PRIVATE_KEY="$(cat path/to/secret.key)"
-  heroku config:set GITHUB_WEBHOOK_SECRET="secret"
-  heroku config:set WEBHOOK_PROXY_URL="https://smee.io/123"
-
-  # Verify that the config vars are set correctly
-  heroku config
-  ```
-
-  Now login, create a new app, and deploy the application.
+  Login, create a new app, and deploy the application.
 
   ```bash
   heroku login
@@ -65,6 +50,24 @@ GitHub Value is a free and open-source application designed to help measure the 
 
   # Check the status of the app
   heroku ps
+  ```
+
+  You will need to manually add the [config vars](https://devcenter.heroku.com/articles/config-vars) to the Heroku app. You can also edit config vars from your app’s `Settings` tab in the [Heroku Dashboard](https://dashboard.heroku.com/).
+  
+  ```bash
+  # Set all config vars
+  heroku config:set GITHUB_APP_ID="1234567"
+  heroku config:set GITHUB_APP_INSTALLATION_ID="12345678"
+  heroku config:set GITHUB_APP_PRIVATE_KEY="$(cat path/to/secret.key)"
+  heroku config:set GITHUB_WEBHOOK_SECRET="secret"
+  heroku config:set WEBHOOK_PROXY_URL="https://smee.io/123" # You can get this URL from your app after it starts
+  heroku config:set BASE_URL="https://octodemo-9e26d32b64b8.herokuapp.com" # This is the URL of your Heroku app
+
+  # Verify that the config vars are set correctly
+  heroku config
+
+  # Restart the app
+  heroku restart -a app_name
   ```
 </details>
 
