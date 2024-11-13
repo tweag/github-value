@@ -32,10 +32,8 @@ services:
     volumes:
       - db:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      test: ["CMD", "mysqladmin", "-uroot", "-h127.0.0.1", "ping"]
+      interval: 1s
       
 volumes:
   db:

@@ -5,7 +5,10 @@
   "remoteUser": "node",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "cd /workspaces/${localWorkspaceFolderBasename}/frontend && npm install && cd /workspaces/${localWorkspaceFolderBasename}/backend && npm install",
-  "forwardPorts": [80, 4200],
+  "forwardPorts": [
+    80,
+    4200
+  ],
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
