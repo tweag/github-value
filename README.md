@@ -78,6 +78,12 @@ Pre-requisites:
 - [Node.js 23+](https://nodejs.org/en) (for local development)
 - [Angular CLI](https://angular.dev/tools/cli/setup-local#install-the-angular-cli) (`npm install -g @angular/cli`)
 
+#### VSCode Task
+
+Pressing `Ctrl+Shift+B` or running Run Build Task from the global Terminal menu
+
+#### Manual
+
 Start up the database. It's defined in the `docker-compose.yml` file.
 
 ```bash
