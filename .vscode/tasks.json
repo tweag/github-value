@@ -2,12 +2,24 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Develop (No docker/Codespace)",
+			"detail": "Start the backend and frontend in development mode. Run this if you already have the database running or are running in a GitHub Codespace.",
+			"group": "build",
+			"icon": {
+				"id": "github"
+			},
+			"problemMatcher": [],
+			"dependsOn": [
+				"npm: db:start - backend"
+			]
+		},
+		{
 			"problemMatcher": [],
 			"label": "Develop",
 			"detail": "Start the backend and frontend in development mode",
 			"group": "build",
 			"icon": {
-				"id": "star"
+				"id": "vm"
 			},
 			"dependsOn": [
 				"npm: start - frontend",
@@ -98,8 +110,7 @@
         "id": "server"
       },
 			"dependsOn": [
-				"npm: dotenv - backend",
-				"npm: db:start - backend"
+				"npm: dotenv - backend"
 			],
 			"presentation": {
 				"group": "dev"
