@@ -1,5 +1,5 @@
 {
-  "name": "Austen",
+  "name": "GitHub Value",
   "dockerComposeFile": "./compose.yml",
   "service": "dev",
   "remoteUser": "node",
@@ -9,6 +9,16 @@
     80,
     4200
   ],
+  "portsAttributes": {
+    "80": {
+      "label": "Backend",
+      "onAutoForward": "notify"
+    },
+    "4200": {
+      "label": "Frontend",
+      "onAutoForward": "openBrowser"
+    }
+  },
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
