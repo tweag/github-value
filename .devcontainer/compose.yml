@@ -1,29 +1,30 @@
 services:
   dev:
-    extends:
-      file: ../compose.yml
-      service: backend
-    volumes:
-      # Mount the parent directory (project root) to /workspace
-      - ../..:/workspaces:cached    
-    # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-    network_mode: service:db
-    # Overrides default command so things don't shut down after the process ends.
-    command: sleep infinity
+    build:
+      context: ../
+      dockerfile: ./Dockerfile
     environment:
       NODE_ENV: development
       MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: octocat
+      MYSQL_DATABASE: value
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Mount the parent directory (project root) to /workspace
+      - ../..:/workspaces:cached    
+    network_mode: service:db
+    # Overrides default command so things don't shut down after the process ends.
+    command: sleep infinity
 
   db:
     extends:
       file: ../compose.yml
       service: db
     restart: unless-stopped
-
-networks:
-  default:
-    name: default
-    driver: bridge
 
 volumes:
   db:
