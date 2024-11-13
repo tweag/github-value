@@ -80,7 +80,7 @@ Pre-requisites:
 
 #### VSCode Task
 
-You can start the *Develop* task by pressing `Ctrl+Shift+B` or running Run Task from the global Terminal menu.
+You can start the **Develop** task by pressing `Ctrl+Shift+B` or running Run Task from the global Terminal menu.
 
 ![image](https://github.com/user-attachments/assets/7ae066e7-654b-4569-bacc-652edac1e0b1)
 
