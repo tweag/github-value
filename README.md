@@ -50,7 +50,12 @@ GitHub Value is a free and open-source application designed to help measure the 
 
   # Check the status of the app
   heroku ps
+
+  # Open the app in the browser
+  heroku open
   ```
+
+  The first time you visit the app it will walk you through creating the GitHub App in your organization.
 
   You will need to manually add the [config vars](https://devcenter.heroku.com/articles/config-vars) to the Heroku app. You can also edit config vars from your app’s `Settings` tab in the [Heroku Dashboard](https://dashboard.heroku.com/).
   
