@@ -87,6 +87,8 @@ You can start the **Develop** task by pressing `Ctrl+Shift+B` or running Run Tas
 
 ![image](https://github.com/user-attachments/assets/7ae066e7-654b-4569-bacc-652edac1e0b1)
 
+Right click the terminal sidebar and click **Unsplit terminal** if you're lacking space to view them side by side.
+
 #### Manual
 
 Start up the database. It's defined in the `docker-compose.yml` file.
