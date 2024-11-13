@@ -2,12 +2,9 @@
   "name": "Austen",
   "dockerComposeFile": "./compose.yml",
   "service": "dev",
-  "workspaceFolder": "/workspaces/github-value",
-  "postCreateCommand": "./postCreateCommand.sh",
-  "forwardPorts": [
-    "dev:4200",
-    "dev:80"
-  ],
+  "remoteUser": "node",
+	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "postCreateCommand": "cd /workspaces/${localWorkspaceFolderBasename}/frontend && npm install && cd /workspaces/${localWorkspaceFolderBasename}/backend && npm install",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest",

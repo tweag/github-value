@@ -3,22 +3,31 @@ services:
     extends:
       file: ../compose.yml
       service: backend
-    build: .
-    ports:
-      - "80:80"
-      - "4200:4200"
     volumes:
       # Mount the parent directory (project root) to /workspace
-      - ..:/workspace/github-value:cached
+      - ../..:/workspaces:cached    
+    # Remove network_mode and use networks instead
+    networks:
+      - default
     # Overrides default command so things don't shut down after the process ends.
-    command: /bin/sh -c "while sleep 1000; do :; done"
+    command: sleep infinity
     environment:
       NODE_ENV: development
+      MYSQL_HOST: db
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: octocat
+      MYSQL_DATABASE: value
 
   db:
     extends:
       file: ../compose.yml
       service: db
+    restart: unless-stopped
+
+networks:
+  default:
+    name: devcontainer_default
 
 volumes:
   db:
