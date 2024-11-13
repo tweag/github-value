@@ -36,11 +36,11 @@ GitHub Value is a free and open-source application designed to help measure the 
   ```bash
   heroku login
 
+  # If new app, create it
+  heroku create your-app-name
+
   # Set stack to container
   heroku stack:set container -a your-app-name
-
-  # If new app
-  heroku create your-app-name
 
   # Push and deploy
   git push heroku main
