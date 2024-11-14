@@ -1,14 +1,25 @@
 {
-  "name": "Austen",
+  "name": "GitHub Value",
   "dockerComposeFile": "./compose.yml",
   "service": "dev",
+  "forwardPorts": [
+    "dev:80",
+    "dev:4200",
+    "db:3600"
+  ],
   "remoteUser": "node",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
   "postCreateCommand": "cd /workspaces/${localWorkspaceFolderBasename}/frontend && npm install && cd /workspaces/${localWorkspaceFolderBasename}/backend && npm install",
-  "forwardPorts": [
-    80,
-    4200
-  ],
+  "portsAttributes": {
+    "80": {
+      "label": "Backend",
+      "onAutoForward": "notify"
+    },
+    "4200": {
+      "label": "Frontend",
+      "onAutoForward": "openBrowser"
+    }
+  },
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {}
