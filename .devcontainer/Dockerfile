@@ -23,9 +23,10 @@ RUN \
     && npm cache clean --force > /dev/null 2>&1
 
 ARG NODE_MODULES="typescript"
-COPY library-scripts/meta.env /usr/local/etc/vscode-dev-containers
-RUN su node -c "umask 0002 && npm install -g ${NODE_MODULES}" \
-    && npm cache clean --force > /dev/null 2>&1
+RUN npm install -g ${NODE_MODULES} && \
+    npm cache clean --force > /dev/null 2>&1 && \
+    # Make installed packages available to all users
+    chmod -R a+x ${NPM_GLOBAL}/bin
 # [Optional] Uncomment this section to install additional OS packages.
 # RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
