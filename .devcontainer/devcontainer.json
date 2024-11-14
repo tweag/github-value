@@ -4,7 +4,7 @@
   "service": "dev",
   "remoteUser": "node",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "postCreateCommand": "cd /workspaces/${localWorkspaceFolderBasename}/frontend && npm install && cd /workspaces/${localWorkspaceFolderBasename}/backend && npm install",
+  "postCreateCommand": "cd /workspaces/${localWorkspaceFolderBasename}/frontend && npm install && npm run build && cd /workspaces/${localWorkspaceFolderBasename}/backend && npm install",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
