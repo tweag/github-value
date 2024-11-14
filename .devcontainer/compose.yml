@@ -3,6 +3,13 @@ services:
     build:
       context: ../
       dockerfile: ./Dockerfile
+    volumes:
+      - ../..:/workspaces:cached   
+    network_mode: service:db
+    command: sleep infinity
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       NODE_ENV: development
       MYSQL_HOST: db
@@ -10,25 +17,18 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: octocat
       MYSQL_DATABASE: value
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      # Mount the parent directory (project root) to /workspace
-      - ../..:/workspaces:cached
-    ports:
-      - "4200:4200"
-      - "80:80"
-    # Overrides default command so things don't shut down after the process ends.
-    command: sleep infinity
-    networks:
-      - default
 
   db:
-    extends:
-      file: ../compose.yml
-      service: db
+    image: mysql
     restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: octocat
+      MYSQL_DATABASE: value
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "-uroot", "-h127.0.0.1", "ping"]
+      interval: 1s
 
 volumes:
   db:
