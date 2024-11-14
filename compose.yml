@@ -30,7 +30,7 @@ services:
     volumes:
       - db:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "-uroot", "-h127.0.0.1", "ping"]
+      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       interval: 1s
 
 volumes:
