@@ -10,7 +10,8 @@
 			},
 			"problemMatcher": [],
 			"dependsOn": [
-				"npm: db:start - backend"
+				"npm: start - frontend",
+				"npm: dev - backend",
 			]
 		},
 		{
@@ -22,6 +23,7 @@
 				"id": "vm"
 			},
 			"dependsOn": [
+				"npm: dotenv - backend",
 				"npm: start - frontend",
 				"npm: dev - backend",
 			]
@@ -109,9 +111,7 @@
       "icon": {
         "id": "server"
       },
-			"dependsOn": [
-				"npm: dotenv - backend"
-			],
+			"dependsOn": [],
 			"presentation": {
 				"group": "dev"
 			}
@@ -149,7 +149,7 @@
 		},
 		{
 			"type": "npm",
-			"script": "start -- --open",
+			"script": "start",
 			"path": "frontend",
       "isBackground": true,
 			"problemMatcher": [],
@@ -157,7 +157,7 @@
       "icon": {
         "id": "dashboard"
       },
-			"detail": "ng serve --open",
+			"detail": "npm run start",
 			"dependsOn": [
 				"npm: install - frontend"
 			],

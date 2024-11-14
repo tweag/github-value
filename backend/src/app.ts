@@ -27,8 +27,8 @@ app.use(expressLoggerMiddleware);
 
   try {
     const appId = process.env.GITHUB_APP_ID || process.env.GH_APP_ID;
-    const privateKey = process.env.GITHUB_APP_PRIVATE_KEY || process.env.GH_PRIVATE_KEY;
-    const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET || process.env.GH_WEB
+    const privateKey = process.env.GITHUB_APP_PRIVATE_KEY || process.env.GH_APP_PRIVATE_KEY;
+    const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET || process.env.GH_WEBHOOK_SECRET;
     if (!appId) throw new Error('GITHUB_APP_ID is not set');
     if (!privateKey) throw new Error('GITHUB_APP_PRIVATE_KEY is not set');
     if (!webhookSecret) throw new Error('GITHUB_WEBHOOK_SECRET is not set');

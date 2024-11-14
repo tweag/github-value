@@ -1,8 +1,7 @@
 services:
   dev:
     build:
-      context: ../
-      dockerfile: ./devcontainer/Dockerfile
+      dockerfile: ./Dockerfile
     volumes:
       - ../..:/workspaces:cached   
     network_mode: service:db
