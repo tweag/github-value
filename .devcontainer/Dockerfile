@@ -22,7 +22,7 @@ RUN \
     && su ${USERNAME} -c "umask 0002 && npm install -g eslint" \
     && npm cache clean --force > /dev/null 2>&1
 
-ARG NODE_MODULES="typescript @angular/cli"
+ARG NODE_MODULES="typescript"
 COPY library-scripts/meta.env /usr/local/etc/vscode-dev-containers
 RUN su node -c "umask 0002 && npm install -g ${NODE_MODULES}" \
     && npm cache clean --force > /dev/null 2>&1
@@ -35,4 +35,5 @@ RUN su node -c "umask 0002 && npm install -g ${NODE_MODULES}" \
 # RUN su node -c "source /usr/local/share/nvm/nvm.sh && nvm install ${EXTRA_NODE_VERSION}"
 
 # [Optional] Uncomment if you want to install more global node modules
-# RUN su node -c "npm install -g <your-package-list-here>"
+ARG OTHER_NODE_MODULES="@angular/cli"
+RUN su node -c "npm install -g ${OTHER_NODE_MODULES}"
