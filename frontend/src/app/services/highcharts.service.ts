@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CopilotMetrics } from './metrics.service.interfaces';
 import { DashboardCardBarsInput } from '../main/copilot/copilot-dashboard/dashboard-card/dashboard-card-bars/dashboard-card-bars.component';
+import { ActivityResponse } from './seat.service';
 
 @Injectable({
   providedIn: 'root'
@@ -256,5 +257,95 @@ export class HighchartsService {
       { name: '.COM Chat', icon: 'public', value: data.copilot_dotcom_chat?.total_engaged_users || 0, maxValue: totalSeats },
       { name: '.COM PRs', icon: 'merge', value: data.copilot_dotcom_pull_requests?.total_engaged_users || 0, maxValue: totalSeats },
     ];
+  }
+
+  transformActivityMetricsToLine(data: ActivityResponse) {
+      const activeUsersSeries = {
+        name: 'Users',
+        type: 'spline',
+        data: Object.entries(data).map(([date, dateData]) => {
+          return {
+            x: new Date(date).getTime(),
+            y: (dateData.totalActive / dateData.totalSeats) * 100,
+            raw: dateData.totalActive  // Store original value for tooltip
+          };
+        }),
+        lineWidth: 2,
+        marker: {
+          enabled: true,
+          radius: 4,
+          symbol: 'circle'
+        },
+        states: {
+          hover: {
+            lineWidth: 3
+          }
+        }
+      };
+      
+      console.log(activeUsersSeries);
+      return {
+        series: [activeUsersSeries],
+      };
+  }
+
+  transformMetricsToDailyActivityLine(activity: ActivityResponse, metrics: CopilotMetrics[]) {
+    const initalSeries = {
+      name: 'Active Users',
+      type: 'spline',
+      data: [],
+      lineWidth: 2,
+      marker: {
+        enabled: true,
+        radius: 4,
+        symbol: 'circle'
+      },
+      states: {
+        hover: {
+          lineWidth: 3
+        }
+      }
+    };
+    const dailyActiveIdeCompletionsSeries = { 
+      ...initalSeries,
+      data: []
+    };
+    const dailyActiveIdeChatSeries = {
+      ...initalSeries,
+      data: []
+    };
+    const dailyActiveDotcomChatSeries = {
+      ...initalSeries,
+      data: []
+    };
+    const dailyActiveDotcomPrSeries = {
+      ...initalSeries,
+      data: []
+    };
+
+    for (const [date, dateData] in Object.entries(activity)) {
+      dailyActiveIdeCompletionsSeries.data.push({
+        x: new Date(date).getTime(),
+        y: (dateData.totalActive / dateData.totalSeats) * 100,
+        raw: dateData.totalActive  // Store original value for tooltip
+      });
+    }
+    Object.entries(activity).map(([date, dateData]) => {
+      console.log(date, dateData);
+      return {
+        x: new Date(date).getTime(),
+        y: (dateData.totalActive / dateData.totalSeats) * 100,
+        raw: dateData.totalActive  // Store original value for tooltip
+      };
+    })
+
+    return {
+      series: [
+        dailyActiveIdeCompletionsSeries,
+        dailyActiveIdeChatSeries,
+        dailyActiveDotcomChatSeries,
+        dailyActiveDotcomPrSeries,
+      ]
+    }
   }
 }
