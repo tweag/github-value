@@ -55,7 +55,7 @@ class Setup {
     dotenv.config();
     const _octokit = new Octokit();
     const response = await _octokit.rest.apps.createFromManifest({
-      code: code as string,
+      code,
     })
     const data = response.data;
 

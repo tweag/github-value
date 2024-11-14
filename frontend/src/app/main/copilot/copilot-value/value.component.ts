@@ -4,6 +4,8 @@ import { AdoptionChartComponent } from "./adoption-chart/adoption-chart.componen
 import { ActivityResponse, SeatService } from '../../../services/seat.service';
 import { DailyActivityChartComponent } from './daily-activity-chart/daily-activity-chart.component';
 import { TimeSavedChartComponent } from './time-saved-chart/time-saved-chart.component';
+import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
+import { MetricsService } from '../../../services/metrics.service';
 
 @Component({
   selector: 'app-value',
@@ -19,13 +21,18 @@ import { TimeSavedChartComponent } from './time-saved-chart/time-saved-chart.com
 })
 export class CopilotValueComponent {
   activityData?: ActivityResponse;
+  metricsData?: CopilotMetrics[];
   constructor(
     private seatService: SeatService,
+    private metricsService: MetricsService
   ) { }
 
   ngOnInit() {
     this.seatService.getActivity().subscribe(data => {
       this.activityData = data;
+    });
+    this.metricsService.getMetrics().subscribe(data => {
+      this.metricsData = data;
     });
   }
 }

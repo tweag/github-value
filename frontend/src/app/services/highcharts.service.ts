@@ -306,29 +306,58 @@ export class HighchartsService {
         }
       }
     };
-    const dailyActiveIdeCompletionsSeries = { 
+    const dailyActiveIdeCompletionsSeries = {
       ...initalSeries,
+      name: 'IDE Completions',
       data: [] as Highcharts.PointOptionsObject[]
     };
     const dailyActiveIdeChatSeries = {
       ...initalSeries,
+      name: 'IDE Chats',
       data: [] as Highcharts.PointOptionsObject[]
     };
     const dailyActiveDotcomChatSeries = {
       ...initalSeries,
+      name: '.COM Chats',
       data: [] as Highcharts.PointOptionsObject[]
     };
     const dailyActiveDotcomPrSeries = {
       ...initalSeries,
+      name: '.COM Pull Requests',
       data: [] as Highcharts.PointOptionsObject[]
     };
 
     Object.entries(activity).forEach(([date, dateData]) => {
-      (dailyActiveIdeCompletionsSeries.data as any).push({
-        x: new Date(date).getTime(),
-        y: (dateData.totalActive / dateData.totalSeats) * 100,
-        raw: dateData
-      });
+      const currentMetrics = metrics.find(m => m.date.startsWith(date));
+      console.log(dateData, currentMetrics);
+      if (currentMetrics?.copilot_ide_code_completions) {
+        (dailyActiveIdeCompletionsSeries.data as any).push({
+          x: new Date(date).getTime(),
+          y: (currentMetrics.copilot_ide_code_completions.total_code_suggestions / dateData.totalActive) * 100,
+          raw: date
+        });
+      }
+      if (currentMetrics?.copilot_ide_chat) {
+        (dailyActiveIdeChatSeries.data as any).push({
+          x: new Date(date).getTime(),
+          y: (currentMetrics.copilot_ide_chat.total_chats / dateData.totalActive) * 100,
+          raw: date
+        });
+      }
+      if (currentMetrics?.copilot_dotcom_chat) {
+        (dailyActiveDotcomChatSeries.data as any).push({
+          x: new Date(date).getTime(),
+          y: (currentMetrics.copilot_dotcom_chat.total_chats / dateData.totalActive) * 100,
+          raw: date
+        });
+      }
+      if (currentMetrics?.copilot_dotcom_pull_requests) {
+        (dailyActiveDotcomPrSeries.data as any).push({
+          x: new Date(date).getTime(),
+          y: (currentMetrics.copilot_dotcom_pull_requests.total_pr_summaries_created / dateData.totalActive) * 100,
+          raw: date
+        });
+      }
     });
 
     return {
