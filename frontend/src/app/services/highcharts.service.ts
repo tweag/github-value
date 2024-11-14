@@ -308,36 +308,28 @@ export class HighchartsService {
     };
     const dailyActiveIdeCompletionsSeries = { 
       ...initalSeries,
-      data: []
+      data: [] as Highcharts.PointOptionsObject[]
     };
     const dailyActiveIdeChatSeries = {
       ...initalSeries,
-      data: []
+      data: [] as Highcharts.PointOptionsObject[]
     };
     const dailyActiveDotcomChatSeries = {
       ...initalSeries,
-      data: []
+      data: [] as Highcharts.PointOptionsObject[]
     };
     const dailyActiveDotcomPrSeries = {
       ...initalSeries,
-      data: []
+      data: [] as Highcharts.PointOptionsObject[]
     };
 
-    for (const [date, dateData] in Object.entries(activity)) {
-      dailyActiveIdeCompletionsSeries.data.push({
+    Object.entries(activity).forEach(([date, dateData]) => {
+      (dailyActiveIdeCompletionsSeries.data as any).push({
         x: new Date(date).getTime(),
         y: (dateData.totalActive / dateData.totalSeats) * 100,
-        raw: dateData.totalActive  // Store original value for tooltip
+        raw: dateData
       });
-    }
-    Object.entries(activity).map(([date, dateData]) => {
-      console.log(date, dateData);
-      return {
-        x: new Date(date).getTime(),
-        y: (dateData.totalActive / dateData.totalSeats) * 100,
-        raw: dateData.totalActive  // Store original value for tooltip
-      };
-    })
+    });
 
     return {
       series: [
