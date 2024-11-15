@@ -21,8 +21,7 @@ class SetupController {
       if (isNaN(Number(installation_id))) {
         throw new Error('installation_id must be a number');
       }
-      const app = await setup.createAppFromInstallationId(Number(installation_id));
-
+      await setup.createAppFromInstallationId(Number(installation_id));
       res.redirect(process.env.WEB_URL || '/');
     } catch (error) {
       res.status(500).json(error);

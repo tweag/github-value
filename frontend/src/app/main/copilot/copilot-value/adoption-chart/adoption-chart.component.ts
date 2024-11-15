@@ -1,4 +1,4 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { ActivityResponse } from '../../../../services/seat.service';
@@ -13,7 +13,7 @@ import { HighchartsService } from '../../../../services/highcharts.service';
   templateUrl: './adoption-chart.component.html',
   styleUrl: './adoption-chart.component.scss'
 })
-export class AdoptionChartComponent {
+export class AdoptionChartComponent implements OnChanges {
   Highcharts: typeof Highcharts = Highcharts;
   updateFlag = false;
   totalUsers = 500;
@@ -106,8 +106,7 @@ export class AdoptionChartComponent {
       }
     }
   };
-  _chartOptions?: any; // Highcharts.Options;
-
+  _chartOptions?: Highcharts.Options;
 
   constructor(
     private highchartsService: HighchartsService

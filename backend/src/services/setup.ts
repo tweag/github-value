@@ -9,6 +9,7 @@ import logger from "./logger";
 import updateDotenv from 'update-dotenv';
 import settingsService from './settings.service';
 import { Express } from 'express';
+import { Endpoints } from '@octokit/types';
 
 interface SetupStatusDbsInitalized {
   usage?: boolean;
@@ -18,10 +19,10 @@ interface SetupStatusDbsInitalized {
   [key: string]: boolean | undefined;
 }
 export interface SetupStatus {
-  isSetup: boolean;
-  dbInitialized: boolean;
-  dbsInitalized: SetupStatusDbsInitalized,
-  installation: any;
+  isSetup?: boolean;
+  dbInitialized?: boolean;
+  dbsInitalized?: SetupStatusDbsInitalized,
+  installation?: Endpoints["GET /app"]["response"]['data'];
 }
 
 class Setup {
@@ -29,7 +30,7 @@ class Setup {
   app?: App;
   webhooks?: Express;
   installationId?: number;
-  installation?: any;
+  installation?: Endpoints["GET /app"]["response"]['data'];
   installUrl: string | undefined;
   setupStatus: SetupStatus = {
     isSetup: false,
@@ -169,7 +170,9 @@ class Setup {
   }
 
   createWebhookMiddleware = () => {
-    const webhookMiddlewearIndex = expressApp._router.stack.findIndex((layer: any) => layer.name === 'bound middleware');
+    const webhookMiddlewearIndex = expressApp._router.stack.findIndex((layer: {
+      name: string;
+    }) => layer.name === 'bound middleware');
     if (webhookMiddlewearIndex > -1) {
       expressApp._router.stack.splice(webhookMiddlewearIndex, 1);
     }
@@ -195,6 +198,7 @@ class Setup {
     if (!this.installationId) throw new Error('Installation ID is not set');
     const octokit = await this.getOctokit();
     const authenticated = await octokit.rest.apps.getAuthenticated();
+    if (!authenticated.data) throw new Error('Failed to get app');
     this.installation = authenticated.data;
     this.webhooks = this.createWebhookMiddleware();
 
@@ -221,7 +225,7 @@ class Setup {
     };
   }
 
-  setSetupStatus = (obj: any) => {
+  setSetupStatus = (obj: SetupStatus) => {
     this.setupStatus = {
       ...this.setupStatus,
       ...obj
@@ -230,6 +234,7 @@ class Setup {
 
   setSetupStatusDbInitialized = (dbsInitalized: SetupStatusDbsInitalized) => {
     Object.entries(dbsInitalized).forEach(([key, value]) => {
+      if (!this.setupStatus?.dbsInitalized) return;
       if (value) {
         this.setupStatus.dbsInitalized[key] = value;
       }
@@ -247,7 +252,7 @@ class Setup {
     return manifest;
   };
 
-  _findFirstInstallation = async (_app: App) => (new Promise<any>((resolve, reject) => {
+  _findFirstInstallation = async (_app: App) => (new Promise<Endpoints["GET /app/installations"]["response"]["data"][0]>((resolve, reject) => {
     _app.eachInstallation((install) => {
       if (install && install.installation && install.installation.id) {
         resolve(install.installation);

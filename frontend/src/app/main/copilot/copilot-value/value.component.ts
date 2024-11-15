@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AppModule } from '../../../app.module';
 import { AdoptionChartComponent } from "./adoption-chart/adoption-chart.component";
 import { ActivityResponse, SeatService } from '../../../services/seat.service';
@@ -19,7 +19,7 @@ import { MetricsService } from '../../../services/metrics.service';
   templateUrl: './value.component.html',
   styleUrl: './value.component.scss'
 })
-export class CopilotValueComponent {
+export class CopilotValueComponent implements OnInit {
   activityData?: ActivityResponse;
   metricsData?: CopilotMetrics[];
   constructor(

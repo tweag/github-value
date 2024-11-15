@@ -1,10 +1,12 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { serverUrl } from './server.service';
 import { Endpoints } from "@octokit/types";
 
-type seatsResponse = Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"];
+type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
+export interface Seat extends _Seat {
+  plan_type: string;
+}
 export interface ActivityResponseData {
   totalSeats: number,
   totalActive: number,
@@ -21,19 +23,11 @@ export class SeatService {
 
   constructor(private http: HttpClient) { }
 
-  getAllSeats(): Observable<NonNullable<seatsResponse>> {
-    return this.http.get<NonNullable<seatsResponse>>(`${this.apiUrl}`);
+  getAllSeats() {
+    return this.http.get<Seat[]>(`${this.apiUrl}`);
   }
 
-  getSeatByLogin(login: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${login}`);
-  }
-
-  getSeatActivityByLogin(login: string): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/${login}/activity`);
-  }
-
-  getActivity(daysInactive = 30): Observable<ActivityResponse> {
+  getActivity(daysInactive = 30) {
     return this.http.get<ActivityResponse>(`${this.apiUrl}/activity`,
       {
         params: {

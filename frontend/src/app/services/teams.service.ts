@@ -1,6 +1,5 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { serverUrl } from './server.service';
 
 @Injectable({
@@ -11,7 +10,7 @@ export class TeamsService {
 
   constructor(private http: HttpClient) { }
 
-  getAllTeams(): Observable<any[]> {
+  getAllTeams() {
     return this.http.get<any[]>(`${this.apiUrl}`);
   }
 }

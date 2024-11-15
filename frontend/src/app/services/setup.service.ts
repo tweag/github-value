@@ -1,6 +1,5 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { serverUrl } from './server.service';
 import { Endpoints } from '@octokit/types';
 
@@ -13,7 +12,7 @@ export interface SetupStausResponse {
     copilotSeats: boolean;
     teamsAndMembers: boolean;
   },
-  installation?: any;
+  installation?: Endpoints["GET /app/installations"]["response"]["data"][0];
 }
 @Injectable({
   providedIn: 'root'
@@ -23,27 +22,33 @@ export class SetupService {
 
   constructor(private http: HttpClient) { }
 
-  getSetupStatus(fields?: string[]): Observable<SetupStausResponse> {
+  getSetupStatus(fields?: string[]) {
     const params = fields ? new HttpParams().set('fields', fields.join(',')) : undefined;
-    return this.http.get<any>(`${this.apiUrl}/status`, {
+    return this.http.get<SetupStausResponse>(`${this.apiUrl}/status`, {
       params
     });
   }
 
   getInstall() {
-    return this.http.get<any>(`${this.apiUrl}/install`);
+    return this.http.get<Endpoints["GET /app"]["response"]['data']>(
+      `${this.apiUrl}/install`
+    );
   }
 
-  getManifest(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/manifest`);
+  getManifest() {
+    return this.http.get<any>(
+      `${this.apiUrl}/manifest`
+    );
   }
 
   addExistingApp(request: {
     appId: string,
     privateKey: string,
     webhookSecret: string
-  }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/existing-app`, request);
+  }) {
+    return this.http.post<{
+      installUrl: string
+    }>(`${this.apiUrl}/existing-app`, request);
   }
 
 }
