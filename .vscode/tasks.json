@@ -49,7 +49,7 @@
 			"path": "backend",
 			"problemMatcher": [],
 			"label": "npm: dotenv - backend",
-			"detail": "cp .env.example .env",
+			"detail": "cp -n .env.example .env",
 			"icon": {
 				"id": "file-add"
 			},

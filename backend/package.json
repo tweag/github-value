@@ -10,7 +10,7 @@
     "dev": "nodemon src/app.ts | bunyan -o short",
     "lint": "eslint src/**/*.ts",
     "db:start": "docker-compose -f ../compose.yml up -d db",
-    "dotenv": "cp -u .env.example .env || if not exist .env copy .env.example .env"
+    "dotenv": "cp -n .env.example .env || true"
   },
   "dependencies": {
     "bunyan": "^1.8.15",
