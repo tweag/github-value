@@ -5,18 +5,11 @@
     "moduleResolution": "nodenext",
     "rootDir": "./src",
     "outDir": "./dist",
+    "baseUrl": "./src",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "baseUrl": "./", // Add this line
-    "paths": {       // Add this block
-      "*": ["src/*"]
-    }
-  },
-  "ts-node": {
-      // Tell ts-node CLI to install the --loader automatically
-      "esm": true,
+    "forceConsistentCasingInFileNames": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
