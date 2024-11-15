@@ -1,5 +1,5 @@
 {
-  "name": "GitHub Value",
+  "name": "github-value-backend",
   "version": "1.0.0",
   "description": "Demonstrate the value of GitHub",
   "main": "src/app.ts",
