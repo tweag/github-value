@@ -174,11 +174,11 @@ class Setup {
   }
 
   createWebhookMiddleware = () => {
-    const webhookMiddlewearIndex = expressApp._router.stack.findIndex((layer: {
+    const webhookMiddlewareIndex = expressApp._router.stack.findIndex((layer: {
       name: string;
     }) => layer.name === 'bound middleware');
-    if (webhookMiddlewearIndex > -1) {
-      expressApp._router.stack.splice(webhookMiddlewearIndex, 1);
+    if (webhookMiddlewareIndex > -1) {
+      expressApp._router.stack.splice(webhookMiddlewareIndex, 1);
     }
     if (this.webhooks) {
       logger.debug('Webhook middleware already created');
@@ -236,8 +236,8 @@ class Setup {
     };
   }
 
-  setSetupStatusDbInitialized = (dbsInitalized: SetupStatusDbsInitialized) => {
-    Object.entries(dbsInitalized).forEach(([key, value]) => {
+  setSetupStatusDbInitialized = (dbsInitialized: SetupStatusDbsInitialized) => {
+    Object.entries(dbsInitialized).forEach(([key, value]) => {
       if (!this.setupStatus?.dbsInitialized) return;
       if (value) {
         this.setupStatus.dbsInitialized[key] = value;
