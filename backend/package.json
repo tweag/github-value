@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/app.ts",
   "scripts": {
-    "start": "node dist/app.js | bunyan -o short",
+    "start": "node --enable-source-maps dist/app.js | bunyan -o short",
     "test": "jest",
     "build": "tsc",
     "dev": "tsx watch src/app.ts | bunyan -o short",
@@ -41,7 +41,7 @@
     "typescript-eslint": "^8.14.0"
   },
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=18.0.0"
   },
   "license": "MIT"
 }

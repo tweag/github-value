@@ -7,6 +7,7 @@ services:
       - "80:80"
     environment:
       NODE_ENV: production
+      NODE_OPTIONS: --enable-source-maps
       MYSQL_HOST: db
       MYSQL_PORT: 3306
       MYSQL_USER: root
