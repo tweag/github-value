@@ -1,13 +1,13 @@
 import dotenv from 'dotenv';
 import { readFileSync } from "fs";
 import { App, createNodeMiddleware, Octokit } from "octokit";
-import { setupWebhookListeners } from '../controllers/webhook.controller';
-import { app as expressApp } from '../app';
-import { QueryService } from "./query.service";
-import SmeeService from './smee';
-import logger from "./logger";
+import { setupWebhookListeners } from '../controllers/webhook.controller.js';
+import { app as expressApp } from '../app.js';
+import { QueryService } from "./query.service.js";
+import SmeeService from './smee.js';
+import logger from "./logger.js";
 import updateDotenv from 'update-dotenv';
-import settingsService from './settings.service';
+import settingsService from './settings.service.js';
 import { Express } from 'express';
 import { Endpoints } from '@octokit/types';
 
@@ -61,10 +61,14 @@ class Setup {
     const data = response.data;
 
     this.addToEnv({
-      GITHUB_WEBHOOK_SECRET: data.webhook_secret,
       GITHUB_APP_ID: data.id.toString(),
       GITHUB_APP_PRIVATE_KEY: data.pem
     });
+    if (data.webhook_secret) {
+      this.addToEnv({
+        GITHUB_WEBHOOK_SECRET: data.webhook_secret,
+      });
+    }
 
     return data;
   }
@@ -170,11 +174,11 @@ class Setup {
   }
 
   createWebhookMiddleware = () => {
-    const webhookMiddlewearIndex = expressApp._router.stack.findIndex((layer: {
+    const webhookMiddlewareIndex = expressApp._router.stack.findIndex((layer: {
       name: string;
     }) => layer.name === 'bound middleware');
-    if (webhookMiddlewearIndex > -1) {
-      expressApp._router.stack.splice(webhookMiddlewearIndex, 1);
+    if (webhookMiddlewareIndex > -1) {
+      expressApp._router.stack.splice(webhookMiddlewareIndex, 1);
     }
     if (this.webhooks) {
       logger.debug('Webhook middleware already created');
@@ -232,8 +236,8 @@ class Setup {
     };
   }
 
-  setSetupStatusDbInitialized = (dbsInitalized: SetupStatusDbsInitialized) => {
-    Object.entries(dbsInitalized).forEach(([key, value]) => {
+  setSetupStatusDbInitialized = (dbsInitialized: SetupStatusDbsInitialized) => {
+    Object.entries(dbsInitialized).forEach(([key, value]) => {
       if (!this.setupStatus?.dbsInitialized) return;
       if (value) {
         this.setupStatus.dbsInitialized[key] = value;

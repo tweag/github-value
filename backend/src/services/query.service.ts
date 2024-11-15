@@ -1,11 +1,11 @@
 import { CronJob, CronTime } from 'cron';
-import logger from './logger';
-import setup from './setup';
-import { insertUsage } from '../models/usage.model';
-import SeatService from '../services/copilot.seats.service';
-import { insertMetrics } from '../models/metrics.model';
-import { CopilotMetrics } from '../models/metrics.model.interfaces';
-import { Member, Team, TeamMemberAssociation } from '../models/teams.model';
+import logger from './logger.js';
+import setup from './setup.js';
+import { insertUsage } from '../models/usage.model.js';
+import SeatService from '../services/copilot.seats.service.js';
+import { insertMetrics } from '../models/metrics.model.js';
+import { CopilotMetrics } from '../models/metrics.model.interfaces.js';
+import { Member, Team, TeamMemberAssociation } from '../models/teams.model.js';
 
 const DEFAULT_CRON_EXPRESSION = '0 0 * * *';
 class QueryService {

@@ -3,13 +3,14 @@ import express from 'express';
 import rateLimit from 'express-rate-limit';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import path from 'path';
-import apiRoutes from "./routes/index"
-import { dbConnect } from './database';
-import setup from './services/setup';
-import settingsService from './services/settings.service';
-import SmeeService from './services/smee';
-import logger, { expressLoggerMiddleware } from './services/logger';
+import path, { dirname } from 'path';
+import apiRoutes from "./routes/index.js"
+import { dbConnect } from './database.js';
+import setup from './services/setup.js';
+import settingsService from './services/settings.service.js';
+import SmeeService from './services/smee.js';
+import logger, { expressLoggerMiddleware } from './services/logger.js';
+import { fileURLToPath } from 'url';
 
 const PORT = Number(process.env.PORT) || 80;
 
@@ -46,7 +47,10 @@ app.use(expressLoggerMiddleware);
   }, bodyParser.urlencoded({ extended: true }));
   app.use('/api', apiRoutes);
 
-  const frontendPath = path.join(__dirname, '../../frontend/dist/github-value/browser');
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
+  const frontendPath = path.resolve(__dirname, '../../frontend/dist/github-value/browser');
+
   app.use(express.static(frontendPath));
   app.get('*', rateLimit({
     windowMs: 15 * 60 * 1000, max: 5000,

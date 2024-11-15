@@ -1,7 +1,7 @@
-import { Settings } from '../models/settings.model';
-import { QueryService } from './query.service';
-import setup from './setup';
-import SmeeService from './smee';
+import { Settings } from '../models/settings.model.js';
+import { QueryService } from './query.service.js';
+import setup from './setup.js';
+import SmeeService from './smee.js';
 
 class SettingsService {
   public baseUrl = process.env.BASE_URL || 'http://localhost';

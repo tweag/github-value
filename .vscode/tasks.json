@@ -2,19 +2,6 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Develop (No docker/Codespace)",
-			"detail": "Start the backend and frontend in development mode. Run this if you already have the database running or are running in a GitHub Codespace.",
-			"group": "build",
-			"icon": {
-				"id": "github"
-			},
-			"problemMatcher": [],
-			"dependsOn": [
-				"npm: start - frontend",
-				"npm: dev - backend",
-			]
-		},
-		{
 			"problemMatcher": [],
 			"label": "Develop",
 			"detail": "Start the backend and frontend in development mode",
@@ -30,18 +17,35 @@
 		},
 		{
 			"type": "npm",
+			"isBackground": true,
 			"script": "db:start",
 			"path": "backend",
-			"problemMatcher": [],
 			"label": "npm: db:start - backend",
-      "icon": {
-        "id": "database"
-      },
+			"icon": {
+				"id": "database"
+			},
 			"detail": "docker-compose -f ../compose.yml up -d db",
 			"presentation": {
-					"revealProblems": "onProblem",
-					"close": true
-			}
+				"revealProblems": "onProblem",
+				"close": true
+			},
+			"problemMatcher": [
+				{
+					"pattern": [
+						{
+							"regexp": ".",
+							"file": 1,
+							"location": 2,
+							"message": 3
+						}
+					],
+					"background": {
+						"activeOnStart": true,
+						"beginsPattern": ".",
+						"endsPattern": ".",
+					}
+				}
+			]
 		},
 		{
 			"type": "npm",
@@ -54,9 +58,9 @@
 				"id": "file-add"
 			},
 			"presentation": {
-					"reveal": "silent",
-					"revealProblems": "onProblem",
-					"close": true
+				"reveal": "silent",
+				"revealProblems": "onProblem",
+				"close": true
 			}
 		},
 		{
@@ -68,8 +72,8 @@
 				"id": "desktop-download"
 			},
 			"presentation": {
-					"revealProblems": "onProblem",
-					"close": true
+				"revealProblems": "onProblem",
+				"close": true
 			}
 		},
 		{
@@ -81,8 +85,8 @@
 				"id": "desktop-download"
 			},
 			"presentation": {
-					"revealProblems": "onProblem",
-					"close": true
+				"revealProblems": "onProblem",
+				"close": true
 			}
 		},
 		{
@@ -104,34 +108,16 @@
 			"type": "npm",
 			"script": "dev",
 			"path": "backend",
-      "isBackground": true,
-			"problemMatcher": [],
-			"label": "npm: dev - backend",
-			"detail": "nodemon src/app.ts | bunyan -o short",
-      "icon": {
-        "id": "server"
-      },
-			"dependsOn": [
-				"npm: install - backend"
-			],
-			"presentation": {
-				"group": "dev"
-			}
-		},
-		{
-			"type": "npm",
-			"script": "dev",
-			"path": "backend",
-      "isBackground": true,
+			"isBackground": true,
 			"problemMatcher": [],
 			"label": "npm: dev - backend with db",
-			"detail": "nodemon src/app.ts | bunyan -o short",
-      "icon": {
-        "id": "server"
-      },
+			"detail": "tsx src/app.ts | bunyan -o short",
+			"icon": {
+				"id": "server"
+			},
 			"dependsOn": [
-				"npm: install - backend",
-				"npm: db:start - backend"
+				"npm: db:start - backend",
+				"npm: install - backend"
 			],
 			"presentation": {
 				"group": "dev"
@@ -141,16 +127,16 @@
 			"type": "npm",
 			"script": "start",
 			"path": "backend",
-			"problemMatcher": [],
 			"label": "npm: start - backend",
 			"detail": "node dist/app.js | bunyan -o short",
-      "icon": {
-        "id": "server"
-      },
+			"icon": {
+				"id": "server"
+			},
 			"dependsOn": [
 				"npm: build - backend",
 				"npm: build - frontend"
-			]
+			],
+			"problemMatcher": []
 		},
 		{
 			"type": "npm",
@@ -171,19 +157,39 @@
 			"type": "npm",
 			"script": "start",
 			"path": "frontend",
-      "isBackground": true,
-			"problemMatcher": [],
+			"isBackground": true,
 			"label": "npm: start - frontend",
-      "icon": {
-        "id": "dashboard"
-      },
+			"icon": {
+				"id": "dashboard"
+			},
 			"detail": "npm run start",
 			"dependsOn": [
 				"npm: install - frontend"
 			],
 			"presentation": {
 				"group": "dev"
-			}
+			},
+			"problemMatcher": [
+				{
+					"fileLocation": [
+						"relative",
+						"${workspaceFolder}"
+					],
+					"pattern": [
+						{
+							"regexp": ".*",
+							"file": 1,
+							"location": 2,
+							"message": 3
+						}
+					],
+					"background": {
+						"activeOnStart": true,
+						"beginsPattern": ".*ng serve.*",
+						"endsPattern": ".*Local:.*http://localhost:4200/.*"
+					}
+				}
+			]
 		}
 	]
 }

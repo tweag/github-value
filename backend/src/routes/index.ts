@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
-import SurveyController from '../controllers/survey.controller';
-import usageController from '../controllers/usage.controller';
-import settingsController from '../controllers/settings.controller';
-import setupController from '../controllers/setup.controller';
-import SeatsController from '../controllers/seats.controller';
-import metricsController from '../controllers/metrics.controller';
-import TeamsController from '../controllers/teams.controller';
+import SurveyController from '../controllers/survey.controller.js';
+import usageController from '../controllers/usage.controller.js';
+import settingsController from '../controllers/settings.controller.js';
+import setupController from '../controllers/setup.controller.js';
+import SeatsController from '../controllers/seats.controller.js';
+import metricsController from '../controllers/metrics.controller.js';
+import TeamsController from '../controllers/teams.controller.js';
 
 const router = Router();
 

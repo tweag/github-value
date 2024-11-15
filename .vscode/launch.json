@@ -1,0 +1,35 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug Frontend",
+      "request": "launch",
+      "type": "chrome",
+      "url": "http://localhost:4200",
+      "preLaunchTask": "npm: start - frontend",
+      "webRoot": "${workspaceFolder}/frontend",
+      "sourceMaps": true,
+    },
+    {
+      "request": "launch",
+      "name": "Debug Backend",
+      "type": "node",
+      "program": "${workspaceFolder}/backend/src/app.ts",
+      "preLaunchTask": "npm: db:start - backend",
+      "cwd": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "args": [
+        "|",
+        "bunyan",
+      ],
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/backend/dist/**/*.js"
+      ],
+      "sourceMaps": true,
+      "console": "integratedTerminal"
+    }
+  ]
+}

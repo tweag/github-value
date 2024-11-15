@@ -1,5 +1,5 @@
 import { Endpoints } from '@octokit/types';
-import { Assignee, AssigningTeam, Seat } from "../models/copilot.seats.model";
+import { Assignee, AssigningTeam, Seat } from "../models/copilot.seats.model.js";
 import { Op, Sequelize } from 'sequelize';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];

@@ -1,9 +1,13 @@
 import bunyan from 'bunyan';
 import { existsSync, mkdirSync, readFileSync } from 'fs';
 import { Request, Response, NextFunction } from 'express';
-import path from 'path';
+import path, { dirname } from 'path';
+import { fileURLToPath } from 'url';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 const logsDir = path.resolve(__dirname, '../../logs');
+
 if (!existsSync(logsDir)) {
     mkdirSync(logsDir, { recursive: true });
 }
