@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import MetricsService from '../services/metrics.service';
+import MetricsService from '../services/metrics.service.ts';
 
 class MetricsController {
   async getMetrics(req: Request, res: Response): Promise<void> {

@@ -1,13 +1,13 @@
 import dotenv from 'dotenv';
 import { readFileSync } from "fs";
 import { App, createNodeMiddleware, Octokit } from "octokit";
-import { setupWebhookListeners } from '../controllers/webhook.controller';
-import { app as expressApp } from '../app';
-import { QueryService } from "./query.service";
-import SmeeService from './smee';
-import logger from "./logger";
+import { setupWebhookListeners } from '../controllers/webhook.controller.ts';
+import { app as expressApp } from '../app.ts';
+import { QueryService } from "./query.service.ts";
+import SmeeService from './smee.ts';
+import logger from "./logger.ts";
 import updateDotenv from 'update-dotenv';
-import settingsService from './settings.service';
+import settingsService from './settings.service.ts';
 import { Express } from 'express';
 import { Endpoints } from '@octokit/types';
 
@@ -61,10 +61,14 @@ class Setup {
     const data = response.data;
 
     this.addToEnv({
-      GITHUB_WEBHOOK_SECRET: data.webhook_secret,
       GITHUB_APP_ID: data.id.toString(),
       GITHUB_APP_PRIVATE_KEY: data.pem
     });
+    if (data.webhook_secret) {
+      this.addToEnv({
+        GITHUB_WEBHOOK_SECRET: data.webhook_secret,
+      });
+    }
 
     return data;
   }

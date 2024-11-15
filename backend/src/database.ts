@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-import logger from './services/logger';
+import logger from './services/logger.ts';
 import mysql2 from 'mysql2/promise';
 
 const sequelize = process.env.JAWSDB_URL ?

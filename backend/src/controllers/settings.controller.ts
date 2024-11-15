@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import SettingsService from '../services/settings.service';
+import SettingsService from '../services/settings.service.ts';
 
 class SettingsController {
   async getAllSettings(req: Request, res: Response) {

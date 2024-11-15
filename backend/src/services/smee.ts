@@ -1,5 +1,5 @@
-import logger from "./logger";
-import settingsService from "./settings.service";
+import logger from "./logger.ts";
+import settingsService from "./settings.service.ts";
 
 class SmeeService {
   private static instance: SmeeService;

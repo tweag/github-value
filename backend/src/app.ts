@@ -4,12 +4,12 @@ import rateLimit from 'express-rate-limit';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import path from 'path';
-import apiRoutes from "./routes/index"
-import { dbConnect } from './database';
-import setup from './services/setup';
-import settingsService from './services/settings.service';
-import SmeeService from './services/smee';
-import logger, { expressLoggerMiddleware } from './services/logger';
+import apiRoutes from "./routes/index.ts"
+import { dbConnect } from './database.ts';
+import setup from './services/setup.ts';
+import settingsService from './services/settings.service.ts';
+import SmeeService from './services/smee.ts';
+import logger, { expressLoggerMiddleware } from './services/logger.ts';
 
 const PORT = Number(process.env.PORT) || 80;
 

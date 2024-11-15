@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import SeatsService from '../services/copilot.seats.service';
+import SeatsService from '../services/copilot.seats.service.ts';
 
 class SeatsController {
   async getAllSeats(req: Request, res: Response): Promise<void> {

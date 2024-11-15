@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Team, Member } from '../models/teams.model';
+import { Team, Member } from '../models/teams.model.ts';
 
 class TeamsController {
   async getAllTeams(req: Request, res: Response): Promise<void> {
