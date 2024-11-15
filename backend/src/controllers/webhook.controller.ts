@@ -1,7 +1,7 @@
 import { Webhooks } from '@octokit/webhooks';
 import { App } from 'octokit';
-import logger from '../services/logger.ts';
-import settingsService from '../services/settings.service.ts';
+import logger from '../services/logger.js';
+import settingsService from '../services/settings.service.js';
 
 const webhooks = new Webhooks({
   secret: process.env.GITHUB_WEBHOOK_SECRET || 'your-secret',

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { Usage, UsageBreakdown } from '../models/usage.model.ts';
+import { Usage, UsageBreakdown } from '../models/usage.model.js';
 
 class UsageController {
    async getUsage(req: Request, res: Response): Promise<void> {

@@ -1,7 +1,7 @@
 import { Model, DataTypes, BaseError } from 'sequelize';
-import { sequelize } from '../database.ts';
-import { CopilotMetrics } from './metrics.model.interfaces.ts';
-import logger from '../services/logger.ts';
+import { sequelize } from '../database.js';
+import { CopilotMetrics } from './metrics.model.interfaces.js';
+import logger from '../services/logger.js';
 
 export class MetricDaily extends Model {
   public date!: Date;

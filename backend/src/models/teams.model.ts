@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../database.ts';
+import { sequelize } from '../database.js';
 
 class Team extends Model {
   public id!: number;

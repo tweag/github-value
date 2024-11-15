@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import setup, { SetupStatus } from '../services/setup.ts';
+import setup, { SetupStatus } from '../services/setup.js';
 
 class SetupController {
   async registrationComplete(req: Request, res: Response) {

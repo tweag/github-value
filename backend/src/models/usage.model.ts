@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
-import { sequelize } from '../database.ts';
-import logger from '../services/logger.ts';
+import { sequelize } from '../database.js';
+import logger from '../services/logger.js';
 import { Endpoints } from '@octokit/types';
 
 const Usage = sequelize.define('Usage', {

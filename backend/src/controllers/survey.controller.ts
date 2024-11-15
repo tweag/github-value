@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
-import { Survey } from '../models/survey.model.ts';
-import setup from '../services/setup.ts';
-import logger from '../services/logger.ts';
+import { Survey } from '../models/survey.model.js';
+import setup from '../services/setup.js';
+import logger from '../services/logger.js';
 
 class SurveyController {
   async createSurvey(req: Request, res: Response): Promise<void> {
