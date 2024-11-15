@@ -2,19 +2,6 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
-			"label": "Develop (No docker/Codespace)",
-			"detail": "Start the backend and frontend in development mode. Run this if you already have the database running or are running in a GitHub Codespace.",
-			"group": "build",
-			"icon": {
-				"id": "github"
-			},
-			"problemMatcher": [],
-			"dependsOn": [
-				"npm: start - frontend",
-				"npm: dev - backend",
-			]
-		},
-		{
 			"problemMatcher": [],
 			"label": "Develop",
 			"detail": "Start the backend and frontend in development mode",
@@ -123,32 +110,14 @@
 			"path": "backend",
 			"isBackground": true,
 			"problemMatcher": [],
-			"label": "npm: dev - backend",
-			"detail": "nodemon src/app.ts | bunyan -o short",
-			"icon": {
-				"id": "server"
-			},
-			"dependsOn": [
-				"npm: install - backend"
-			],
-			"presentation": {
-				"group": "dev"
-			}
-		},
-		{
-			"type": "npm",
-			"script": "dev",
-			"path": "backend",
-			"isBackground": true,
-			"problemMatcher": [],
 			"label": "npm: dev - backend with db",
-			"detail": "nodemon src/app.ts | bunyan -o short",
+			"detail": "tsx src/app.ts | bunyan -o short",
 			"icon": {
 				"id": "server"
 			},
 			"dependsOn": [
-				"npm: install - backend",
-				"npm: db:start - backend"
+				"npm: db:start - backend",
+				"npm: install - backend"
 			],
 			"presentation": {
 				"group": "dev"
@@ -167,23 +136,7 @@
 				"npm: build - backend",
 				"npm: build - frontend"
 			],
-			"problemMatcher": [
-				{
-					"pattern": [
-						{
-							"regexp": "^(\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z)\\s+(\\w+)\\s+([^:]+):\\s+(.*)$",
-							"severity": 2,
-							"message": 4,
-							"file": 3
-						}
-					],
-					"background": {
-						"activeOnStart": true,
-						"beginsPattern": "^.*tsx watch.*$",
-						"endsPattern": ".*Server is running at.*"
-					}
-				}
-			]
+			"problemMatcher": []
 		},
 		{
 			"type": "npm",
