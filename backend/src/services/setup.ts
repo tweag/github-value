@@ -11,7 +11,7 @@ import settingsService from './settings.service';
 import { Express } from 'express';
 import { Endpoints } from '@octokit/types';
 
-interface SetupStatusDbsInitalized {
+interface SetupStatusDbsInitialized {
   usage?: boolean;
   metrics?: boolean;
   copilotSeats?: boolean;
@@ -21,7 +21,7 @@ interface SetupStatusDbsInitalized {
 export interface SetupStatus {
   isSetup?: boolean;
   dbInitialized?: boolean;
-  dbsInitalized?: SetupStatusDbsInitalized,
+  dbsInitialized?: SetupStatusDbsInitialized,
   installation?: Endpoints["GET /app"]["response"]['data'];
 }
 
@@ -35,7 +35,7 @@ class Setup {
   setupStatus: SetupStatus = {
     isSetup: false,
     dbInitialized: false,
-    dbsInitalized: {
+    dbsInitialized: {
       usage: false,
       metrics: false,
       copilotSeats: false,
@@ -232,11 +232,11 @@ class Setup {
     };
   }
 
-  setSetupStatusDbInitialized = (dbsInitalized: SetupStatusDbsInitalized) => {
+  setSetupStatusDbInitialized = (dbsInitalized: SetupStatusDbsInitialized) => {
     Object.entries(dbsInitalized).forEach(([key, value]) => {
-      if (!this.setupStatus?.dbsInitalized) return;
+      if (!this.setupStatus?.dbsInitialized) return;
       if (value) {
-        this.setupStatus.dbsInitalized[key] = value;
+        this.setupStatus.dbsInitialized[key] = value;
       }
     });
   }

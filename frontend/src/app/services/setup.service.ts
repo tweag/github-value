@@ -36,7 +36,24 @@ export class SetupService {
   }
 
   getManifest() {
-    return this.http.get<any>(
+    return this.http.get<{
+      name: string;
+      description: string;
+      url: string;
+      hook_attributes: {
+        url: string;
+      };
+      setup_url: string;
+      redirect_url: string;
+      public: boolean;
+      default_permissions: {
+        members: 'read';
+        metadata: 'read';
+        organization_copilot_seat_management: 'read';
+        pull_requests: 'write';
+      };
+      default_events: ('pull_request')[];
+    }>(
       `${this.apiUrl}/manifest`
     );
   }
