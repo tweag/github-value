@@ -110,8 +110,8 @@ export class DbLoadingComponent implements OnInit, OnDestroy {
             this.router.navigate(['/setup']);
             return;
           }
-          if (response.dbsInitalized) {
-            this.dbStatus = response.dbsInitalized;
+          if (response.dbsInitialized) {
+            this.dbStatus = response.dbsInitialized;
             this.updateProgress();
           }
 

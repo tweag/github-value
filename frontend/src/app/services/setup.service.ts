@@ -3,10 +3,10 @@ import { Injectable } from '@angular/core';
 import { serverUrl } from './server.service';
 import { Endpoints } from '@octokit/types';
 
-export interface SetupStausResponse {
+export interface SetupStatusResponse {
   isSetup?: boolean;
   dbInitialized?: boolean;
-  dbsInitalized?: {
+  dbsInitialized?: {
     usage: boolean;
     metrics: boolean;
     copilotSeats: boolean;
@@ -24,7 +24,7 @@ export class SetupService {
 
   getSetupStatus(fields?: string[]) {
     const params = fields ? new HttpParams().set('fields', fields.join(',')) : undefined;
-    return this.http.get<SetupStausResponse>(`${this.apiUrl}/status`, {
+    return this.http.get<SetupStatusResponse>(`${this.apiUrl}/status`, {
       params
     });
   }

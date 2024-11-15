@@ -7,7 +7,7 @@ import { MetricsService } from '../../../services/metrics.service';
 import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
 import { SeatService } from '../../../services/seat.service';
 import { MembersService } from '../../../services/members.service';
-import { CopilotSurveyService } from '../../../services/copilot-survery.service';
+import { CopilotSurveyService } from '../../../services/copilot-survey.service';
 import { forkJoin } from 'rxjs';
 
 @Component({

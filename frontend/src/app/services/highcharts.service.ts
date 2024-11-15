@@ -222,7 +222,7 @@ export class HighchartsService {
   }
 
   transformMetricsToDailyActivityLine(activity: ActivityResponse, metrics: CopilotMetrics[]): Highcharts.Options {
-    const initalSeries = {
+    const initialSeries = {
       name: 'Active Users',
       type: 'spline' as const,
       data: [],
@@ -239,22 +239,22 @@ export class HighchartsService {
       }
     };
     const dailyActiveIdeCompletionsSeries = {
-      ...initalSeries,
+      ...initialSeries,
       name: 'IDE Completions',
       data: [] as CustomHighchartsPoint[]
     };
     const dailyActiveIdeChatSeries = {
-      ...initalSeries,
+      ...initialSeries,
       name: 'IDE Chats',
       data: [] as CustomHighchartsPoint[]
     };
     const dailyActiveDotcomChatSeries = {
-      ...initalSeries,
+      ...initialSeries,
       name: '.COM Chats',
       data: [] as CustomHighchartsPoint[]
     };
     const dailyActiveDotcomPrSeries = {
-      ...initalSeries,
+      ...initialSeries,
       name: '.COM Pull Requests',
       data: [] as CustomHighchartsPoint[]
     };
