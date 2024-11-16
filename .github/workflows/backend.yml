@@ -24,16 +24,26 @@ jobs:
         working-directory: ./backend
       - run: npm run build
         working-directory: ./backend
+      - uses: actions/upload-artifact@v4
+        with:
+          name: backend
+          path: ./backend/dist
 
   run:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: ['18', '20', '22']
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: ${{ matrix.node-version }}
       - run: npm ci
         working-directory: ./backend
+      - uses: actions/download-artifact@v4
+        with:
+          name: backend
       - run: npm run start
         working-directory: ./backend
 
