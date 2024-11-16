@@ -53,6 +53,7 @@ jobs:
       MYSQL_USER: root
       MYSQL_PASSWORD: octocat
       MYSQL_DATABASE: value
+      PORT: 3000
     strategy:
       matrix:
         node-version: ['18', '20', '22']
