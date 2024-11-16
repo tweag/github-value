@@ -83,3 +83,4 @@ jobs:
       - uses: ./.github/actions/eslint
         with:
           working-directory: ./backend
+          category: backend

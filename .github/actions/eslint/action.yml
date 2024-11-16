@@ -6,6 +6,9 @@ inputs:
     description: 'Directory containing the code to analyze'
     required: false
     default: '.'
+  category:
+    description: 'The category of the codeql-analysis run'
+    required: false
 
 runs:
   using: "composite"
@@ -30,3 +33,4 @@ runs:
       with:
         sarif_file: ${{ inputs.working-directory }}/eslint-results.sarif
         wait-for-processing: true
+        category: ${{ inputs.category }}
