@@ -14,6 +14,8 @@ class Team extends Model {
   public html_url!: string;
   public members_url!: string;
   public repositories_url!: string;
+  public updatedAt!: Date;
+  public createdAt!: Date;
 }
 
 class Member extends Model {
@@ -67,8 +69,7 @@ Team.init({
     allowNull: true
   }
 }, {
-  sequelize,
-  timestamps: false
+  sequelize
 });
 
 Member.init({
@@ -98,8 +99,7 @@ Member.init({
   starred_at: DataTypes.STRING,
   user_view_type: DataTypes.STRING
 }, {
-  sequelize,
-  timestamps: false
+  sequelize
 });
 
 TeamMemberAssociation.init({
@@ -140,7 +140,99 @@ Member.belongsToMany(Team, {
 Team.belongsTo(Team, { as: 'parent', foreignKey: 'parent_id' });
 Team.hasMany(Team, { as: 'children', foreignKey: 'parent_id' });
 
+const deleteTeam = async (teamId: number) => {    // Find the team first to check existence 🔍
+  const team = await Team.findByPk(teamId);
+  if (!team) {
+    throw new Error(`Team with ID ${teamId} not found`);
+  }
+
+  await TeamMemberAssociation.destroy({
+    where: {
+      TeamId: teamId
+    }
+  });
+
+  await Team.update(
+    { parent_id: null },
+    { 
+      where: { 
+        parent_id: teamId 
+      }
+    }
+  );
+
+  await Team.destroy({
+    where: {
+      id: teamId
+    }
+  });
+
+  return true;
+}
+
+const deleteMemberFromTeam = async (teamId: number, memberId: number) => {
+  const team = await Team.findByPk(teamId);
+  const member = await Member.findByPk(memberId);
+
+  if (!team) {
+    throw new Error(`Team with ID ${teamId} not found`);
+  }
+  if (!member) {
+    throw new Error(`Member with ID ${memberId} not found`);
+  }
+
+  const deleted = await TeamMemberAssociation.destroy({
+    where: {
+      TeamId: teamId,
+      MemberId: memberId
+    }
+  });
+
+  if (deleted === 0) {
+    throw new Error(`Member ${memberId} is not part of team ${teamId}`);
+  }
+
+  return true;
+};
+
+const deleteMember = async (memberId: number) => {
+  const member = await Member.findByPk(memberId);
+  if (!member) {
+    throw new Error(`Member with ID ${memberId} not found`);
+  }
+
+  await TeamMemberAssociation.destroy({
+    where: {
+      MemberId: memberId
+    }
+  });
+
+  await Member.destroy({
+    where: {
+      id: memberId
+    }
+  });
+
+  return true;
+};
+
+const getLastUpdatedAt = async () => {
+  const team = await Team.findOne({
+    order: [
+      ['updatedAt', 'ASC']
+    ]
+  });
+  if (!team) {
+    throw new Error(`Team not found`);
+  }
+  return team.updatedAt;
+}
+
 export {
+  deleteTeam,
+  deleteMemberFromTeam,
+  deleteMember,
+  getLastUpdatedAt,
   Team,
   Member,
   TeamMemberAssociation

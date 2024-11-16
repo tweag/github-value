@@ -60,7 +60,6 @@ export class SettingsComponent implements OnInit {
           });
           if (!this.cronString) throw new Error('Invalid cron expression');
         } catch (error) {
-          console.log(error)
           return { invalidCron: { value: error } };
         }
         return null

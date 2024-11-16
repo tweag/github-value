@@ -132,6 +132,7 @@ class Setup {
         clientId: null!,
         clientSecret: null!
       },
+      log: logger
     });
 
     await this.start();
@@ -167,11 +168,13 @@ class Setup {
     return process.env[key];
   }
 
-  getOctokit = () => {
+  getOctokit = async () => {
     if (!this.app || !this.installationId) {
       throw new Error('App is not initialized');
     }
-    return this.app.getInstallationOctokit(this.installationId);
+    const octokit = await this.app.getInstallationOctokit(this.installationId);
+    octokit.log = logger;
+    return octokit;
   }
 
   start = async () => {

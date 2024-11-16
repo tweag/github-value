@@ -5,7 +5,7 @@ import { insertUsage } from '../models/usage.model.js';
 import SeatService from '../services/copilot.seats.service.js';
 import { insertMetrics } from '../models/metrics.model.js';
 import { CopilotMetrics } from '../models/metrics.model.interfaces.js';
-import { Member, Team, TeamMemberAssociation } from '../models/teams.model.js';
+import { getLastUpdatedAt, Member, Team, TeamMemberAssociation } from '../models/teams.model.js';
 
 const DEFAULT_CRON_EXPRESSION = '0 0 * * *';
 class QueryService {
@@ -13,21 +13,32 @@ class QueryService {
   private cronJob: CronJob;
 
   private constructor(cronExpression: string, timeZone: string) {
-    this.cronJob = new CronJob(cronExpression, this.task, null, true, timeZone);
+    try {
+      this.cronJob = new CronJob(cronExpression, this.task.bind(this), null, true, timeZone);
+    } catch {
+      logger.error('Invalid cron expression. Using default cron expression.');
+      this.cronJob = new CronJob(DEFAULT_CRON_EXPRESSION, this.task, null, true, timeZone);
+    }
     this.task();
   }
 
   private async task() {
-    await Promise.all([
+    const queries = [
       this.queryCopilotUsageMetrics().then(() =>
         setup.setSetupStatusDbInitialized({ usage: true })),
       this.queryCopilotUsageMetricsNew().then(() =>
         setup.setSetupStatusDbInitialized({ metrics: true })),
       this.queryCopilotSeatAssignments().then(() =>
         setup.setSetupStatusDbInitialized({ copilotSeats: true })),
-      this.queryTeamsAndMembers().then(() =>
-        setup.setSetupStatusDbInitialized({ teamsAndMembers: true })),
-    ]);
+    ]
+    // Query teams and members if it has been more than 24 hours since the last update
+    if ((await getLastUpdatedAt()).getTime() < new Date().getTime() - 1000 * 60 * 60 * 24) {
+      queries.push(
+        this.queryTeamsAndMembers().then(() =>
+          setup.setSetupStatusDbInitialized({ teamsAndMembers: true }))
+      );
+    }
+    await Promise.all(queries);
     setup.setSetupStatus({
       dbInitialized: true
     })
@@ -104,11 +115,14 @@ class QueryService {
     }
   }
 
-  public async queryTeamsAndMembers() {
+  public async queryTeamsAndMembers(team_slug?: string, member_login?: string) {
     if (!setup.installation?.owner?.login) throw new Error('No installation found')
     try {
       const octokit = await setup.getOctokit();
-      const teams = await octokit.paginate(octokit.rest.teams.list, {
+      const teams = team_slug ? [(await octokit.rest.teams.getByName({
+        org: setup.installation.owner?.login,
+        team_slug,
+      })).data] : await octokit.paginate(octokit.rest.teams.list, {
         org: setup.installation.owner?.login
       });
 
@@ -181,46 +195,51 @@ class QueryService {
         logger.info(`Team ${team.name} successfully updated! ✏️`);
       }
 
-
-      await Team.upsert({
-        name: 'No Team',
-        slug: 'no-team',
-        description: 'No team assigned',
-        id: -1
-      });
-
-      const members = await octokit.paginate(octokit.rest.orgs.listMembers, {
-        org: setup.installation?.owner?.login
-      });
-      if (members?.length) {
-        await Promise.all(members.map(async member => {
-          const [dbMember] = await Member.upsert({
-            id: member.id,
-            login: member.login,
-            node_id: member.node_id,
-            avatar_url: member.avatar_url,
-            gravatar_id: member.gravatar_id || null,
-            url: member.url,
-            html_url: member.html_url,
-            followers_url: member.followers_url,
-            following_url: member.following_url,
-            gists_url: member.gists_url,
-            starred_url: member.starred_url,
-            subscriptions_url: member.subscriptions_url,
-            organizations_url: member.organizations_url,
-            repos_url: member.repos_url,
-            events_url: member.events_url,
-            received_events_url: member.received_events_url,
-            type: member.type,
-            site_admin: member.site_admin
-          });
-
-          // Create team-member association 🤝
-          await TeamMemberAssociation.upsert({
-            TeamId: -1,
-            MemberId: dbMember.id
-          });
-        }));
+      if (!team_slug) {
+        await Team.upsert({
+          name: 'No Team',
+          slug: 'no-team',
+          description: 'No team assigned',
+          id: -1
+        });
+  
+        const members = member_login ? [(await octokit.rest.orgs.getMembershipForUser({
+          org: setup.installation?.owner?.login,
+          username: member_login
+        })).data.user] : await octokit.paginate(octokit.rest.orgs.listMembers, {
+          org: setup.installation?.owner?.login
+        });
+        if (members?.length) {
+          await Promise.all(members.map(async member => {
+            if (!member) return;
+            const [dbMember] = await Member.upsert({
+              id: member.id,
+              login: member.login,
+              node_id: member.node_id,
+              avatar_url: member.avatar_url,
+              gravatar_id: member.gravatar_id || null,
+              url: member.url,
+              html_url: member.html_url,
+              followers_url: member.followers_url,
+              following_url: member.following_url,
+              gists_url: member.gists_url,
+              starred_url: member.starred_url,
+              subscriptions_url: member.subscriptions_url,
+              organizations_url: member.organizations_url,
+              repos_url: member.repos_url,
+              events_url: member.events_url,
+              received_events_url: member.received_events_url,
+              type: member.type,
+              site_admin: member.site_admin
+            });
+  
+            // Create team-member association 🤝
+            await TeamMemberAssociation.upsert({
+              TeamId: -1,
+              MemberId: dbMember.id
+            });
+          }));
+        }
       }
 
       logger.info("Teams & Members successfully updated! 🧑‍🤝‍🧑");

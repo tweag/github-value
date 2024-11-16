@@ -15,6 +15,7 @@
     "pull_requests": "write"
   },
   "default_events": [
-    "pull_request"
+    "pull_request",
+    "teams"
   ]
 }

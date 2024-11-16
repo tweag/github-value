@@ -82,7 +82,11 @@ class SettingsService {
       console.log('setting webhook secret', value)
       setup.addToEnv({ GITHUB_WEBHOOK_SECRET: value });
       console.log(name, value)
-      await setup.createAppFromEnv();
+      try {
+        await setup.createAppFromEnv();
+      } catch {
+        console.warn('failed to create app from env')
+      }
     }
     if (name === 'metricsCronExpression') QueryService.getInstance()?.updateCronJob(value);
     return await Settings.findOne({ where: { name } });
