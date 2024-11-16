@@ -27,14 +27,8 @@ app.use(expressLoggerMiddleware);
   logger.info('Created Smee webhook proxy ✅');
 
   try {
-    const appId = process.env.GITHUB_APP_ID || process.env.GH_APP_ID;
-    const privateKey = process.env.GITHUB_APP_PRIVATE_KEY || process.env.GH_APP_PRIVATE_KEY;
-    const webhookSecret = process.env.GITHUB_WEBHOOK_SECRET || process.env.GH_WEBHOOK_SECRET;
-    if (!appId) throw new Error('GITHUB_APP_ID is not set');
-    if (!privateKey) throw new Error('GITHUB_APP_PRIVATE_KEY is not set');
-    if (!webhookSecret) throw new Error('GITHUB_WEBHOOK_SECRET is not set');
-    await setup.createAppFromExisting(appId, privateKey, webhookSecret);
-    logger.info('App created from environment ✅');
+    await setup.createAppFromEnv();
+    logger.info('Created GitHub App from environment ✅');
   } catch (error) {
     logger.info('Failed to create app from environment. This is expected if the app is not yet installed.', error);
   }

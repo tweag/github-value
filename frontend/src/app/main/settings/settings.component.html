@@ -7,7 +7,7 @@
     <div class="settings-header">
       <h3>Assumptions</h3>
     </div>
-    <div class="settings-content">
+    <div class="settings-content auto-fit-grid">
       <mat-form-field>
         <mat-label>Number of Developers</mat-label>
         <input type="number" matInput formControlName="developerCount" placeholder="Ex: 100">
@@ -15,44 +15,53 @@
           Number of developers is <strong>required</strong>
         </mat-error>
       </mat-form-field>
-    
-      <mat-form-field>
-        <mat-label>Total Loaded Cost per Developer per Year ($)</mat-label>
-        <input type="number" matInput formControlName="devCostPerYear" placeholder="Ex: 150000">
+
+      <mat-form-field floatLabel="always">
+        <mat-label>Total Loaded Cost per Developer per Year</mat-label>
+        <input type="number" matInput formControlName="devCostPerYear" placeholder="Ex: 150000"
+          class="example-right-align">
         <mat-error *ngIf="form.controls.devCostPerYear.hasError('required')">
           Developer cost is <strong>required</strong>
         </mat-error>
+        <span matTextPrefix>$&nbsp;</span>
+        <span matTextSuffix>.00</span>
       </mat-form-field>
-    
+
       <mat-form-field>
-        <mat-label>Total Hours Available per Developer per Year</mat-label>
-        <input type="number" matInput formControlName="hoursPerYear" placeholder="Ex: 2080">
+        <mat-label>Hours Available per Developer per Year</mat-label>
+        <input type="number" matInput formControlName="hoursPerYear" placeholder="Ex: 2080" min="0"
+          class="example-right-align">
         <mat-error *ngIf="form.controls.hoursPerYear.hasError('required')">
           Hours per year is <strong>required</strong>
         </mat-error>
-        <mat-hint>Standard work year is 2080 hours (52 weeks × 40 hours)</mat-hint>
+        <span matTextSuffix>Hrs</span>
       </mat-form-field>
-    
+
       <mat-form-field>
-        <mat-label>Percent of Time Spent Coding (%)</mat-label>
-        <input type="number" matInput formControlName="percentCoding" placeholder="Ex: 60" min="0" max="100">
+        <mat-label>Time Spent Coding</mat-label>
+        <input type="number" matInput formControlName="percentCoding" placeholder="Ex: 60" min="0" max="100" step="10"
+          class="example-right-align">
         <mat-error *ngIf="form.controls.percentCoding.hasError('required')">
           Coding percentage is <strong>required</strong>
         </mat-error>
         <mat-error *ngIf="form.controls.percentCoding.hasError('min') || form.controls.percentCoding.hasError('max')">
           Must be between 0 and 100
         </mat-error>
+        <span matTextSuffix>%</span>
       </mat-form-field>
-    
+
       <mat-form-field>
-        <mat-label>Expected Time Savings per Task (%)</mat-label>
-        <input type="number" matInput formControlName="percentTimeSaved" placeholder="Ex: 20" min="0" max="100">
+        <mat-label>Time Savings per Task</mat-label>
+        <input type="number" matInput formControlName="percentTimeSaved" placeholder="Ex: 20" min="0" max="100"
+          step="10" class="example-right-align">
         <mat-error *ngIf="form.controls.percentTimeSaved.hasError('required')">
           Time savings is <strong>required</strong>
         </mat-error>
-        <mat-error *ngIf="form.controls.percentTimeSaved.hasError('min') || form.controls.percentTimeSaved.hasError('max')">
+        <mat-error
+          *ngIf="form.controls.percentTimeSaved.hasError('min') || form.controls.percentTimeSaved.hasError('max')">
           Must be between 0 and 100
         </mat-error>
+        <span matTextSuffix>%</span>
       </mat-form-field>
     </div>
     <div class="settings-header">
@@ -64,7 +73,15 @@
         <input type="text" matInput [formControl]="form.controls.metricsCronExpression" placeholder="Ex: 0 0 * * *">
         <mat-error *ngIf="form.controls.metricsCronExpression.hasError('required')">Repository is
           <strong>required</strong></mat-error>
-        <!-- <mat-hint><a href="https://crontab.guru/">crontab.guru</a></mat-hint> -->
+        <mat-error *ngIf="form.controls.metricsCronExpression.hasError('invalidCron')">
+          {{form.controls.metricsCronExpression.errors?.['invalidCron'].value || 'Invalid cron expression'}}
+        </mat-error>
+        <mat-hint>
+          <a [href]="'https://crontab.guru/#' + (form.controls.metricsCronExpression.valueChanges | async)?.replaceAll(' ', '_')"
+            target="_blank">
+            {{cronString}}
+          </a>
+        </mat-hint>
       </mat-form-field>
     </div>
 
@@ -74,7 +91,8 @@
     <div class="settings-content">
       <mat-form-field>
         <mat-label>Theme</mat-label>
-        <mat-select [value]="themeService.getTheme() | async" (selectionChange)="themeService.saveThemePreference($event.value)">
+        <mat-select [value]="themeService.getTheme() | async"
+          (selectionChange)="themeService.saveThemePreference($event.value)">
           <mat-option value="light-theme">Light</mat-option>
           <mat-option value="dark-theme">Dark</mat-option>
           <mat-option value="system">System</mat-option>
@@ -91,9 +109,9 @@
         <h3>GitHub App Installation</h3>
       </div>
       <div class="settings-content">
-        
-          <h3><a [href]="install.html_url" target="_blank">{{install.name}}</a></h3>
-        
+
+        <h3><a [href]="install.html_url" target="_blank">{{install.name}}</a></h3>
+
         <p>{{install.description}}</p>
         <h4 *ngIf="install.owner">Owner: <a [href]="install.owner.html_url">{{install.owner.login}}</a></h4>
         <!-- <h6>Permissions:</h6>
@@ -109,7 +127,7 @@
     <div class="settings-header">
       <h3>Advanced</h3>
     </div>
-    <div class="settings-content">
+    <div class="settings-content auto-fit-grid">
       <mat-form-field>
         <mat-label>Base URL</mat-label>
         <input type="email" matInput [formControl]="form.controls.baseUrl" placeholder="Ex: https://localhost">

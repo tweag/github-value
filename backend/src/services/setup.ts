@@ -31,7 +31,7 @@ class Setup {
   webhooks?: Express;
   installationId?: number;
   installation?: Endpoints["GET /app"]["response"]['data'];
-  installUrl: string | undefined;
+  installUrl?: string;
   setupStatus: SetupStatus = {
     isSetup: false,
     dbInitialized: false,
@@ -52,12 +52,10 @@ class Setup {
     return Setup.instance;
   }
 
-  createAppFromCode = async (code: string) => {
+  createFromManifest = async (code: string) => {
     dotenv.config();
     const _octokit = new Octokit();
-    const response = await _octokit.rest.apps.createFromManifest({
-      code,
-    })
+    const response = await _octokit.rest.apps.createFromManifest({ code });
     const data = response.data;
 
     this.addToEnv({
@@ -73,7 +71,7 @@ class Setup {
     return data;
   }
 
-  createAppFromExisting = async (appId: string, privateKey: string, webhookSecret: string) => {
+  findFirstInstallation = async (appId: string, privateKey: string, webhookSecret: string) => {
     const _app = new App({
       appId: appId,
       privateKey: privateKey,
@@ -86,14 +84,16 @@ class Setup {
       }
     })
 
+    const installation = await new Promise<Endpoints["GET /app/installations"]["response"]["data"][0]>((resolve) => {
+      _app.eachInstallation((install) =>
+        install && install.installation && install.installation.id ? resolve(install.installation) : null
+      );
+    });
+    if (!installation?.id) throw new Error('Failed to get installation');
     this.installUrl = await _app.getInstallationUrl();
     if (!this.installUrl) {
       throw new Error('Failed to get installation URL');
     }
-
-    const installation = await this._findFirstInstallation(_app);
-
-    await _app.getInstallationOctokit(installation.id);
 
     this.installationId = installation.id;
     this.addToEnv({
@@ -102,54 +102,19 @@ class Setup {
       GITHUB_WEBHOOK_SECRET: webhookSecret,
       GITHUB_APP_INSTALLATION_ID: installation.id.toString()
     })
-    
-    return this.createAppFromEnv();
-  }
-
-  addToEnv = (obj: { [key: string]: string }) => {
-    updateDotenv(obj);
-    Object.entries(obj).forEach(([key, value]) => {
-      process.env[key] = value;
-    });
-  }
-
-  getEnv = (key: string) => {
-    return process.env[key];
-  }
-
-  createAppFromInstallationId = async (installationId: number) => {
-    dotenv.config();
-    if (!process.env.GITHUB_APP_ID) throw new Error('GITHUB_APP_ID is not set');
-    if (!process.env.GITHUB_APP_PRIVATE_KEY) throw new Error('GITHUB_APP_PRIVATE_KEY is not set');
-    if (!process.env.GITHUB_WEBHOOK_SECRET) throw new Error('GITHUB_WEBHOOK_SECRET is not set');
-
-    this.app = new App({
-      appId: process.env.GITHUB_APP_ID,
-      privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
-      installationId: installationId,
-      webhooks: {
-        secret: process.env.GITHUB_WEBHOOK_SECRET
-      },
-      oauth: {
-        clientId: null!,
-        clientSecret: null!
-      },
-    });
-
-    this.addToEnv({
-      GITHUB_APP_INSTALLATION_ID: installationId.toString()
-    })
-    this.installationId = installationId;
-
-    this.start();
-    return this.app;
   }
 
   createAppFromEnv = async () => {
+    if (process.env.GH_APP_ID) this.addToEnv({ GITHUB_APP_ID: process.env.GH_APP_ID });
+    if (process.env.GH_APP_PRIVATE_KEY) this.addToEnv({ GITHUB_APP_PRIVATE_KEY: process.env.GH_APP_PRIVATE_KEY });
+    if (process.env.GH_APP_WEBHOOK_SECRET) this.addToEnv({ GITHUB_WEBHOOK_SECRET: process.env.GH_APP_WEBHOOK_SECRET });
+    if (process.env.GH_APP_INSTALLATION_ID) this.addToEnv({ GITHUB_APP_INSTALLATION_ID: process.env.GH_APP_INSTALLATION_ID });
     if (!process.env.GITHUB_APP_ID) throw new Error('GITHUB_APP_ID is not set');
     if (!process.env.GITHUB_APP_PRIVATE_KEY) throw new Error('GITHUB_APP_PRIVATE_KEY is not set');
     if (!process.env.GITHUB_WEBHOOK_SECRET) throw new Error('GITHUB_WEBHOOK_SECRET is not set');
-    if (!process.env.GITHUB_APP_INSTALLATION_ID) throw new Error('GITHUB_APP_INSTALLATION_ID is not set');
+    if (!process.env.GITHUB_APP_INSTALLATION_ID) {
+      this.findFirstInstallation(process.env.GITHUB_APP_ID, process.env.GITHUB_APP_PRIVATE_KEY, process.env.GITHUB_WEBHOOK_SECRET);
+    }
     const installationId = Number(process.env.GITHUB_APP_INSTALLATION_ID);
     if (isNaN(installationId)) {
       throw new Error('GITHUB_APP_INSTALLATION_ID is not a valid number');
@@ -190,6 +155,17 @@ class Setup {
     const web = expressApp.use(createNodeMiddleware(this.app));
     return web;
   };
+
+  addToEnv = (obj: { [key: string]: string }) => {
+    updateDotenv(obj);
+    Object.entries(obj).forEach(([key, value]) => {
+      process.env[key] = value;
+    });
+  }
+
+  getEnv = (key: string) => {
+    return process.env[key];
+  }
 
   getOctokit = () => {
     if (!this.app || !this.installationId) {
@@ -255,17 +231,6 @@ class Setup {
     manifest.hook_attributes.url = SmeeService.getWebhookProxyUrl();
     return manifest;
   };
-
-  _findFirstInstallation = async (_app: App) => (new Promise<Endpoints["GET /app/installations"]["response"]["data"][0]>((resolve, reject) => {
-    _app.eachInstallation((install) => {
-      if (install && install.installation && install.installation.id) {
-        resolve(install.installation);
-      } else {
-        reject(new Error("No installation found"));
-      }
-      return false;
-    });
-  }));
 
 }
 

@@ -23,12 +23,11 @@ class SmeeService {
   }
 
   private async createSmeeWebhookUrl() {
-    const webhookProxyUrl = await this.createWebhookChannel();
+    const webhookProxyUrl = await (await import("smee-client")).default.createChannel();
     if (!webhookProxyUrl) {
       throw new Error('Unable to create webhook channel');
     }
     this.webhookProxyUrl = webhookProxyUrl;
-    await settingsService.updateSetting('webhookProxyUrl', this.webhookProxyUrl);
     return webhookProxyUrl;
   }
 
@@ -57,7 +56,6 @@ class SmeeService {
       if (!eventSource) throw new Error('Unable to connect to smee.io');
     }
     this.port = port;
-    await settingsService.updateSetting('webhookProxyUrl', this.webhookProxyUrl);
     return { url: this.webhookProxyUrl, eventSource };
   }
 
@@ -83,15 +81,6 @@ class SmeeService {
       logger.error('Unable to connect to smee.io', error);
     }
   };
-
-  createWebhookChannel = async (): Promise<string | undefined> => {
-    try {
-      const SmeeClient = (await import("smee-client")).default;
-      return await SmeeClient.createChannel();
-    } catch (error) {
-      logger.error('Unable to create webhook channel', error);
-    }
-  }
 
 }
 

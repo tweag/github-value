@@ -13,7 +13,7 @@ class QueryService {
   private cronJob: CronJob;
 
   private constructor(cronExpression: string, timeZone: string) {
-    this.cronJob = new CronJob(cronExpression || DEFAULT_CRON_EXPRESSION, this.task, null, true, timeZone);
+    this.cronJob = new CronJob(cronExpression, this.task, null, true, timeZone);
     this.task();
   }
 

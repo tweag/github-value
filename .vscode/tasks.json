@@ -25,6 +25,10 @@
 				"id": "database"
 			},
 			"detail": "docker-compose -f ../compose.yml up -d db",
+			"promptOnClose": false,
+			"runOptions": {
+				"reevaluateOnRerun": true
+			},
 			"presentation": {
 				"revealProblems": "onProblem",
 				"close": true

@@ -15,7 +15,7 @@
       "name": "Debug Backend",
       "type": "node",
       "program": "${workspaceFolder}/backend/src/app.ts",
-      "preLaunchTask": "npm: db:start - backend",
+      "preLaunchTask": "npm: build - backend",
       "cwd": "${workspaceFolder}/backend",
       "envFile": "${workspaceFolder}/backend/.env",
       "args": [

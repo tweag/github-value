@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MaterialModule } from '../../material.module';
 import { AppModule } from '../../app.module';
-import { FormControl, FormGroup, FormGroupDirective, NgForm, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, FormGroupDirective, NgForm, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { SettingsHttpService } from '../../services/settings.service';
 import { CommonModule } from '@angular/common';
@@ -10,6 +10,7 @@ import { SetupService } from '../../services/setup.service';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ThemeService } from '../../services/theme.service';
 import { Endpoints } from '@octokit/types';
+import cronstrue from 'cronstrue';
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -50,7 +51,21 @@ export class SettingsComponent implements OnInit {
       Validators.min(0),
       Validators.max(100)
     ]),
-    metricsCronExpression: new FormControl('', []),
+    metricsCronExpression: new FormControl('', [
+      (control: AbstractControl): ValidationErrors | null => {
+        try {
+          this.cronString = cronstrue.toString(control.value, {
+            throwExceptionOnParseError: true,
+            verbose: true
+          });
+          if (!this.cronString) throw new Error('Invalid cron expression');
+        } catch (error) {
+          console.log(error)
+          return { invalidCron: { value: error } };
+        }
+        return null
+      },
+    ]),
     baseUrl: new FormControl('', [
       Validators.pattern(/^(https?:\/\/)[^\s/$.?#].[^\s]*$/)
     ]),
@@ -60,6 +75,7 @@ export class SettingsComponent implements OnInit {
     ]),
     webhookSecret: new FormControl('', [])
   });
+  cronString = '';
   install?: Endpoints["GET /app"]["response"]['data'];
 
   constructor(

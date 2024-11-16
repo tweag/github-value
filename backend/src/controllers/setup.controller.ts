@@ -6,7 +6,7 @@ class SetupController {
     try {
       const { code } = req.query;
 
-      const data = await setup.createAppFromCode(code as string);
+      const data = await setup.createFromManifest(code as string);
 
       res.redirect(`${data.html_url}/installations/new`);
     } catch (error) {
@@ -17,11 +17,8 @@ class SetupController {
   async installComplete(req: Request, res: Response) {
     try {
       const { installation_id } = req.query;
-
-      if (isNaN(Number(installation_id))) {
-        throw new Error('installation_id must be a number');
-      }
-      await setup.createAppFromInstallationId(Number(installation_id));
+      setup.addToEnv({ GITHUB_APP_INSTALLATION_ID: installation_id as string });
+      await setup.createAppFromEnv();
       res.redirect(process.env.WEB_URL || '/');
     } catch (error) {
       res.status(500).json(error);
@@ -45,7 +42,8 @@ class SetupController {
         return res.status(400).json({ error: 'All fields are required' });
       }
 
-      await setup.createAppFromExisting(appId, privateKey, webhookSecret);
+      await setup.findFirstInstallation(appId, privateKey, webhookSecret);
+      await setup.createAppFromEnv();
 
       res.json({ installUrl: setup.installUrl });
     } catch (error) {
