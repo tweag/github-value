@@ -117,7 +117,7 @@ npm run dev
 ```bash
 cd frontend
 npm install
-ng serve --open
+npm run start
 ```
 
 Congratulations! You now have a fully functioning development environment! 🧑‍💻
