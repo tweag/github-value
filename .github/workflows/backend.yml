@@ -34,6 +34,13 @@ jobs:
   run:
     runs-on: ubuntu-latest
     needs: build
+    services:
+      mysql:
+        image: mysql
+    env:
+      MYSQL_HOST: mysql
+      MYSQL_ROOT_PASSWORD: octocat
+      MYSQL_DATABASE: value
     strategy:
       matrix:
         node-version: ['18', '20', '22']
