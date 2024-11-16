@@ -67,6 +67,14 @@ Team.init({
   parent_id: {
     type: DataTypes.INTEGER,
     allowNull: true
+  },
+  createdAt: {
+      field: 'created_at',
+      type: DataTypes.DATE,
+  },
+  updatedAt: {
+      field: 'updated_at',
+      type: DataTypes.DATE,
   }
 }, {
   sequelize
