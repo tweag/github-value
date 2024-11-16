@@ -99,7 +99,9 @@ Member.init({
   name: DataTypes.STRING,
   email: DataTypes.STRING,
   starred_at: DataTypes.STRING,
-  user_view_type: DataTypes.STRING
+  user_view_type: DataTypes.STRING,
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE
 }, {
   sequelize
 });
@@ -138,11 +140,10 @@ Member.belongsToMany(Team, {
   otherKey: 'TeamId',
   as: 'teams'
 });
-// Parent-child relationship for nested teams 👨‍👦
 Team.belongsTo(Team, { as: 'parent', foreignKey: 'parent_id' });
 Team.hasMany(Team, { as: 'children', foreignKey: 'parent_id' });
 
-const deleteTeam = async (teamId: number) => {    // Find the team first to check existence 🔍
+const deleteTeam = async (teamId: number) => {
   const team = await Team.findByPk(teamId);
   if (!team) {
     throw new Error(`Team with ID ${teamId} not found`);
