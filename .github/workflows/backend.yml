@@ -74,6 +74,7 @@ jobs:
           sleep 30
           kill $!
         working-directory: ./backend
+        timeout-minutes: 1
 
   lint:
     runs-on: ubuntu-latest
