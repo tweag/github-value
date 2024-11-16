@@ -69,7 +69,10 @@ jobs:
         with:
           name: backend
           path: ./backend/dist
-      - run: timeout 30s 'npm run start'; exit 0
+      - run:  |
+          npm start & 
+          sleep 30
+          kill $!
         working-directory: ./backend
 
   lint:
