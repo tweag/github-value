@@ -26,9 +26,6 @@ app.use(expressLoggerMiddleware);
   await SmeeService.createSmeeWebhookProxy(PORT);
   logger.info('Created Smee webhook proxy ✅');
 
-  if (true === true) {
-    throw new Error('Test error');
-  }
   try {
     await setup.createAppFromEnv();
     logger.info('Created GitHub App from environment ✅');
