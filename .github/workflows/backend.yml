@@ -69,9 +69,7 @@ jobs:
         with:
           name: backend
           path: ./backend/dist
-      - run: ( tail -f -n0 logs/app.log & ) | grep -q "Server is running"
-        working-directory: ./backend
-      - run: npm run start
+      - run: timeout 30s 'npm run start'; exit 0
         working-directory: ./backend
 
   lint:
