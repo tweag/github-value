@@ -63,10 +63,10 @@ class SettingsService {
     return await Settings.findAll();
   }
 
-  async getSettingsByName(name: string): Promise<string> {
+  async getSettingsByName(name: string): Promise<string | undefined> {
     const rsp = await Settings.findOne({ where: { name } });
     if (!rsp) {
-      throw new Error('Settings not found');
+      return undefined;
     }
     return rsp.dataValues.value;
   }
