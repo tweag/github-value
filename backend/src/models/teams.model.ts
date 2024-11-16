@@ -68,14 +68,8 @@ Team.init({
     type: DataTypes.INTEGER,
     allowNull: true
   },
-  createdAt: {
-      field: 'created_at',
-      type: DataTypes.DATE,
-  },
-  updatedAt: {
-      field: 'updated_at',
-      type: DataTypes.DATE,
-  }
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE
 }, {
   sequelize
 });
