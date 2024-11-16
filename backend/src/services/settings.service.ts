@@ -12,7 +12,9 @@ class SettingsService {
 
   async initializeSettings() {
     try {
-      this.baseUrl = await this.getSettingsByName('baseUrl')
+      const baseUrl = await this.getSettingsByName('baseUrl');
+      if (!baseUrl) throw new Error('Base URL is not set');
+      this.baseUrl = baseUrl;
     } catch {
       this.updateSetting('baseUrl', this.baseUrl);
     }

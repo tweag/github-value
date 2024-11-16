@@ -187,10 +187,10 @@ class Setup {
 
     const metricsCronExpression = await settingsService.getSettingsByName('metricsCronExpression').catch(() => {
       return '0 0 * * *';
-    });
+    }) || '0 0 * * *';
     const timezone = await settingsService.getSettingsByName('timezone').catch(() => {
       return 'UTC';
-    });
+    }) || 'UTC';
     QueryService.createInstance(metricsCronExpression, timezone);
 
     logger.info(`GitHub App ${this.installation.slug} is ready to use`);

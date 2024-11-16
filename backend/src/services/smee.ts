@@ -35,6 +35,9 @@ class SmeeService {
     if (!port) port = this.port;
     try {
       this.webhookProxyUrl = process.env.WEBHOOK_PROXY_URL || await settingsService.getSettingsByName('webhookProxyUrl');
+      if (!this.webhookProxyUrl) {
+        throw new Error('Webhook proxy URL is not set');
+      }
     } catch {
       this.webhookProxyUrl = await this.createSmeeWebhookUrl();
     }
