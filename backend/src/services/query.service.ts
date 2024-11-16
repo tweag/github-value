@@ -230,6 +230,7 @@ class QueryService {
   }
 
   public updateCronJob(cronExpression: string) {
+    if (!this.cronJob) return;
     if (!cronExpression) cronExpression = DEFAULT_CRON_EXPRESSION;
     this.cronJob.setTime(new CronTime(cronExpression));
   }
