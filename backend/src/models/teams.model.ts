@@ -225,8 +225,8 @@ const getLastUpdatedAt = async () => {
       ['updatedAt', 'ASC']
     ]
   });
-  if (!team) {
-    throw new Error(`Team not found`);
+  if (!team?.updatedAt) {
+    return new Date(0);
   }
   return team.updatedAt;
 }
