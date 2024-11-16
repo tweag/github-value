@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MaterialModule } from '../../material.module';
 import { AppModule } from '../../app.module';
-import { AbstractControl, FormControl, FormGroup, FormGroupDirective, NgForm, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
+import { AbstractControl, FormControl, FormGroup, FormGroupDirective, NgForm, ValidationErrors, Validators } from '@angular/forms';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { SettingsHttpService } from '../../services/settings.service';
 import { CommonModule } from '@angular/common';

@@ -19,7 +19,7 @@ runs:
 
     - name: Run ESLint
       shell: bash
-      run: ./node_modules/.bin/eslint --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
+      run: npm run lint -- --format @microsoft/eslint-formatter-sarif --output-file eslint-results.sarif
       env:
         SARIF_ESLINT_IGNORE_SUPPRESSED: "true"
       working-directory: ${{ inputs.working-directory }}
