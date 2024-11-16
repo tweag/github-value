@@ -32,7 +32,7 @@ class QueryService {
         setup.setSetupStatusDbInitialized({ copilotSeats: true })),
     ]
     // Query teams and members if it has been more than 24 hours since the last update
-    if ((await getLastUpdatedAt()).getTime() < new Date().getTime() - 1000 * 60 * 60 * 24) {
+    if ((await getLastUpdatedAt() || new Date()).getTime() < new Date().getTime() - 1000 * 60 * 60 * 24) {
       queries.push(
         this.queryTeamsAndMembers().then(() =>
           setup.setSetupStatusDbInitialized({ teamsAndMembers: true }))
