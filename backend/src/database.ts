@@ -41,7 +41,7 @@ const dbConnect = async () => {
   }
   try {
     await sequelize.authenticate()
-    await sequelize.sync({ force: false }).then(() => {
+    await sequelize.sync({ alter: true }).then(() => {
       logger.info('All models were synchronized successfully. 🚀');
     }).catch((error) => {
       logger.error('Error synchronizing models', error);
