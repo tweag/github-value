@@ -2,8 +2,8 @@ import { Webhooks } from '@octokit/webhooks';
 import { App } from 'octokit';
 import logger from '../services/logger.js';
 import settingsService from '../services/settings.service.js';
-import { QueryService } from 'services/query.service.js';
-import { deleteMember, deleteMemberFromTeam, deleteTeam } from 'models/teams.model.js';
+import { QueryService } from '../services/query.service.js';
+import { deleteMember, deleteMemberFromTeam, deleteTeam } from '../models/teams.model.js';
 
 const webhooks = new Webhooks({
   secret: process.env.GITHUB_WEBHOOK_SECRET || 'your-secret',
