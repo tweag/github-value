@@ -10,7 +10,11 @@ const sequelize = process.env.JAWSDB_URL ?
       acquire: 30000,
       idle: 10000
     },
-    logging: (sql: string) => logger.debug(sql)
+    logging: (sql) => logger.debug(sql),
+    timezone: '+00:00', // Force UTC timezone
+    dialectOptions: {
+      timezone: '+00:00' // Force UTC for MySQL connection
+    },
   }) :
   new Sequelize({
     dialect: 'mysql',
@@ -19,7 +23,11 @@ const sequelize = process.env.JAWSDB_URL ?
     username: process.env.MYSQL_USER || 'root',
     password: process.env.MYSQL_PASSWORD || 'octocat',
     database: process.env.MYSQL_DATABASE || 'value',
-    logging: (sql: string) => logger.debug(sql)
+    logging: (sql) => logger.debug(sql),
+    timezone: '+00:00', // Force UTC timezone
+    dialectOptions: {
+      timezone: '+00:00' // Force UTC for MySQL connection
+    },
   });
 
 const dbConnect = async () => {

@@ -101,20 +101,20 @@ class SeatsService {
     }
   }
 
-  async getAssigneesActivity(daysInactive: number): Promise<AssigneeDailyActivity> {
+  async getAssigneesActivity(daysInactive: number, precision: 'hour' | 'day' = 'day'): Promise<AssigneeDailyActivity> {
     const assignees = await Assignee.findAll({
       attributes: ['login', 'id'],
-      order: [
-        ['login', 'ASC'],
-        [{ model: Seat, as: 'activity' }, 'createdAt', 'DESC']
-      ],
       include: [
         {
           model: Seat,
           as: 'activity',
           required: false,
-          attributes: ['createdAt', 'last_activity_at']
+          attributes: ['createdAt', 'last_activity_at'],
+          order: [['last_activity_at', 'ASC']],
         }
+      ],
+      order: [
+        [{ model: Seat, as: 'activity' }, 'last_activity_at', 'ASC']
       ]
     });
     const activityDays: AssigneeDailyActivity = {};
@@ -123,9 +123,15 @@ class SeatsService {
         const fromTime = activity.last_activity_at?.getTime() || 0;
         const toTime = activity.createdAt.getTime();
         const diff = Math.floor((toTime - fromTime) / 86400000);
-        const dateIndex = activity.createdAt.toISOString().slice(0, 10);
-        if (!activityDays[dateIndex]) {
-          activityDays[dateIndex] = {
+        const dateIndex = new Date(activity.createdAt);
+        if (precision === 'day') {
+          dateIndex.setUTCHours(0, 0, 0, 0);
+        } else if (precision === 'hour') {
+          dateIndex.setUTCMinutes(0, 0, 0);
+        }
+        const dateIndexStr = new Date(dateIndex).toISOString();
+        if (!activityDays[dateIndexStr]) {
+          activityDays[dateIndexStr] = {
             totalSeats: 0,
             totalActive: 0,
             totalInactive: 0,
@@ -133,13 +139,13 @@ class SeatsService {
             inactive: {}
           }
         }
-        if (activityDays[dateIndex].active[assignee.login] || activityDays[dateIndex].inactive[assignee.login]) {
+        if (activityDays[dateIndexStr].active[assignee.login] || activityDays[dateIndexStr].inactive[assignee.login]) {
           return; // already processed for this day
         }
         if (diff > daysInactive) {
-          activityDays[dateIndex].inactive[assignee.login] = assignee.activity[0].last_activity_at;
+          activityDays[dateIndexStr].inactive[assignee.login] = assignee.activity[0].last_activity_at;
         } else {
-          activityDays[dateIndex].active[assignee.login] = assignee.activity[0].last_activity_at;
+          activityDays[dateIndexStr].active[assignee.login] = assignee.activity[0].last_activity_at;
         }
       });
     });
@@ -147,8 +153,14 @@ class SeatsService {
       activityDays[date].totalSeats = Object.values(activity.active).length + Object.values(activity.inactive).length
       activityDays[date].totalActive = Object.values(activity.active).length
       activityDays[date].totalInactive = Object.values(activity.inactive).length
-    });
-    return activityDays;
+    });    
+
+    const sortedActivityDays = Object.fromEntries(
+      Object.entries(activityDays)
+        .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
+    );
+    
+    return sortedActivityDays;
   }
 }
 

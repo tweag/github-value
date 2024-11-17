@@ -260,9 +260,9 @@ export class HighchartsService {
     };
 
     Object.entries(activity).forEach(([date, dateData]) => {
-      const currentMetrics = metrics.find(m => m.date.startsWith(date));
+      console.log(date, date.slice(0, 10), metrics)
+      const currentMetrics = metrics.find(m => m.date.startsWith(date.slice(0, 10)));
       if (currentMetrics?.copilot_ide_code_completions) {
-        console.log(`date: ${date} total_code_suggestions: ${currentMetrics.copilot_ide_code_completions.total_code_suggestions} totalActive: ${dateData.totalActive} percentage: ${(currentMetrics.copilot_ide_code_completions.total_code_suggestions / dateData.totalActive)}`);
         (dailyActiveIdeCompletionsSeries.data).push({
           x: new Date(date).getTime(),
           y: (currentMetrics.copilot_ide_code_completions.total_code_suggestions / dateData.totalActive),

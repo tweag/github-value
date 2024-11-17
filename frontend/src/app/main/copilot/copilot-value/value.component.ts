@@ -6,6 +6,8 @@ import { DailyActivityChartComponent } from './daily-activity-chart/daily-activi
 import { TimeSavedChartComponent } from './time-saved-chart/time-saved-chart.component';
 import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
 import { MetricsService } from '../../../services/metrics.service';
+import { FormControl } from '@angular/forms';
+import { combineLatest, startWith } from 'rxjs';
 
 @Component({
   selector: 'app-value',
@@ -22,14 +24,22 @@ import { MetricsService } from '../../../services/metrics.service';
 export class CopilotValueComponent implements OnInit {
   activityData?: ActivityResponse;
   metricsData?: CopilotMetrics[];
+  daysInactive = new FormControl(30);
+  adoptionFidelity = new FormControl<'day' | 'hour'>('hour');
+
   constructor(
     private seatService: SeatService,
     private metricsService: MetricsService
   ) { }
 
   ngOnInit() {
-    this.seatService.getActivity().subscribe(data => {
-      this.activityData = data;
+    combineLatest([
+      this.daysInactive.valueChanges.pipe(startWith(this.daysInactive.value || 30)),
+      this.adoptionFidelity.valueChanges.pipe(startWith(this.adoptionFidelity.value || 'day'))
+    ]).subscribe(([days, fidelity]) => {
+      this.seatService.getActivity(days || 30, fidelity || 'day').subscribe(data => {
+        this.activityData = data;
+      });
     });
     this.metricsService.getMetrics().subscribe(data => {
       this.metricsData = data;

@@ -12,14 +12,14 @@ class SeatsController {
   }
 
   async getActivity(req: Request, res: Response): Promise<void> {
-    const { daysInactive } = req.query;
+    const { daysInactive, precision } = req.query;
     const _daysInactive = Number(daysInactive);
     if (!daysInactive || isNaN(_daysInactive)) {
       res.status(400).json({ error: 'daysInactive query parameter is required' });
       return;
     }
     try {
-      const activityDays = await SeatsService.getAssigneesActivity(_daysInactive);
+      const activityDays = await SeatsService.getAssigneesActivity(_daysInactive, precision as 'hour' | 'day');
       res.status(200).json(activityDays);
     } catch (error) {
       res.status(500).json(error);

@@ -81,9 +81,7 @@ class SettingsService {
       await SmeeService.createSmeeWebhookProxy();
     }
     if (name === 'webhookSecret') {
-      console.log('setting webhook secret', value)
       setup.addToEnv({ GITHUB_WEBHOOK_SECRET: value });
-      console.log(name, value)
       try {
         await setup.createAppFromEnv();
       } catch {
@@ -96,7 +94,6 @@ class SettingsService {
 
   async updateSettings(obj: { [key: string]: string }) {
     Object.entries(obj).forEach(([name, value]) => {
-      console.log(name, value)
       this.updateSetting(name, value);
     });
   }

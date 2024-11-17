@@ -25,7 +25,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: octocat
       MYSQL_DATABASE: value
-      # TZ: UTC
+      TZ: UTC
     ports:
       - '3306:3306'
     volumes:

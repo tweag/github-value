@@ -116,14 +116,12 @@ export class DailyActivityChartComponent implements OnChanges {
   }
 
   ngOnChanges() {
-    console.log('old', this.chartOptions);
     if (this.activity && this.metrics) {
       this._chartOptions = this.highchartsService.transformMetricsToDailyActivityLine(this.activity, this.metrics);
       this.chartOptions = {
         ...this.chartOptions,
         ...this._chartOptions
       };
-      console.log('new', this.chartOptions);
       this.updateFlag = true;
     }
   }

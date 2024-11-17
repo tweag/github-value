@@ -194,6 +194,9 @@ Highcharts.theme = {
   },
   xAxis: xAxisConfig,
   yAxis: yAxisConfig,
+  time: {
+    useUTC: false
+  },
   legend: {
     align: 'left',
     verticalAlign: 'top',

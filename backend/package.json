@@ -8,7 +8,7 @@
     "start": "node --enable-source-maps dist/app.js",
     "test": "jest",
     "build": "tsc",
-    "dev": "tsx watch src/app.ts | bunyan -o short",
+    "dev": "tsx watch src/app.ts | bunyan -o short -l debug",
     "lint": "eslint src/**/*.ts",
     "db:start": "docker-compose -f ../compose.yml up -d db",
     "dotenv": "cp -n .env.example .env || true"

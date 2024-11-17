@@ -7,7 +7,7 @@ import { insertMetrics } from '../models/metrics.model.js';
 import { CopilotMetrics } from '../models/metrics.model.interfaces.js';
 import { getLastUpdatedAt, Member, Team, TeamMemberAssociation } from '../models/teams.model.js';
 
-const DEFAULT_CRON_EXPRESSION = '0 0 * * *';
+const DEFAULT_CRON_EXPRESSION = '0 * * * *';
 class QueryService {
   private static instance: QueryService;
   private cronJob: CronJob;
@@ -32,7 +32,7 @@ class QueryService {
         setup.setSetupStatusDbInitialized({ copilotSeats: true })),
     ]
     // Query teams and members if it has been more than 24 hours since the last update
-    if ((await getLastUpdatedAt() || new Date(0)).getTime() < new Date().getTime() - 1000 * 60 * 60 * 24) {
+    if ((await getLastUpdatedAt()).getTime() < new Date().getTime() - 1000 * 60 * 60 * 24) {
       queries.push(
         this.queryTeamsAndMembers().then(() =>
           setup.setSetupStatusDbInitialized({ teamsAndMembers: true }))

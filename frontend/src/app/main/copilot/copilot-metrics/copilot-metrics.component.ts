@@ -10,6 +10,5 @@ import { DateRangeSelectComponent } from "../../../shared/date-range-select/date
 })
 export class CopilotMetricsComponent {
   dateRangeChange(event: {start: Date, end: Date}) {
-    console.log(event);
   }
 }

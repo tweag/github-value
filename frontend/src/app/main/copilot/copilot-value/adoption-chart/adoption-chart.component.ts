@@ -36,7 +36,7 @@ export class AdoptionChartComponent implements OnChanges {
     },
     yAxis: {
       title: {
-        text: 'Adoption (%)'
+        text: 'Percent Active'
       },
       min: 0,
       max: 100,
@@ -114,14 +114,12 @@ export class AdoptionChartComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log('old', this.chartOptions);
     if (changes['data'] && this.data) {
       this._chartOptions = this.highchartsService.transformActivityMetricsToLine(this.data);
       this.chartOptions = {
         ...this.chartOptions,
         ...this._chartOptions
       };
-      console.log('new', this.chartOptions);
       this.updateFlag = true;
     }
   }
