@@ -260,7 +260,6 @@ export class HighchartsService {
     };
 
     Object.entries(activity).forEach(([date, dateData]) => {
-      console.log(date, date.slice(0, 10), metrics)
       const currentMetrics = metrics.find(m => m.date.startsWith(date.slice(0, 10)));
       if (currentMetrics?.copilot_ide_code_completions) {
         (dailyActiveIdeCompletionsSeries.data).push({

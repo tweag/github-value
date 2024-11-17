@@ -25,7 +25,7 @@ export class CopilotValueComponent implements OnInit {
   activityData?: ActivityResponse;
   metricsData?: CopilotMetrics[];
   daysInactive = new FormControl(30);
-  adoptionFidelity = new FormControl<'day' | 'hour'>('hour');
+  adoptionFidelity = new FormControl<'day' | 'hour'>('day');
 
   constructor(
     private seatService: SeatService,
