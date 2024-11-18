@@ -15,6 +15,10 @@ interface ModelBase {
 }
 
 interface CodeModel extends ModelBase {
+  total_code_acceptances: number,
+  total_code_suggestions: number,
+  total_code_lines_accepted: number,
+  total_code_lines_suggested: number,
   languages: LanguageMetrics[];
 }
 
@@ -35,6 +39,10 @@ interface PullRequestModel extends ModelBase {
 interface Editor {
   name: string;
   total_engaged_users: number;
+  total_code_acceptances: number,
+  total_code_suggestions: number,
+  total_code_lines_accepted: number,
+  total_code_lines_suggested: number,
   models: (CodeModel | ChatModel)[];
 }
 

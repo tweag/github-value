@@ -11,8 +11,10 @@ import { Subscription } from 'rxjs';
 
 export enum DateRangeOption {
   WEEK = 'week',
+  LAST_WEEK = 'lastWeek',
   MONTH = 'month',
   LAST_MONTH = 'lastMonth',
+  SEVEN_DAYS = '7days',
   THIRTY_DAYS = '30days',
   NINETY_DAYS = '90days',
   YEAR = 'year',
@@ -102,6 +104,13 @@ export class DateRangeSelectComponent implements OnDestroy {
         end.setDate(start.getDate() + 6);
       }
         break;
+      case 'lastWeek': {
+        const currentDay = today.getDay();
+        const daysToMonday = currentDay === 0 ? 6 : currentDay - 1;
+        start.setDate(today.getDate() - daysToMonday - 7);
+        end.setDate(start.getDate() + 6);
+      }
+        break;
       case 'month':
         start = new Date(today.getFullYear(), today.getMonth(), 1);
         end = new Date(today.getFullYear(), today.getMonth() + 1, 0);
@@ -109,6 +118,9 @@ export class DateRangeSelectComponent implements OnDestroy {
       case 'lastMonth':
         start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
         end = new Date(today.getFullYear(), today.getMonth(), 0);
+        break;
+      case '7days':
+        start.setDate(today.getDate() - 7);
         break;
       case '30days':
         start.setDate(today.getDate() - 30);

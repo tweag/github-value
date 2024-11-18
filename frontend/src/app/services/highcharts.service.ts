@@ -4,6 +4,7 @@ import { DashboardCardBarsInput } from '../main/copilot/copilot-dashboard/dashbo
 import { ActivityResponse, Seat } from './seat.service';
 import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
 import { Survey } from './copilot-survey.service';
+import { DecimalPipe } from '@angular/common';
 
 interface CustomHighchartsPoint extends Highcharts.PointOptionsObject {
   date?: Date;
@@ -18,6 +19,10 @@ interface CustomHighchartsGanttPoint extends Highcharts.GanttPointOptionsObject 
   providedIn: 'root'
 })
 export class HighchartsService {
+
+  constructor(
+  ) { }
+
   transformCopilotMetricsToBarChartDrilldown(data: CopilotMetrics[]): Highcharts.Options {
     const engagedUsersSeries: Highcharts.SeriesOptionsType = {
       name: 'Users',
@@ -374,16 +379,9 @@ export class HighchartsService {
       return Object.keys(editorGroups).findIndex(editor => editorGroups[editor].includes(seat));
     }
     const getEditorColor = (seat: Seat) => {
-      return ({
-        'vscode': '#007ACC', // VS Code blue
-        'intellij': '#FC801D', // IntelliJ orange
-        'sublime': '#FF9800', // Sublime orange
-        'atom': '#66595C', // Atom dark grey
-        'vim': '#019733', // Vim green
-        'unknown': '#808080' // Grey for unknown
-      })[seat.last_activity_editor?.split('/')[0] || 'unknown'];
+      return this.getEditorColor(seat.last_activity_editor?.split('/')[0] || 'unknown');
     }
-    
+
     return {
       chart: {
         zooming: {
@@ -398,7 +396,7 @@ export class HighchartsService {
         type: 'gantt' as const,
         data: seatActivity.reduce((acc, seat, index) => {
           const lastSeatActivity = seatActivity[index - 1];
-    
+
           // Skip if same activity timestamp as previous (no new activity) 🕐
           if (
             lastSeatActivity?.last_activity_at === seat.last_activity_at &&
@@ -406,27 +404,27 @@ export class HighchartsService {
           ) {
             return acc;
           }
-      
+
           const activityTime = new Date(Date.parse(seat.last_activity_at || seat.created_at));
-          
+
           // For first activity or new activity timestamp 📊
           acc.push({
             name: String(seat.assignee?.login || `Seat ${seat.assignee?.id}`),
             start: activityTime.getTime(),
             // End time is either next activity or current time
-            end: index < seatActivity.length - 1 
+            end: index < seatActivity.length - 1
               ? new Date(Date.parse(seatActivity[index + 1].last_activity_at || seatActivity[index + 1].created_at)).getTime()
               : activityTime.getTime() + (60 * 60 * 1000), // Add 1 hour for last activity
             y: getEditorIndex(seat),
             color: getEditorColor(seat),
             raw: seat,
           });
-          
+
           return acc;
         }, [] as CustomHighchartsGanttPoint[]),
       }] as Highcharts.SeriesGanttOptions[],
       tooltip: {
-        formatter: function() {
+        formatter: function () {
           const point: CustomHighchartsGanttPoint = this.point;
           return `<b>${point.name}</b><br/>
                   Editor: ${point.raw.last_activity_editor}<br/>
@@ -445,5 +443,195 @@ export class HighchartsService {
         categories: Object.keys(editorGroups).map(editor => editor.toLowerCase()),
       }
     };
+  }
+
+  transformMetricsToPieDrilldown(metrics: CopilotMetrics): Highcharts.Options {
+    // Main pie series showing top level categories 🔝
+    console.log(metrics)
+    const sharedSeriesOptions: any = {
+      colorByPoint: true,
+      dataLabels: [{
+        enabled: true,
+        distance: 20
+      }, {
+        enabled: true,
+        distance: -40,
+        format: '{point.percentage:.1f}%',
+        filter: {
+          operator: '>',
+          property: 'percentage',
+          value: 10
+        }
+      }]
+    };
+    const suggestionsSeries: Highcharts.SeriesOptionsType = {
+      type: 'pie',
+      name: 'Copilot Usage',
+      data: metrics.copilot_ide_code_completions?.editors.map(editor => ({
+        name: editor.name,
+        y: editor.total_code_suggestions,
+        raw: editor,
+        drilldown: `editor_${editor.name}`,
+        color: this.getEditorColor(editor.name.split('/')[0])
+      })),
+      ...sharedSeriesOptions
+    };
+
+    const drilldownSeries: Highcharts.SeriesOptionsType[] = [];
+
+    // IDE Completions drilldown by editor 🖥️
+    if (metrics.copilot_ide_code_completions?.editors) {
+      metrics.copilot_ide_code_completions.editors.forEach(editor => {
+        drilldownSeries.push({
+          type: 'pie',
+          name: editor.name,
+          id: `editor_${editor.name}`,
+          data: editor.models.map(model => ({
+            name: model.name,
+            y: 'languages' in model ? model.total_code_suggestions : model.total_chats,
+            raw: model,
+            drilldown: 'languages' in model ? `model_${editor.name}_${model.name}` : undefined
+          })),
+          ...sharedSeriesOptions
+        });
+
+        // Model languages drilldown 📊
+        editor.models.forEach(model => {
+          if ('languages' in model) {
+            drilldownSeries.push({
+              type: 'pie',
+              name: `${model.name} Languages`,
+              id: `model_${editor.name}_${model.name}`,
+              data: model.languages.map(lang => ({
+                name: lang.name,
+                y: lang.total_code_suggestions,
+                raw: lang,
+                drilldown: `lang_${editor.name}_${model.name}_${lang.name}`,
+                color: this.getLanguageColor(lang.name),
+              })),
+              ...sharedSeriesOptions
+            });
+
+            // Language details drilldown 🔍
+            model.languages.forEach(lang => {
+              console.log(lang.name)
+              drilldownSeries.push({
+                type: 'pie',
+                name: `${lang.name} Details`,
+                id: `lang_${editor.name}_${model.name}_${lang.name}`,
+                data: [
+                  {
+                    name: 'Accepted',
+                    y: lang.total_code_acceptances,
+                    raw: lang,
+                  },
+                  {
+                    name: 'Ignored',
+                    y: (lang.total_code_suggestions || 0) - (lang.total_code_acceptances || 0),
+                    raw: lang,
+                  }
+                ] as CustomHighchartsPoint[],
+                ...sharedSeriesOptions
+              });
+            });
+          }
+        });
+      });
+    }
+
+    return {
+      series: [suggestionsSeries],
+      drilldown: {
+        series: drilldownSeries
+      },
+      tooltip: {
+        headerFormat: undefined,
+        pointFormatter: function () {
+          const point: any = this;
+          const decimalPipe = new DecimalPipe('en-US');
+          const parts = [
+            `<b>${point.name}</b><br>`,
+            `Suggestions: <b>${decimalPipe.transform(point.y)}</b><br>`,
+            `Accepted: <b>${decimalPipe.transform(point.raw.total_code_acceptances)} (${decimalPipe.transform(point.raw.total_code_acceptances / point.y * 100, '1.2-2')}%)</b><br>`,
+            `LoC Suggested: <b>${decimalPipe.transform(point.raw.total_code_lines_suggested)}</b><br>`,
+            `LoC Accepted: <b>${decimalPipe.transform(point.raw.total_code_lines_accepted)}</b><br>`
+          ];
+          return parts.join('');
+        }
+      }
+    };
+  }
+
+  getEditorColor(editor: string): string | undefined {
+    return ({
+      'visualstudio': '#5C2D91',
+      'vscode': '#007ACC',
+      'jetbrains': '#000000',
+      'xcode': '#157EFB',
+      'neovim': '#57A143',
+      'emacs': '#7F5AB6',
+      'vim': '#019733',
+      'unknown': '#808080'
+    })[editor.toLowerCase()];
+  }
+
+  getLanguageColor(language: string): string | undefined {
+    const colorMap: Record<string, string> = {
+      // Programming Languages
+      'typescript': '#3178c6',
+      'javascript': '#f1e05a',
+      'python': '#3572A5',
+      'java': '#b07219',
+      'csharp': '#178600',
+      'cpp': '#f34b7d',
+      'fsharp': '#b845fc',
+      'ruby': '#701516',
+      'go': '#00ADD8',
+      'rust': '#dea584',
+      'swift': '#F05138',
+      'kotlin': '#A97BFF',
+      'dart': '#00B4AB',
+      'elixir': '#6e4a7e',
+      'lua': '#000080',
+      'perl': '#0298c3',
+      'scala': '#c22d40',
+      'groovy': '#4298b8',
+      'clojure': '#db5855',
+      'julia': '#a270ba',
+
+      // Markup & Config
+      'html': '#e34c26',
+      'css': '#563d7c',
+      'scss': '#c6538c',
+      'markdown': '#083fa1',
+      'yaml': '#cb171e',
+      'xml': '#0060ac',
+      'json': '#292929',
+      'jsonc': '#292929',
+      'toml': '#9c4221',
+      'dockerfile': '#384d54',
+      'makefile': '#427819',
+
+      // Framework Specific
+      'typescriptreact': '#3178c6',
+      'javascriptreact': '#f1e05a',
+      'vue': '#41b883',
+      'svelte': '#ff3e00',
+      'razor': '#512be4',
+      'blade': '#f7523f',
+
+      // Other
+      'sql': '#e38c00',
+      'graphql': '#e10098',
+      'powershell': '#012456',
+      'shellscript': '#89e051',
+      'bat': '#C1F12E',
+      'ini': '#d1dbe0',
+      'plaintext': '#777777',
+      'ignore': '#666666',
+      'gitattributes': '#F44D27'
+    };
+
+    return colorMap[language.toLowerCase()]
   }
 }

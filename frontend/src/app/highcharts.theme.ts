@@ -107,7 +107,7 @@ Highcharts.theme = {
   drilldown: {
     breadcrumbs: {
       position: {
-          align: 'right'
+        align: 'right'
       },
       buttonTheme: {
         // fill: 'var(--sys-surface-container)',
@@ -254,7 +254,18 @@ Highcharts.theme = {
     },
     pie: {
       borderWidth: 0,
-      borderRadius: 4
+      borderRadius: 4,
+      dataLabels: {  style: {
+        font: 'var(--sys-label-large)',            
+        fontSize: '14px',                         
+        opacity: 0.87,                             
+        fontWeight: 'var(--sys-label-large-weight)',   
+        textOutline: 'none',        
+      },
+      distance: 20,                               
+      connectorWidth: 1,                          
+      connectorColor: 'var(--sys-outline-variant)'
+      }
     }
   },
   accessibility: {
