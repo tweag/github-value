@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CopilotSurveyComponent } from './copilot-survey.component';
+import { NewCopilotSurveyComponent } from './new-copilot-survey.component';
 
 describe('CopilotSurveyComponent', () => {
-  let component: CopilotSurveyComponent;
-  let fixture: ComponentFixture<CopilotSurveyComponent>;
+  let component: NewCopilotSurveyComponent;
+  let fixture: ComponentFixture<NewCopilotSurveyComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CopilotSurveyComponent]
+      imports: [NewCopilotSurveyComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CopilotSurveyComponent);
+    fixture = TestBed.createComponent(NewCopilotSurveyComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

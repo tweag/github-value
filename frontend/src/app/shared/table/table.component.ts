@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {Component, OnChanges, SimpleChanges, ViewChild} from '@angular/core';
+import {Component, EventEmitter, OnChanges, OnInit, Output, SimpleChanges, ViewChild} from '@angular/core';
 import {MatPaginator, MatPaginatorModule} from '@angular/material/paginator';
 import {MatSort, MatSortable, MatSortModule} from '@angular/material/sort';
 import {MatTableDataSource, MatTableModule} from '@angular/material/table';
@@ -38,7 +38,7 @@ export interface ColumnOptions {
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss'
 })
-export class TableComponent implements OnChanges  {
+export class TableComponent implements OnChanges, OnInit  {
   dataSource!: MatTableDataSource<any>;
   @Input() data?: any[] = [];
   @Input() columns: ColumnOptions[] = [];
@@ -46,9 +46,11 @@ export class TableComponent implements OnChanges  {
   @Input() sortingDataAccessor?: (item: any, property: string) => any;
   @Input() filterPredicate?: (data: any, filter: string) => boolean;
   @Input() filterPlaceholder = 'Ex. Mona';
+  @Output() rowClick = new EventEmitter<any>();
   displayedColumns = this.columns.map(c => c.columnDef);
   isLoadingResults = true;
   isError = false;
+  isClickable = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
@@ -57,6 +59,10 @@ export class TableComponent implements OnChanges  {
     this.dataSource = new MatTableDataSource();
     this.dataSource.data = this.data!;
     this.dataSource.paginator = this.paginator;
+  }
+
+  ngOnInit() { 
+    this.isClickable = this.rowClick.observers.length > 0;
   }
 
   ngOnChanges(changes: SimpleChanges) {

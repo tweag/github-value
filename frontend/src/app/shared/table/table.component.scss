@@ -42,3 +42,17 @@ td, th {
     padding: 20px;
   }
 }
+
+.clickable {
+  &.mat-mdc-row .mat-mdc-cell {
+  cursor: pointer;
+  transition: all 0.1s ease-in-out;
+}
+
+&.mat-mdc-row:hover {
+  background: var(--sys-surface-container-high);
+  color: var(--sys-on-surface);
+  border-color: var(--sys-primary);
+}
+
+}

@@ -8,6 +8,7 @@ import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
 import { MetricsService } from '../../../services/metrics.service';
 import { FormControl } from '@angular/forms';
 import { combineLatest, startWith } from 'rxjs';
+import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
 
 @Component({
   selector: 'app-value',
@@ -24,12 +25,14 @@ import { combineLatest, startWith } from 'rxjs';
 export class CopilotValueComponent implements OnInit {
   activityData?: ActivityResponse;
   metricsData?: CopilotMetrics[];
+  surveysData?: Survey[];
   daysInactive = new FormControl(30);
   adoptionFidelity = new FormControl<'day' | 'hour'>('day');
 
   constructor(
     private seatService: SeatService,
-    private metricsService: MetricsService
+    private metricsService: MetricsService,
+    private copilotSurveyService: CopilotSurveyService
   ) { }
 
   ngOnInit() {
@@ -43,6 +46,9 @@ export class CopilotValueComponent implements OnInit {
     });
     this.metricsService.getMetrics().subscribe(data => {
       this.metricsData = data;
+    });
+    this.copilotSurveyService.getAllSurveys().subscribe(data => {
+      this.surveysData = data;
     });
   }
 }

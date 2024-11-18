@@ -71,6 +71,13 @@ export class DateRangeSelectComponent implements OnDestroy {
     )
   }
 
+  ngOnInit() { 
+    this.dateRangeChange.emit({
+      start: this.range.value.start,
+      end: this.range.value.end
+    });
+  }
+
   ngOnDestroy() {
     this.subscriptions.forEach(s => s.unsubscribe());
   }

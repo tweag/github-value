@@ -23,7 +23,7 @@
           {{column.cell(row)}}
         </mat-icon>
         } @else if (column.link) {
-        <a [href]="column.link(row)">{{column.cell(row)}}</a>
+        <a [href]="column.link(row)" target="_blank">{{column.cell(row)}}</a>
         } @else {
         {{column.cell(row)}}
         }
@@ -32,7 +32,7 @@
     }
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.clickable]="isClickable" (click)="rowClick.emit(row)"></tr>
 
     <!-- Row shown when there is no matching data. -->
     <tr class="mat-row" *matNoDataRow class="filter-not-found-row">

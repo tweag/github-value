@@ -101,7 +101,7 @@ class SeatsService {
     }
   }
 
-  async getAssigneesActivity(daysInactive: number, precision: 'hour' | 'day' = 'day'): Promise<AssigneeDailyActivity> {
+  async getAssigneesActivity(daysInactive: number, precision: 'hour' | 'day' | 'minute' = 'day'): Promise<AssigneeDailyActivity> {
     const assignees = await Assignee.findAll({
       attributes: ['login', 'id'],
       include: [
@@ -128,6 +128,8 @@ class SeatsService {
           dateIndex.setUTCHours(0, 0, 0, 0);
         } else if (precision === 'hour') {
           dateIndex.setUTCMinutes(0, 0, 0);
+        } else if (precision === 'minute') {
+          dateIndex.setUTCSeconds(0, 0);
         }
         const dateIndexStr = new Date(dateIndex).toISOString();
         if (!activityDays[dateIndexStr]) {

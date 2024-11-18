@@ -3,12 +3,16 @@ import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { ActivityResponse } from '../../../../services/seat.service';
 import { HighchartsService } from '../../../../services/highcharts.service';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-adoption-chart',
   standalone: true,
   imports: [
     HighchartsChartModule
+  ],
+  providers: [
+    DatePipe
   ],
   templateUrl: './adoption-chart.component.html',
   styleUrl: './adoption-chart.component.scss'
@@ -69,12 +73,17 @@ export class AdoptionChartComponent implements OnChanges {
       }]
     },
     tooltip: {
-      headerFormat: '<b>{point.x:%b %d, %Y}</b><br/>',
-      pointFormat: [
-        '{series.name}: ',
-        '<b>{point.raw}</b>',
-        '(<b>{point.y:.1f}%</b>)'
-      ].join(''),
+      // '<b>{point.x:%b %d, %Y}</b><br/>',
+      headerFormat: '',
+      pointFormatter: function () {
+        const parts = [
+          `<b>${new DatePipe('en-US').transform(this.x)}</b><br/>`,
+          `${this.series.name}: `,
+          `<b>${(this as any).raw}</b>`,
+          `(<b>${this.y?.toFixed(1)}%</b>)`
+        ]
+        return parts.join('');
+      },
       style: {
         fontSize: '14px'
       }
@@ -109,13 +118,15 @@ export class AdoptionChartComponent implements OnChanges {
   _chartOptions?: Highcharts.Options;
 
   constructor(
-    private highchartsService: HighchartsService
+    private highchartsService: HighchartsService,
+    private datePipe: DatePipe
   ) {
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['data'] && this.data) {
       this._chartOptions = this.highchartsService.transformActivityMetricsToLine(this.data);
+      this.setTooltipFormatter();
       this.chartOptions = {
         ...this.chartOptions,
         ...this._chartOptions
@@ -123,4 +134,22 @@ export class AdoptionChartComponent implements OnChanges {
       this.updateFlag = true;
     }
   }
+
+  setTooltipFormatter() {
+    if (!this.data) return;
+    const dateTimes = Object.keys(this.data);
+    const isDaily = Math.abs(new Date(dateTimes[1]).getTime() - new Date(dateTimes[0]).getTime()) > 3600000;
+    const dateFormat = isDaily ? undefined : 'short';
+    console.log(isDaily, dateFormat);
+    this.chartOptions.tooltip!.pointFormatter = function () {
+      const parts = [
+        `<b>${new DatePipe('en-US').transform(this.x, dateFormat)}</b><br/>`,
+        `${this.series.name}: `,
+        `<b>${(this as any).raw}</b>`,
+        `(<b>${this.y?.toFixed(1)}%</b>)`
+      ]
+      return parts.join('');
+    };
+  }
+
 }

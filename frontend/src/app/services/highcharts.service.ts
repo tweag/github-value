@@ -3,6 +3,7 @@ import { CopilotMetrics } from './metrics.service.interfaces';
 import { DashboardCardBarsInput } from '../main/copilot/copilot-dashboard/dashboard-card/dashboard-card-bars/dashboard-card-bars.component';
 import { ActivityResponse } from './seat.service';
 import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
+import { Survey } from './copilot-survey.service';
 
 interface CustomHighchartsPoint extends Highcharts.PointOptionsObject {
   date?: Date;
@@ -299,5 +300,61 @@ export class HighchartsService {
         dailyActiveDotcomPrSeries,
       ]
     }
+  }
+
+  transformSurveysToScatter(surveys: Survey[]): Highcharts.Options {
+    return {
+      series: [{
+        name: 'Time Saved',
+        type: 'spline' as const,
+        data: surveys.map(survey => ({
+          x: new Date(survey.dateTime).getTime(),
+          y: survey.percentTimeSaved,
+        })),
+        lineWidth: 2,
+        marker: {
+          enabled: true,
+          radius: 4,
+          symbol: 'circle'
+        },
+        states: {
+          hover: {
+            lineWidth: 3
+          }
+        }
+      }, {
+        type: 'scatter' as const,
+        name: 'Survey',
+        data: surveys.map(survey => ({
+          x: new Date(survey.dateTime).getTime(),
+          y: survey.percentTimeSaved,
+          raw: survey
+        })),
+        lineWidth: 2,
+        marker: {
+          enabled: true,
+          radius: 4,
+          symbol: 'circle'
+        },
+        states: {
+          hover: {
+            lineWidth: 3
+          }
+        }
+      }],
+      tooltip: {
+        headerFormat: '<b>{point.x:%b %d, %Y}</b><br/>',
+        pointFormatter: function () {
+          return [
+            `User: `,
+            '<b>' + (this as any).raw.userId + '</b>',
+            `</br>Time saved: `,
+            '<b>' + Math.round(this.y || 0) + '%</b>',
+            `</br>PR: `,
+            '<b>#' + (this as any).raw.prNumber + '</b>',
+          ].join('');
+        }
+      }
+    };
   }
 }

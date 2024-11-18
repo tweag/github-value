@@ -19,7 +19,7 @@ class SeatsController {
       return;
     }
     try {
-      const activityDays = await SeatsService.getAssigneesActivity(_daysInactive, precision as 'hour' | 'day');
+      const activityDays = await SeatsService.getAssigneesActivity(_daysInactive, precision as 'hour' | 'day' | 'minute');
       res.status(200).json(activityDays);
     } catch (error) {
       res.status(500).json(error);

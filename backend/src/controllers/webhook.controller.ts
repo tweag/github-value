@@ -17,7 +17,7 @@ const webhooks = new Webhooks({
 
 export const setupWebhookListeners = (github: App) => {
   github.webhooks.on("pull_request.opened", ({ octokit, payload }) => {
-    const surveyUrl = new URL(`/surveys/new`, settingsService.baseUrl);
+    const surveyUrl = new URL(`copilot/surveys/new`, settingsService.baseUrl);
 
     surveyUrl.searchParams.append('url', payload.pull_request.html_url);
     surveyUrl.searchParams.append('author', payload.pull_request.user.login);

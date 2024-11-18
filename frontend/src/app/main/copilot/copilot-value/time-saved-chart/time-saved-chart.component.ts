@@ -1,6 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
 import { HighchartsChartModule } from 'highcharts-angular';
+import { Survey } from '../../../../services/copilot-survey.service';
+import { HighchartsService } from '../../../../services/highcharts.service';
 
 @Component({
   selector: 'app-time-saved-chart',
@@ -12,6 +14,7 @@ import { HighchartsChartModule } from 'highcharts-angular';
   styleUrl: './time-saved-chart.component.scss'
 })
 export class TimeSavedChartComponent {
+  @Input() surveys?: Survey[];
   Highcharts: typeof Highcharts = Highcharts;
   updateFlag = false;
   data = [
@@ -160,6 +163,24 @@ export class TimeSavedChartComponent {
           lineWidth: 3
         }
       }
+    }, {
+      type: 'scatter',
+      name: 'Observations',
+      data: [
+        [1.4, 0.4],
+        [2.4, 5.3],
+        [2.9, 4.9],
+        [5, 2.3],
+        [3.6, 1.9],
+        [5.1, 6.1],
+        [2, 4],
+        [2, 5.6],
+        [-0.2, 6.3],
+        [1.2, 6.3]
+      ],
+      marker: {
+        radius: 4
+      }
     }],
     legend: {
       enabled: false
@@ -172,5 +193,23 @@ export class TimeSavedChartComponent {
       }
     }
   };
+  _chartOptions?: Highcharts.Options;
+
+  constructor(
+    private highchartsService: HighchartsService
+  ) {
+  }
+
+  ngOnChanges() {
+    if (this.surveys) {
+      console.log('surveys', this.surveys);
+      this._chartOptions = this.highchartsService.transformSurveysToScatter(this.surveys);
+      this.chartOptions = {
+        ...this.chartOptions,
+        ...this._chartOptions
+      };
+      this.updateFlag = true;
+    }
+  }
 
 }

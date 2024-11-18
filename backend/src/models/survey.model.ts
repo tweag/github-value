@@ -39,7 +39,7 @@ Survey.init({
     }
   },
   reason: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(4096),
     allowNull: true,
   },
   timeUsedFor: {

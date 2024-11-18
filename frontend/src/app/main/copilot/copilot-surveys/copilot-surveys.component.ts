@@ -3,16 +3,17 @@ import { MaterialModule } from '../../../material.module';
 import { AppModule } from '../../../app.module';
 import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
 import { ColumnOptions } from '../../../shared/table/table.component';
+import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-surveys',
+  selector: 'app-copilot-surveys',
   standalone: true,
   imports: [
     AppModule,
     MaterialModule
   ],
-  templateUrl: './surveys.component.html',
-  styleUrl: './surveys.component.scss'
+  templateUrl: './copilot-surveys.component.html',
+  styleUrl: './copilot-surveys.component.scss'
 })
 export class CopilotSurveysComponent implements OnInit {
   surveys?: Survey[];
@@ -24,11 +25,12 @@ export class CopilotSurveysComponent implements OnInit {
     { columnDef: 'timeUsedFor', header: 'Time Used For', cell: (element: Survey) => this.formatTimeUsedFor(element.timeUsedFor) },
     { columnDef: 'prNumber', header: 'PR', cell: (element: Survey) => `${element.repo}#${element.prNumber}`, link: (element: Survey) => `https://github.com/${element.owner}/${element.repo}/pull/${element.prNumber}` },
     { columnDef: 'dateTime', header: 'Date Time', cell: (element: Survey) => new Date(element.dateTime).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) },
-    { columnDef: 'reason', header: 'Reason', cell: (element: Survey) => element.reason || '-' },
+    // { columnDef: 'reason', header: 'Reason', cell: (element: Survey) => element.reason || '-' },
   ];
 
   constructor(
-    private copilotSurveyService: CopilotSurveyService
+    private copilotSurveyService: CopilotSurveyService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -54,5 +56,9 @@ export class CopilotSurveysComponent implements OnInit {
       default:
         return 'Unknown';
     }
+  }
+
+  onSurveyClick(survey: any) {
+    this.router.navigate(['/copilot/surveys', survey.id]);
   }
 }

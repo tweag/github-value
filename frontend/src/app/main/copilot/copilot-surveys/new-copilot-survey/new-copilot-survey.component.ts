@@ -13,14 +13,14 @@ import { ActivatedRoute, Params } from '@angular/router';
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
-      useExisting: forwardRef(() => CopilotSurveyComponent),
+      useExisting: forwardRef(() => NewCopilotSurveyComponent),
       multi: true,
     }
   ],
-  templateUrl: './copilot-survey.component.html',
-  styleUrl: './copilot-survey.component.scss'
+  templateUrl: './new-copilot-survey.component.html',
+  styleUrl: './new-copilot-survey.component.scss'
 })
-export class CopilotSurveyComponent implements OnInit {
+export class NewCopilotSurveyComponent implements OnInit {
   surveyForm: FormGroup;
   params: Params = {};
   defaultPercentTimeSaved = 30;
