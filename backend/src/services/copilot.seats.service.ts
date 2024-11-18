@@ -13,10 +13,10 @@ type AssigneeDailyActivity = {
     totalActive: number,
     totalInactive: number,
     active: {
-      [assignee: string]: Date
+      [assignee: string]: Seat
     },
     inactive: {
-      [assignee: string]: Date
+      [assignee: string]: Seat
     }
   };
 };
@@ -42,6 +42,18 @@ class SeatsService {
         }
       },
       order: [['last_activity_at', 'DESC']]
+    });
+  }
+
+  async getAssignee(id: number) {
+    return Seat.findAll({
+      include: [{
+        model: Assignee,
+        as: 'assignee'
+      }],
+      where: {
+        assignee_id: id
+      }
     });
   }
 
@@ -109,7 +121,7 @@ class SeatsService {
           model: Seat,
           as: 'activity',
           required: false,
-          attributes: ['createdAt', 'last_activity_at'],
+          attributes: ['createdAt', 'last_activity_at', 'last_activity_editor'],
           order: [['last_activity_at', 'ASC']],
         }
       ],
@@ -145,9 +157,9 @@ class SeatsService {
           return; // already processed for this day
         }
         if (diff > daysInactive) {
-          activityDays[dateIndexStr].inactive[assignee.login] = assignee.activity[0].last_activity_at;
+          activityDays[dateIndexStr].inactive[assignee.login] = assignee.activity[0];
         } else {
-          activityDays[dateIndexStr].active[assignee.login] = assignee.activity[0].last_activity_at;
+          activityDays[dateIndexStr].active[assignee.login] = assignee.activity[0];
         }
       });
     });

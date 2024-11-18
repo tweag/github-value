@@ -11,6 +11,16 @@ class SeatsController {
     }
   }
 
+  async getSeat(req: Request, res: Response): Promise<void> {
+    const { id } = req.params;
+    try {
+      const seat = await SeatsService.getAssignee(Number(id));
+      res.status(200).json(seat);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
   async getActivity(req: Request, res: Response): Promise<void> {
     const { daysInactive, precision } = req.query;
     const _daysInactive = Number(daysInactive);

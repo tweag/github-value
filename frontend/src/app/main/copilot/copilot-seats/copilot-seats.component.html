@@ -3,5 +3,5 @@
     <h1>Seats</h1>
   </div>
   <app-table [data]="seats" [columns]="tableColumns" [defaultSort]="defaultSort"
-    [sortingDataAccessor]="sortingDataAccessor" [filterPredicate]="filterPredicate"></app-table>
+    [sortingDataAccessor]="sortingDataAccessor" [filterPredicate]="filterPredicate" (rowClick)="onRowClick($event)"></app-table>
 </div>

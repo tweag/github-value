@@ -166,18 +166,7 @@ export class TimeSavedChartComponent {
     }, {
       type: 'scatter',
       name: 'Observations',
-      data: [
-        [1.4, 0.4],
-        [2.4, 5.3],
-        [2.9, 4.9],
-        [5, 2.3],
-        [3.6, 1.9],
-        [5.1, 6.1],
-        [2, 4],
-        [2, 5.6],
-        [-0.2, 6.3],
-        [1.2, 6.3]
-      ],
+      data: [],
       marker: {
         radius: 4
       }

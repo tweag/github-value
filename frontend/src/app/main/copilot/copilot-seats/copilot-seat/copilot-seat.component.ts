@@ -1,78 +1,84 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
 import 'highcharts/es-modules/masters/modules/gantt.src';
-import 'highcharts/es-modules/masters/modules/accessibility.src';
 import { HighchartsChartModule } from 'highcharts-angular';
+import { Seat, SeatService } from '../../../../services/seat.service';
+import { ActivatedRoute } from '@angular/router';
+import { HighchartsService } from '../../../../services/highcharts.service';
+import { MatCardModule } from '@angular/material/card';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-copilot-seat',
   standalone: true,
   imports: [
-    HighchartsChartModule
+    HighchartsChartModule,
+    MatCardModule,
+    CommonModule
   ],
   templateUrl: './copilot-seat.component.html',
   styleUrl: './copilot-seat.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CopilotSeatComponent {
+export class CopilotSeatComponent implements OnInit {
   Highcharts: typeof Highcharts = Highcharts;
   updateFlag = false;
   chartOptions: Highcharts.Options = {
-    title: {
-      text: 'Gantt Chart with Progress Indicators',
-      align: 'left'
+    "title": {
+      "text": "Seat Activity by Editor"
     },
-    xAxis: {
-      type: 'datetime',
-      min: Date.UTC(2014, 10, 17),
-      max: Date.UTC(2014, 10, 30)
+    "xAxis": {
+      "type": "datetime"
     },
-    accessibility: {
-      point: {
-        descriptionFormat: '{yCategory}. ' +
-          '{#if completed}Task {(multiply completed.amount 100):.1f}% ' +
-          'completed. {/if}' +
-          'Start {x:%Y-%m-%d}, end {x2:%Y-%m-%d}.'
+    legend: {
+      enabled: false
+    },
+    "series": [
+      {
+        "name": "Seat Activity",
+        "type": "gantt",
+        "data": []
       }
-    },
-    lang: {
-      accessibility: {
-        axis: {
-          xAxisDescriptionPlural: 'The chart has a two-part X axis ' +
-            'showing time in both week numbers and days.'
-        }
-      }
-    },
-    series: [{
-      name: 'Project 1',
-      type: 'gantt',
-      data: [{
-        name: 'Start prototype',
-        start: Date.UTC(2014, 10, 18),
-        end: Date.UTC(2014, 10, 25),
-        completed: {
-          amount: 0.25
-        }
-      }, {
-        name: 'Test prototype',
-        start: Date.UTC(2014, 10, 27),
-        end: Date.UTC(2014, 10, 29)
-      }, {
-        name: 'Develop',
-        start: Date.UTC(2014, 10, 20),
-        end: Date.UTC(2014, 10, 25),
-        completed: {
-          amount: 0.12,
-          fill: '#fa0'
-        }
-      }, {
-        name: 'Run acceptance tests',
-        start: Date.UTC(2014, 10, 23),
-        end: Date.UTC(2014, 10, 26)
-      }]
-    } as any]
+    ],
+    "tooltip": {},
+    "yAxis": {
+      "categories": [
+        "vscode",
+        "copilot-summarization-pr"
+      ]
+    }
   }
+  _chartOptions?: Highcharts.Options;
+  id?: number;
+  seat?: Seat;
+  seatActivity?: Seat[];
 
-  constructor() { }
+  constructor(
+    private copilotSeatService: SeatService,
+    private activatedRoute: ActivatedRoute,
+    private highchartsService: HighchartsService,
+    private cdr: ChangeDetectorRef
+  ) { }
+
+  ngOnInit() {
+    const routeId = this.activatedRoute.snapshot.paramMap.get('id');
+    if (!routeId) return;
+    this.id = parseInt(routeId);
+
+    this.copilotSeatService.getSeat(this.id).subscribe(seatActivity => {
+      this.seatActivity = seatActivity;
+      this.seat = seatActivity[this.seatActivity.length - 1];
+      console.log('seat', seatActivity);
+      this._chartOptions = this.highchartsService.transformSeatActivityToGantt(seatActivity);
+      this.chartOptions = {
+        ...this.chartOptions,
+        ...this._chartOptions
+      };
+      console.log('chartOptions', this.chartOptions);
+      this.updateFlag = true;
+      this.cdr.detectChanges();
+    });
+
+  }
 
 }

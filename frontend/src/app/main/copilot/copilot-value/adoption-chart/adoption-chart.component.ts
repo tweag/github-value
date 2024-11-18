@@ -119,7 +119,6 @@ export class AdoptionChartComponent implements OnChanges {
 
   constructor(
     private highchartsService: HighchartsService,
-    private datePipe: DatePipe
   ) {
   }
 

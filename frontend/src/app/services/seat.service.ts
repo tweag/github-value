@@ -27,6 +27,10 @@ export class SeatService {
     return this.http.get<Seat[]>(`${this.apiUrl}`);
   }
 
+  getSeat(id: number) {
+    return this.http.get<Seat[]>(`${this.apiUrl}/${id}`);
+  }
+
   getActivity(daysInactive = 30, precision: 'hour' | 'day' = 'day') {
     return this.http.get<ActivityResponse>(`${this.apiUrl}/activity`,
       {

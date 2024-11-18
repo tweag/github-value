@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { CopilotMetrics } from './metrics.service.interfaces';
 import { DashboardCardBarsInput } from '../main/copilot/copilot-dashboard/dashboard-card/dashboard-card-bars/dashboard-card-bars.component';
-import { ActivityResponse } from './seat.service';
+import { ActivityResponse, Seat } from './seat.service';
 import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
 import { Survey } from './copilot-survey.service';
 
@@ -11,6 +11,9 @@ interface CustomHighchartsPoint extends Highcharts.PointOptionsObject {
   raw?: any;
 }
 
+interface CustomHighchartsGanttPoint extends Highcharts.GanttPointOptionsObject {
+  raw?: any;
+}
 @Injectable({
   providedIn: 'root'
 })
@@ -354,6 +357,92 @@ export class HighchartsService {
             '<b>#' + (this as any).raw.prNumber + '</b>',
           ].join('');
         }
+      }
+    };
+  }
+
+  transformSeatActivityToGantt(seatActivity: Seat[]): Highcharts.Options {
+    const editorGroups = seatActivity.reduce((acc, seat) => {
+      const editor = seat.last_activity_editor?.split('/')[0] || 'unknown';
+      if (!acc[editor]) {
+        acc[editor] = [];
+      }
+      acc[editor].push(seat);
+      return acc;
+    }, {} as Record<string, Seat[]>);
+    const getEditorIndex = (seat: Seat) => {
+      return Object.keys(editorGroups).findIndex(editor => editorGroups[editor].includes(seat));
+    }
+    const getEditorColor = (seat: Seat) => {
+      return ({
+        'vscode': '#007ACC', // VS Code blue
+        'intellij': '#FC801D', // IntelliJ orange
+        'sublime': '#FF9800', // Sublime orange
+        'atom': '#66595C', // Atom dark grey
+        'vim': '#019733', // Vim green
+        'unknown': '#808080' // Grey for unknown
+      })[seat.last_activity_editor?.split('/')[0] || 'unknown'];
+    }
+    
+    return {
+      chart: {
+        zooming: {
+          type: 'x'
+        }
+      },
+      title: {
+        text: undefined
+      },
+      series: [{
+        name: 'Seat Activity',
+        type: 'gantt' as const,
+        data: seatActivity.reduce((acc, seat, index) => {
+          const lastSeatActivity = seatActivity[index - 1];
+    
+          // Skip if same activity timestamp as previous (no new activity) 🕐
+          if (
+            lastSeatActivity?.last_activity_at === seat.last_activity_at &&
+            lastSeatActivity?.last_activity_editor === seat.last_activity_editor
+          ) {
+            return acc;
+          }
+      
+          const activityTime = new Date(Date.parse(seat.last_activity_at || seat.created_at));
+          
+          // For first activity or new activity timestamp 📊
+          acc.push({
+            name: String(seat.assignee?.login || `Seat ${seat.assignee?.id}`),
+            start: activityTime.getTime(),
+            // End time is either next activity or current time
+            end: index < seatActivity.length - 1 
+              ? new Date(Date.parse(seatActivity[index + 1].last_activity_at || seatActivity[index + 1].created_at)).getTime()
+              : activityTime.getTime() + (60 * 60 * 1000), // Add 1 hour for last activity
+            y: getEditorIndex(seat),
+            color: getEditorColor(seat),
+            raw: seat,
+          });
+          
+          return acc;
+        }, [] as CustomHighchartsGanttPoint[]),
+      }] as Highcharts.SeriesGanttOptions[],
+      tooltip: {
+        formatter: function() {
+          const point: CustomHighchartsGanttPoint = this.point;
+          return `<b>${point.name}</b><br/>
+                  Editor: ${point.raw.last_activity_editor}<br/>
+                  Start: ${new Date(point.start || 0).toLocaleString()}<br/>
+                  End: ${new Date(point.end || 0).toLocaleString()}`;
+        }
+      },
+      xAxis: {
+        zoomEnabled: true,
+        type: 'datetime',
+        min: new Date(seatActivity[0].last_activity_at || seatActivity[0].created_at).getTime(),
+        max: new Date().getTime(),
+      },
+      yAxis: {
+        type: 'category',
+        categories: Object.keys(editorGroups).map(editor => editor.toLowerCase()),
       }
     };
   }

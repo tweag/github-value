@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { ColumnOptions, TableComponent } from '../../../shared/table/table.component';
 import { Seat, SeatService } from '../../../services/seat.service';
 import { SortDirection } from '@angular/material/sort';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-seats',
@@ -64,12 +65,20 @@ export class CopilotSeatsComponent implements OnInit {
   };
 
   constructor(
-    private seatsService: SeatService
+    private seatsService: SeatService,
+    private router: Router
   ) {}
 
   ngOnInit() {
     this.seatsService.getAllSeats().subscribe(seats => {
       this.seats = seats as Seat[];
     });
+  }
+
+  
+  onRowClick(seat: Seat) {
+    if (seat.assignee.id) {
+      this.router.navigate(['/copilot/seats', seat.assignee.id]);
+    }
   }
 }
