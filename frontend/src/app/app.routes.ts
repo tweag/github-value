@@ -9,7 +9,6 @@ import { CopilotDashboardComponent } from './main/copilot/copilot-dashboard/dash
 import { CopilotValueComponent } from './main/copilot/copilot-value/value.component';
 import { CopilotMetricsComponent } from './main/copilot/copilot-metrics/copilot-metrics.component';
 import { CopilotSeatsComponent } from './main/copilot/copilot-seats/copilot-seats.component';
-import { CopilotCalculatorComponent } from './main/copilot/copilot-calculator/copilot-calculator.component';
 import { DbLoadingComponent } from './install/db-loading/db-loading.component';
 import { CopilotSurveyComponent } from './main/copilot/copilot-surveys/copilot-survey-details/copilot-survey.component';
 import { CopilotSeatComponent } from './main/copilot/copilot-seats/copilot-seat/copilot-seat.component';
@@ -29,7 +28,6 @@ export const routes: Routes = [
       { path: 'copilot/metrics', component: CopilotMetricsComponent, title: 'Metrics' },
       { path: 'copilot/seats', component: CopilotSeatsComponent, title: 'Seats' },
       { path: 'copilot/seats/:id', component: CopilotSeatComponent, title: 'Seat' },
-      { path: 'copilot/calculator', component: CopilotCalculatorComponent, title: 'Calculator' },
       { path: 'copilot/surveys', component: CopilotSurveysComponent, title: 'Surveys' },
       { path: 'copilot/surveys/:id', component: CopilotSurveyComponent, title: 'Survey' },
       { path: 'copilot/surveys/new', component: NewCopilotSurveyComponent, title: 'New Survey' },
