@@ -1,0 +1,21 @@
+.predictive-modeling-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+}
+
+.left-column, .right-column {
+  width: 48%;
+}
+
+.settings-section, .targets-section {
+  margin-bottom: 20px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+button {
+  margin-top: 20px;
+}
