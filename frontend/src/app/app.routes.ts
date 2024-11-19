@@ -13,6 +13,7 @@ import { CopilotCalculatorComponent } from './main/copilot/copilot-calculator/co
 import { DbLoadingComponent } from './install/db-loading/db-loading.component';
 import { CopilotSurveyComponent } from './main/copilot/copilot-surveys/copilot-survey-details/copilot-survey.component';
 import { CopilotSeatComponent } from './main/copilot/copilot-seats/copilot-seat/copilot-seat.component';
+import { PredictiveModelingComponent } from './main/copilot/predictive-modeling/predictive-modeling.component';
 
 export const routes: Routes = [
   { path: 'setup', component: InstallComponent },
@@ -32,6 +33,7 @@ export const routes: Routes = [
       { path: 'copilot/surveys', component: CopilotSurveysComponent, title: 'Surveys' },
       { path: 'copilot/surveys/:id', component: CopilotSurveyComponent, title: 'Survey' },
       { path: 'copilot/surveys/new', component: NewCopilotSurveyComponent, title: 'New Survey' },
+      { path: 'copilot/predictive-modeling', component: PredictiveModelingComponent, title: 'Predictive Modeling' },
       { path: 'settings', component: SettingsComponent, title: 'Settings' },
       { path: '', redirectTo: 'copilot', pathMatch: 'full' }
     ]
