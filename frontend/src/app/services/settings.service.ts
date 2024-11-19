@@ -50,50 +50,50 @@ export class SettingsHttpService {
   }
 
   getDeveloperTotal() {
-    return this.http.get<string>(`${this.apiUrl}/developerTotal`);
+    return this.http.get<Settings>(`${this.apiUrl}/developerTotal`);
   }
 
-  updateDeveloperTotal(data: string) {
-    return this.http.put<void>(`${this.apiUrl}/developerTotal`, { value: data });
+  updateDeveloperTotal(data: Settings) {
+    return this.http.put<void>(`${this.apiUrl}/developerTotal`, data);
   }
 
   getAdopterCount() {
-    return this.http.get<string>(`${this.apiUrl}/adopterCount`);
+    return this.http.get<Settings>(`${this.apiUrl}/adopterCount`);
   }
 
-  updateAdopterCount(data: string) {
-    return this.http.put<void>(`${this.apiUrl}/adopterCount`, { value: data });
+  updateAdopterCount(data: Settings) {
+    return this.http.put<void>(`${this.apiUrl}/adopterCount`, data);
   }
 
   getPerLicenseCost() {
-    return this.http.get<string>(`${this.apiUrl}/perLicenseCost`);
+    return this.http.get<Settings>(`${this.apiUrl}/perLicenseCost`);
   }
 
-  updatePerLicenseCost(data: string) {
-    return this.http.put<void>(`${this.apiUrl}/perLicenseCost`, { value: data });
+  updatePerLicenseCost(data: Settings) {
+    return this.http.put<void>(`${this.apiUrl}/perLicenseCost`, data);
   }
 
   getPerDevCostPerYear() {
-    return this.http.get<string>(`${this.apiUrl}/perDevCostPerYear`);
+    return this.http.get<Settings>(`${this.apiUrl}/perDevCostPerYear`);
   }
 
-  updatePerDevCostPerYear(data: string) {
-    return this.http.put<void>(`${this.apiUrl}/perDevCostPerYear`, { value: data });
+  updatePerDevCostPerYear(data: Settings) {
+    return this.http.put<void>(`${this.apiUrl}/perDevCostPerYear`, data);
   }
 
   getPerDevHoursPerYear() {
-    return this.http.get<string>(`${this.apiUrl}/perDevHoursPerYear`);
+    return this.http.get<Settings>(`${this.apiUrl}/perDevHoursPerYear`);
   }
 
-  updatePerDevHoursPerYear(data: string) {
-    return this.http.put<void>(`${this.apiUrl}/perDevHoursPerYear`, { value: data });
+  updatePerDevHoursPerYear(data: Settings) {
+    return this.http.put<void>(`${this.apiUrl}/perDevHoursPerYear`, data);
   }
 
   getPercentofHoursCoding() {
-    return this.http.get<string>(`${this.apiUrl}/percentofHoursCoding`);
+    return this.http.get<Settings>(`${this.apiUrl}/percentofHoursCoding`);
   }
 
-  updatePercentofHoursCoding(data: string) {
-    return this.http.put<void>(`${this.apiUrl}/percentofHoursCoding`, { value: data });
+  updatePercentofHoursCoding(data: Settings) {
+    return this.http.put<void>(`${this.apiUrl}/percentofHoursCoding`, data);
   }
 }

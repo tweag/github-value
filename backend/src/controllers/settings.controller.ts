@@ -57,7 +57,7 @@ class SettingsController {
   async getDeveloperTotal(req: Request, res: Response) {
     try {
       const developerTotal = await SettingsService.getDeveloperTotal();
-      res.json(developerTotal);
+      res.status(200).json(developerTotal);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -66,8 +66,8 @@ class SettingsController {
   async updateDeveloperTotal(req: Request, res: Response) {
     try {
       const { value } = req.body;
-      await SettingsService.updateDeveloperTotal(value);
-      res.status(200).end();
+      const updatedDeveloperTotal = await SettingsService.updateDeveloperTotal(value);
+      res.status(200).json(updatedDeveloperTotal);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -76,7 +76,7 @@ class SettingsController {
   async getAdopterCount(req: Request, res: Response) {
     try {
       const adopterCount = await SettingsService.getAdopterCount();
-      res.json(adopterCount);
+      res.status(200).json(adopterCount);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -85,8 +85,8 @@ class SettingsController {
   async updateAdopterCount(req: Request, res: Response) {
     try {
       const { value } = req.body;
-      await SettingsService.updateAdopterCount(value);
-      res.status(200).end();
+      const updatedAdopterCount = await SettingsService.updateAdopterCount(value);
+      res.status(200).json(updatedAdopterCount);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -95,7 +95,7 @@ class SettingsController {
   async getPerLicenseCost(req: Request, res: Response) {
     try {
       const perLicenseCost = await SettingsService.getPerLicenseCost();
-      res.json(perLicenseCost);
+      res.status(200).json(perLicenseCost);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -104,8 +104,8 @@ class SettingsController {
   async updatePerLicenseCost(req: Request, res: Response) {
     try {
       const { value } = req.body;
-      await SettingsService.updatePerLicenseCost(value);
-      res.status(200).end();
+      const updatedPerLicenseCost = await SettingsService.updatePerLicenseCost(value);
+      res.status(200).json(updatedPerLicenseCost);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -114,7 +114,7 @@ class SettingsController {
   async getPerDevCostPerYear(req: Request, res: Response) {
     try {
       const perDevCostPerYear = await SettingsService.getPerDevCostPerYear();
-      res.json(perDevCostPerYear);
+      res.status(200).json(perDevCostPerYear);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -123,8 +123,8 @@ class SettingsController {
   async updatePerDevCostPerYear(req: Request, res: Response) {
     try {
       const { value } = req.body;
-      await SettingsService.updatePerDevCostPerYear(value);
-      res.status(200).end();
+      const updatedPerDevCostPerYear = await SettingsService.updatePerDevCostPerYear(value);
+      res.status(200).json(updatedPerDevCostPerYear);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -133,7 +133,7 @@ class SettingsController {
   async getPerDevHoursPerYear(req: Request, res: Response) {
     try {
       const perDevHoursPerYear = await SettingsService.getPerDevHoursPerYear();
-      res.json(perDevHoursPerYear);
+      res.status(200).json(perDevHoursPerYear);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -142,8 +142,8 @@ class SettingsController {
   async updatePerDevHoursPerYear(req: Request, res: Response) {
     try {
       const { value } = req.body;
-      await SettingsService.updatePerDevHoursPerYear(value);
-      res.status(200).end();
+      const updatedPerDevHoursPerYear = await SettingsService.updatePerDevHoursPerYear(value);
+      res.status(200).json(updatedPerDevHoursPerYear);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -152,7 +152,7 @@ class SettingsController {
   async getPercentofHoursCoding(req: Request, res: Response) {
     try {
       const percentofHoursCoding = await SettingsService.getPercentofHoursCoding();
-      res.json(percentofHoursCoding);
+      res.status(200).json(percentofHoursCoding);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -161,8 +161,8 @@ class SettingsController {
   async updatePercentofHoursCoding(req: Request, res: Response) {
     try {
       const { value } = req.body;
-      await SettingsService.updatePercentofHoursCoding(value);
-      res.status(200).end();
+      const updatedPercentofHoursCoding = await SettingsService.updatePercentofHoursCoding(value);
+      res.status(200).json(updatedPercentofHoursCoding);
     } catch (error) {
       res.status(500).json(error);
     }
