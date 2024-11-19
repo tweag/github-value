@@ -7,7 +7,7 @@ import { SettingsHttpService } from '../../../services/settings.service';
   standalone: true,
   imports: [],
   templateUrl: './predictive-modeling.component.html',
-  styleUrl: './predictive-modeling.component.scss'
+  styleUrls: ['./predictive-modeling.component.scss']
 })
 export class PredictiveModelingComponent implements OnInit {
   form: FormGroup;
