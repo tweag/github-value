@@ -58,12 +58,12 @@ class Setup {
     const response = await _octokit.rest.apps.createFromManifest({ code });
     const data = response.data;
 
-    this.addToEnv({
+    await this.addToEnv({
       GITHUB_APP_ID: data.id.toString(),
       GITHUB_APP_PRIVATE_KEY: data.pem
     });
     if (data.webhook_secret) {
-      this.addToEnv({
+      await this.addToEnv({
         GITHUB_WEBHOOK_SECRET: data.webhook_secret,
       });
     }
@@ -96,7 +96,7 @@ class Setup {
     }
 
     this.installationId = installation.id;
-    this.addToEnv({
+    await this.addToEnv({
       GITHUB_APP_ID: appId,
       GITHUB_APP_PRIVATE_KEY: privateKey,
       GITHUB_WEBHOOK_SECRET: webhookSecret,
@@ -105,10 +105,10 @@ class Setup {
   }
 
   createAppFromEnv = async () => {
-    if (process.env.GH_APP_ID) this.addToEnv({ GITHUB_APP_ID: process.env.GH_APP_ID });
-    if (process.env.GH_APP_PRIVATE_KEY) this.addToEnv({ GITHUB_APP_PRIVATE_KEY: process.env.GH_APP_PRIVATE_KEY });
-    if (process.env.GH_APP_WEBHOOK_SECRET) this.addToEnv({ GITHUB_WEBHOOK_SECRET: process.env.GH_APP_WEBHOOK_SECRET });
-    if (process.env.GH_APP_INSTALLATION_ID) this.addToEnv({ GITHUB_APP_INSTALLATION_ID: process.env.GH_APP_INSTALLATION_ID });
+    if (process.env.GH_APP_ID) await this.addToEnv({ GITHUB_APP_ID: process.env.GH_APP_ID });
+    if (process.env.GH_APP_PRIVATE_KEY) await this.addToEnv({ GITHUB_APP_PRIVATE_KEY: process.env.GH_APP_PRIVATE_KEY });
+    if (process.env.GH_APP_WEBHOOK_SECRET) await this.addToEnv({ GITHUB_WEBHOOK_SECRET: process.env.GH_APP_WEBHOOK_SECRET });
+    if (process.env.GH_APP_INSTALLATION_ID) await this.addToEnv({ GITHUB_APP_INSTALLATION_ID: process.env.GH_APP_INSTALLATION_ID });
     if (!process.env.GITHUB_APP_ID) throw new Error('GITHUB_APP_ID is not set');
     if (!process.env.GITHUB_APP_PRIVATE_KEY) throw new Error('GITHUB_APP_PRIVATE_KEY is not set');
     if (!process.env.GITHUB_WEBHOOK_SECRET) throw new Error('GITHUB_WEBHOOK_SECRET is not set');
@@ -157,8 +157,8 @@ class Setup {
     return web;
   };
 
-  addToEnv = (obj: { [key: string]: string }) => {
-    updateDotenv(obj);
+  addToEnv = async (obj: { [key: string]: string }) => {
+    await updateDotenv(obj);
     Object.entries(obj).forEach(([key, value]) => {
       process.env[key] = value;
     });

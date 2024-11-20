@@ -8,6 +8,12 @@ import { ActivatedRoute } from '@angular/router';
 import { HighchartsService } from '../../../../services/highcharts.service';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
+import dayjs, { Dayjs } from "dayjs";
+import duration from 'dayjs/plugin/duration';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(duration);
+dayjs.extend(relativeTime);
+const _day: Dayjs = dayjs();
 
 @Component({
   selector: 'app-copilot-seat',
@@ -53,6 +59,7 @@ export class CopilotSeatComponent implements OnInit {
   id?: number;
   seat?: Seat;
   seatActivity?: Seat[];
+  hoursSpent?: string;
 
   constructor(
     private copilotSeatService: SeatService,
@@ -69,11 +76,20 @@ export class CopilotSeatComponent implements OnInit {
     this.copilotSeatService.getSeat(this.id).subscribe(seatActivity => {
       this.seatActivity = seatActivity;
       this.seat = seatActivity[this.seatActivity.length - 1];
+
       this._chartOptions = this.highchartsService.transformSeatActivityToGantt(seatActivity);
       this.chartOptions = {
         ...this.chartOptions,
         ...this._chartOptions
       };
+      const totalTime = (this.chartOptions.series as Highcharts.SeriesGanttOptions[])?.reduce((acc, series) => {
+        return acc += series.data?.reduce((acc: number, data) => {
+          return acc += (data.end || 0) - (data.start || 0);
+        }, 0) || 0;
+      }, 0);
+      this.hoursSpent = dayjs.duration({
+        milliseconds: totalTime
+      }).humanize();
       this.updateFlag = true;
       this.cdr.detectChanges();
     });
