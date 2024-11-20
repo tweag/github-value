@@ -12,6 +12,10 @@ interface CustomHighchartsPoint extends Highcharts.Point {
   raw?: any;
   customTooltipInfo?: () => string;
 }
+interface CustomHighchartsPointOptions extends Highcharts.PointOptionsObject {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  raw?: any;
+}
 
 interface CustomHighchartsGanttPoint extends Highcharts.GanttPointOptionsObject {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -401,22 +405,22 @@ export class HighchartsService {
     const dailyActiveIdeCompletionsSeries = {
       ...initialSeries,
       name: 'IDE Completions',
-      data: [] as CustomHighchartsPoint[]
+      data: [] as CustomHighchartsPointOptions[]
     };
     const dailyActiveIdeChatSeries = {
       ...initialSeries,
       name: 'IDE Chats',
-      data: [] as CustomHighchartsPoint[]
+      data: [] as CustomHighchartsPointOptions[]
     };
     const dailyActiveDotcomChatSeries = {
       ...initialSeries,
       name: '.COM Chats',
-      data: [] as CustomHighchartsPoint[]
+      data: [] as CustomHighchartsPointOptions[]
     };
     const dailyActiveDotcomPrSeries = {
       ...initialSeries,
       name: '.COM Pull Requests',
-      data: [] as CustomHighchartsPoint[]
+      data: [] as CustomHighchartsPointOptions[]
     };
 
     Object.entries(activity).forEach(([date, dateData]) => {
