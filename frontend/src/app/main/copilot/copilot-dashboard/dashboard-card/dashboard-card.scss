@@ -10,5 +10,4 @@
 .dashboard-card:hover {
   @include mat.elevation(2);
   // background: var(--sys-surface-container);
-  cursor: pointer;
 }

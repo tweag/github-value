@@ -84,10 +84,7 @@ export class TimeSavedChartComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit() {
-    this._chartOptions = {
-      ...this._chartOptions,
-      ...this.chartOptions
-    }
+    this._chartOptions = Object.assign({}, this._chartOptions, this.chartOptions);
   }
 
   ngOnChanges() {

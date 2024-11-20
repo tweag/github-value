@@ -77,10 +77,7 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
     }, {
       name: '.COM Pull Requests',
       type: 'spline',
-    }],
-    legend: {
-      enabled: true
-    }
+    }]
   };
 
   constructor(
@@ -88,10 +85,7 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit() {
-    this._chartOptions = {
-      ...this._chartOptions,
-      ...this.chartOptions
-    }
+    this._chartOptions = Object.assign({}, this._chartOptions, this.chartOptions);
   }
   
   ngOnChanges() {

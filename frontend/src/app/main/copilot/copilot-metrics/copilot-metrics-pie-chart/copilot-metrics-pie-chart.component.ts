@@ -10,7 +10,7 @@ import { HighchartsService } from '../../../../services/highcharts.service';
     imports: [
         HighchartsChartModule
     ],
-    template: `<highcharts-chart [Highcharts]="Highcharts" [options]="chartOptions" [(update)]="updateFlag" style="width: 100%; display: block;">
+    template: `<highcharts-chart [Highcharts]="Highcharts" [options]="chartOptions" [(update)]="updateFlag">
 </highcharts-chart>`,
     // styleUrl: './copilot-metrics-ide-completion-pie-chart.component.css',
     changeDetection: ChangeDetectionStrategy.OnPush,

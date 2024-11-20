@@ -1,28 +1,16 @@
-<mat-card appearance="outlined" class="dashboard-card">
-  <mat-card-header *ngIf="title">
-    <mat-card-title>{{title}}</mat-card-title>
-  </mat-card-header>
-  <mat-card-content>
-    <ng-container *ngIf="sections; else loading">
-    <div class="bar-container">
-      <div class="bar-item" *ngFor="let section of sections; let i = index">
-        <div class="bar-header">
-          <mat-icon>{{section.icon}}</mat-icon>
-          <span class="bar-title">{{section.name}}</span>
-        </div>
-        <mat-progress-bar 
-          mode="determinate" 
-          [value]="section.percentage">
-        </mat-progress-bar>
-        <div class="bar-footer">
-          <span class="value">{{section.value | number:'1.0-0'}}</span>
-          <span class="percentage">{{section.percentage | number:'1.0-0'}}%</span>
-        </div>
-      </div>
+<div class="bar-container">
+  <div class="bar-item" *ngFor="let section of sections; let i = index">
+    <div class="bar-header">
+      <mat-icon>{{section.icon}}</mat-icon>
+      <span class="bar-title">{{section.name}}</span>
     </div>
-    </ng-container>
-    <ng-template #loading>
-      <app-loading-spinner></app-loading-spinner>
-    </ng-template>
-  </mat-card-content>
-</mat-card>
+    <mat-progress-bar 
+      mode="determinate" 
+      [value]="section.percentage">
+    </mat-progress-bar>
+    <div class="bar-footer">
+      <span class="value">{{section.value | number:'1.0-0'}}</span>
+      <span class="percentage">{{section.percentage | number:'1.0-0'}}%</span>
+    </div>
+  </div>
+</div>

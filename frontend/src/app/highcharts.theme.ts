@@ -103,6 +103,7 @@ const theme: Highcharts.Options = {
       }
     },
     width: null, // Let chart size flexibly
+    height: null
   },
   drilldown: {
     breadcrumbs: {
@@ -230,23 +231,6 @@ const theme: Highcharts.Options = {
     footerFormat: tooltipFooterFormat
   },
   plotOptions: {
-    series: {
-      animation: {
-        duration: 300
-      },
-      states: {
-        hover: {
-          brightness: 0.1,
-          halo: {
-            size: 5,
-            opacity: 0.25
-          }
-        },
-        inactive: {
-          opacity: 0.5
-        }
-      }
-    },
     column: {
       borderRadius: 4,
       borderWidth: 0

@@ -22,24 +22,8 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
   updateFlag = false;
   totalUsers = 500;
   @Input() data?: ActivityResponse;
-  @Input() stripped = false;
   @Input() chartOptions?: Highcharts.Options;
-  notStrippedChartOptions: Highcharts.Options = {
-    chart: {
-      zooming: {
-        type: 'x'
-      },
-      width: undefined,
-    },
-    xAxis: {
-      type: 'datetime',
-      dateTimeLabelFormats: {
-        // don't display the year
-        month: '%b',
-        year: '%b'
-      },
-      crosshair: true
-    },
+  _chartOptions: Highcharts.Options = {
     yAxis: {
       title: {
         text: 'Percent Active'
@@ -73,15 +57,6 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
           }
         }
       }]
-    }
-  }
-  _chartOptions: Highcharts.Options = {
-    yAxis: {
-      min: 0,
-      max: 100,
-      labels: {
-        enabled: false
-      }
     },
     series: [{
       name: 'Users',
@@ -96,7 +71,6 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
     },
   };
   @Output() chartInstanceChange = new EventEmitter<Highcharts.Chart>();
-  strippedChartOptions: Highcharts.Options = JSON.parse(JSON.stringify(this._chartOptions));
   charts: Highcharts.Chart[] = [];
 
   constructor(
@@ -104,14 +78,7 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit() {
-    this._chartOptions = {
-      ...this._chartOptions,
-      ...this.chartOptions
-    }
-    this._chartOptions = this.stripped ? this.strippedChartOptions : {
-      ...this._chartOptions,
-      ...this.notStrippedChartOptions
-    };
+    this._chartOptions = Object.assign({}, this._chartOptions, this.chartOptions);
   }
 
   ngOnChanges(changes: SimpleChanges) {

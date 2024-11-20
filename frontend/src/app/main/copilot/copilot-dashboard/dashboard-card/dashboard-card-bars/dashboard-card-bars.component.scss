@@ -1,5 +1,6 @@
-mat-card-content {
+:host {
   padding-top: 16px;
+  display: block;
 }
 
 .bar-item {

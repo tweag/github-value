@@ -4,8 +4,7 @@
   </mat-card-header>
   <mat-card-content>
     <ng-container *ngIf="_chartOptions !== undefined; else loading">
-      <highcharts-chart [Highcharts]="Highcharts" [options]="chartOptions" style="width: 100%; display: block;"
-        [(update)]="updateFlag">
+      <highcharts-chart [Highcharts]="Highcharts" [options]="chartOptions" [(update)]="updateFlag">
       </highcharts-chart>
     </ng-container>
     <ng-template #loading>

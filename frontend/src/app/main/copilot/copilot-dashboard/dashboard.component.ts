@@ -5,10 +5,14 @@ import { DashboardCardValueComponent } from './dashboard-card/dashboard-card-val
 import { DashboardCardDrilldownBarChartComponent } from './dashboard-card/dashboard-card-drilldown-bar-chart/dashboard-card-drilldown-bar-chart.component';
 import { MetricsService } from '../../../services/metrics.service';
 import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
-import { SeatService } from '../../../services/seat.service';
+import { ActivityResponse, SeatService } from '../../../services/seat.service';
 import { MembersService } from '../../../services/members.service';
-import { CopilotSurveyService } from '../../../services/copilot-survey.service';
+import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
 import { forkJoin } from 'rxjs';
+import { AdoptionChartComponent } from '../copilot-value/adoption-chart/adoption-chart.component';
+import { DailyActivityChartComponent } from '../copilot-value/daily-activity-chart/daily-activity-chart.component';
+import { TimeSavedChartComponent } from '../copilot-value/time-saved-chart/time-saved-chart.component';
+import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -17,7 +21,11 @@ import { forkJoin } from 'rxjs';
     AppModule,
     DashboardCardValueComponent,
     DashboardCardBarsComponent,
-    DashboardCardDrilldownBarChartComponent
+    DashboardCardDrilldownBarChartComponent,
+    AdoptionChartComponent,
+    DailyActivityChartComponent,
+    TimeSavedChartComponent,
+    LoadingSpinnerComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
@@ -25,14 +33,42 @@ import { forkJoin } from 'rxjs';
 export class CopilotDashboardComponent implements OnInit {
   totalMembers?: number;
   totalSeats?: number;
+  surveysData?: Survey[];
   totalSurveys?: number;
   totalSurveysThisWeek?: number;
   metricsData?: CopilotMetrics[];
+  activityData?: ActivityResponse;
   seatPercentage?: number;
   activeToday?: number;
   activeWeeklyChangePercent?: number;
   activeCurrentWeekAverage?: number;
   activeLastWeekAverage?: number;
+  chartOptions: Highcharts.Options = {
+    legend: {
+      enabled: false,
+    },
+    xAxis: {
+      visible: false,
+    },
+    yAxis: {
+      visible: false,
+    },
+    plotOptions: {
+      spline: {
+        lineWidth: 4,
+        states: {
+            hover: {
+                lineWidth: 5,
+                fillColor: '#000',
+            }
+        },
+        marker: {
+            enabled: false,
+            fillColor: 'transparent'
+        },
+      }
+    }
+  }
 
   constructor(
     private metricsService: MetricsService,
@@ -47,6 +83,7 @@ export class CopilotDashboardComponent implements OnInit {
     const formattedSince = since.toISOString().split('T')[0];
 
     this.surveyService.getAllSurveys().subscribe(data => {
+      this.surveysData = data;
       this.totalSurveys = data.length;
       this.totalSurveysThisWeek = data.reduce((acc, survey) => {
         const surveyDate = new Date(survey.dateTime);
@@ -64,6 +101,10 @@ export class CopilotDashboardComponent implements OnInit {
       this.totalSeats = result.seats.length;
       this.seatPercentage = (this.totalSeats / this.totalMembers) * 100;
     });
+
+    this.seatService.getActivity(30).subscribe((activity) => {
+      this.activityData = activity;
+    })
 
     this.metricsService.getMetrics({
       since: formattedSince,
