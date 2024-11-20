@@ -1,5 +1,5 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import * as Highcharts from 'highcharts';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { ActivityResponse } from '../../../../services/seat.service';
 import { HighchartsService } from '../../../../services/highcharts.service';
@@ -17,27 +17,13 @@ import { DatePipe } from '@angular/common';
   templateUrl: './adoption-chart.component.html',
   styleUrl: './adoption-chart.component.scss'
 })
-export class AdoptionChartComponent implements OnChanges {
+export class AdoptionChartComponent implements OnInit, OnChanges {
   Highcharts: typeof Highcharts = Highcharts;
   updateFlag = false;
   totalUsers = 500;
   @Input() data?: ActivityResponse;
-  chartOptions: Highcharts.Options = {
-    chart: {
-      zooming: {
-        type: 'x'
-      },
-      width: undefined,
-    },
-    xAxis: {
-      type: 'datetime',
-      dateTimeLabelFormats: {
-        // don't display the year
-        month: '%b',
-        year: '%b'
-      },
-      crosshair: true
-    },
+  @Input() chartOptions?: Highcharts.Options;
+  _chartOptions: Highcharts.Options = {
     yAxis: {
       title: {
         text: 'Percent Active'
@@ -72,83 +58,44 @@ export class AdoptionChartComponent implements OnChanges {
         }
       }]
     },
-    tooltip: {
-      // '<b>{point.x:%b %d, %Y}</b><br/>',
-      headerFormat: '',
-      pointFormatter: function () {
-        const parts = [
-          `<b>${new DatePipe('en-US').transform(this.x)}</b><br/>`,
-          `${this.series.name}: `,
-          `<b>${(this as any).raw}</b>`,
-          `(<b>${this.y?.toFixed(1)}%</b>)`
-        ]
-        return parts.join('');
-      },
-      style: {
-        fontSize: '14px'
-      }
-    },
     series: [{
       name: 'Users',
       type: 'spline',
-      data: [],
-      lineWidth: 2,
-      marker: {
-        enabled: true,
-        radius: 4,
-        symbol: 'circle'
-      },
-      states: {
-        hover: {
-          lineWidth: 3
-        }
-      }
+      data: []
     }],
+    tooltip: {
+      headerFormat: '',
+    },
     legend: {
       enabled: false
     },
-    plotOptions: {
-      series: {
-        animation: {
-          duration: 300
-        }
-      }
-    }
   };
-  _chartOptions?: Highcharts.Options;
+  @Output() chartInstanceChange = new EventEmitter<Highcharts.Chart>();
+  charts: Highcharts.Chart[] = [];
 
   constructor(
     private highchartsService: HighchartsService,
-  ) {
+  ) { }
+
+  ngOnInit() {
+    this._chartOptions.yAxis = Object.assign({}, this.chartOptions?.yAxis, this._chartOptions.yAxis);
+    this._chartOptions.tooltip = Object.assign({}, this.chartOptions?.tooltip, this._chartOptions.tooltip);
+    this._chartOptions = Object.assign({}, this.chartOptions, this._chartOptions);
   }
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes['data'] && this.data) {
-      this._chartOptions = this.highchartsService.transformActivityMetricsToLine(this.data);
-      this.setTooltipFormatter();
-      this.chartOptions = {
-        ...this.chartOptions,
-        ...this._chartOptions
+      const options = this.highchartsService.transformActivityMetricsToLine(this.data);
+      this._chartOptions = {
+        ...this._chartOptions,
+        ...options,
+        tooltip: {
+          ...options.tooltip,
+          ...this._chartOptions.tooltip
+        }
       };
       this.updateFlag = true;
     }
-  }
-
-  setTooltipFormatter() {
-    if (!this.data) return;
-    const dateTimes = Object.keys(this.data);
-    const isDaily = Math.abs(new Date(dateTimes[1]).getTime() - new Date(dateTimes[0]).getTime()) > 3600000;
-    const dateFormat = isDaily ? undefined : 'short';
-    console.log(isDaily, dateFormat);
-    this.chartOptions.tooltip!.pointFormatter = function () {
-      const parts = [
-        `<b>${new DatePipe('en-US').transform(this.x, dateFormat)}</b><br/>`,
-        `${this.series.name}: `,
-        `<b>${(this as any).raw}</b>`,
-        `(<b>${this.y?.toFixed(1)}%</b>)`
-      ]
-      return parts.join('');
-    };
   }
 
 }

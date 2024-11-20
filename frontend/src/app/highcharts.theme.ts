@@ -1,4 +1,4 @@
-import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
+import * as Highcharts from 'highcharts';
 
 const tooltipHeaderFormat =
   '<table><tr><th style="color: var(--sys-on-surface-variant); font-weight: 600; padding-bottom: 2px">{point.key}</th></tr>';
@@ -36,7 +36,7 @@ const yAxisConfig: Highcharts.YAxisOptions = {
   ...xAxisConfig
 };
 
-Highcharts.theme = {
+const theme: Highcharts.Options = {
   colors: [
     'var(--sys-primary)',
     'var(--sys-secondary)',
@@ -49,7 +49,7 @@ Highcharts.theme = {
     'var(--sys-on-error)'
   ],
   chart: {
-    backgroundColor: 'var(--sys-surface)',
+    backgroundColor: undefined, // 'var(--sys-surface)',
     borderRadius: 16,
     style: {
       fontFamily: 'var(--sys-body-large-font)'
@@ -103,6 +103,7 @@ Highcharts.theme = {
       }
     },
     width: null, // Let chart size flexibly
+    height: null
   },
   drilldown: {
     breadcrumbs: {
@@ -131,8 +132,7 @@ Highcharts.theme = {
               color: 'var(--sys-on-surface)'
             }
           }
-        },
-        borderRadius: 4
+        }
       },
       separator: {
         style: {
@@ -231,23 +231,6 @@ Highcharts.theme = {
     footerFormat: tooltipFooterFormat
   },
   plotOptions: {
-    series: {
-      animation: {
-        duration: 300
-      },
-      states: {
-        hover: {
-          brightness: 0.1,
-          halo: {
-            size: 5,
-            opacity: 0.25
-          }
-        },
-        inactive: {
-          opacity: 0.5
-        }
-      }
-    },
     column: {
       borderRadius: 4,
       borderWidth: 0
@@ -255,16 +238,18 @@ Highcharts.theme = {
     pie: {
       borderWidth: 0,
       borderRadius: 4,
-      dataLabels: {  style: {
-        font: 'var(--sys-label-large)',            
-        fontSize: '14px',                         
-        opacity: 0.87,                             
-        fontWeight: 'var(--sys-label-large-weight)',   
-        textOutline: 'none',        
-      },
-      distance: 20,                               
-      connectorWidth: 1,                          
-      connectorColor: 'var(--sys-outline-variant)'
+      dataLabels: {
+        style: {
+          font: 'var(--sys-label-large)',
+          color: 'var(--sys-on-surface)',
+          fontSize: '14px',
+          opacity: 0.87,
+          fontWeight: 'var(--sys-label-large-weight)',
+          textOutline: 'none',
+        },
+        distance: 20,
+        connectorWidth: 1,
+        connectorColor: 'var(--sys-outline-variant)'
       }
     }
   },
@@ -279,11 +264,76 @@ Highcharts.theme = {
       theme: {
         fill: 'var(--sys-surface-container)',
         stroke: 'var(--sys-outline)',
-      }
+        states: {
+          hover: {
+            fill: 'var(--sys-surface-container-high)',
+            style: {
+              color: 'var(--sys-on-surface)'
+            }
+          },
+          select: {
+            fill: 'var(--sys-surface-container-highest)',
+            style: {
+              color: 'var(--sys-on-surface)'
+            }
+          }
+        },
+      } as any
+    },
+    menuStyle: {
+      background: 'var(--sys-surface-container)',
+      color: 'var(--sys-on-surface)',
+      border: '0px solid var(--sys-outline)',
+      borderRadius: 4,
+      padding: '8px 0',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+      zIndex: 1000,
+    },
+    menuItemHoverStyle: {
+      background: 'var(--sys-surface-container-highest)',
+      color: 'var(--sys-on-surface)',
+      cursor: 'pointer',
+      transition: 'background 200ms cubic-bezier(0.4, 0, 0.2, 1)'
+    },
+    menuItemStyle: {
+      color: 'var(--sys-on-surface)',
+      fontSize: '14px',
+      padding: '8px 16px',
+      fontFamily: 'var(--sys-body-large-font)',
+      fontWeight: 'var(--sys-body-large-weight)',
+      transition: 'background 200ms cubic-bezier(0.4, 0, 0.2, 1)',
     }
   },
   credits: {
     enabled: false
+  },
+  exporting: {
+    enabled: false,
+    buttons: {
+      contextButton: {
+        symbol: 'menu',
+        symbolStroke: 'var(--sys-on-surface)',
+        symbolStrokeWidth: 2,
+        theme: {
+          fill: 'var(--sys-surface-container)',
+          stroke: '0px var(--sys-outline)'
+        },
+      }
+    },
+    chartOptions: {
+      plotOptions: {
+        series: {
+          dataLabels: {
+            enabled: true,
+            style: {
+              fontSize: '14px',
+              fontWeight: 'normal',
+              textOutline: 'none'
+            }
+          }
+        }
+      }
+    }
   }
 };
-Highcharts.setOptions(Highcharts.theme);
+Highcharts.setOptions(theme);

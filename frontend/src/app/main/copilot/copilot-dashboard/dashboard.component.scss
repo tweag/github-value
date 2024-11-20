@@ -5,18 +5,34 @@
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
 
-  app-dashboard-card-drilldown-bar-chart {
-    grid-row: span 4; grid-column: span 2;
+  mat-card-content {
+    min-height: 400px;
+    height: 100%;
+    max-width: 100%;
+    overflow: hidden;
   }
-  app-dashboard-card-bars {
-    grid-row: span 4;
+  #drilldown-bar-chart {
+    // grid-row: span 4;
+    grid-column: span 2;
+  }
+  #card-bars {
+    // grid-row: span 4;
+  }
+  #adoption, #activity, #time-saved {
+    max-height: 300px;
+    height: 300px;
+  }
+  mat-card {
+    max-width: 100%;
+    width: 100%;
+    overflow: hidden;
+    cursor: pointer;
   }
 }
 
 /* Add media query for smaller screens */
 @media (max-width: 768px) {
   .cards-grid {
-    grid-template-columns: 1fr; /* Force single column */
   }
   
   /* Reset the grid spans on mobile */

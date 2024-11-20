@@ -32,10 +32,10 @@ interface PullRequestModel extends ModelBase {
   total_pr_summaries_created: number;
 }
 
-interface Editor {
+type Editor<T> = {
   name: string;
   total_engaged_users: number;
-  models: (CodeModel | ChatModel)[];
+  models: T[];
 }
 
 interface Repository {
@@ -47,12 +47,12 @@ interface Repository {
 interface IdeCodeCompletions {
   total_engaged_users: number;
   languages: LanguageMetrics[];
-  editors: Editor[];
+  editors: Editor<CodeModel>[];
 }
 
 interface IdeChat {
   total_engaged_users: number;
-  editors: Editor[];
+  editors: Editor<ChatModel>[];
 }
 
 interface DotComChat {

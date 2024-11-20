@@ -31,8 +31,11 @@ class QueryService {
       this.queryCopilotSeatAssignments().then(() =>
         setup.setSetupStatusDbInitialized({ copilotSeats: true })),
     ]
-    // Query teams and members if it has been more than 24 hours since the last update
-    if ((await getLastUpdatedAt()).getTime() < new Date().getTime() - 1000 * 60 * 60 * 24) {
+    
+    const lastUpdated = await getLastUpdatedAt();
+    const elapsedHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
+    logger.info(`It's been ${Math.floor(elapsedHours)} hours since last update 🕒`);
+    if (elapsedHours > 24) {
       queries.push(
         this.queryTeamsAndMembers().then(() =>
           setup.setSetupStatusDbInitialized({ teamsAndMembers: true }))
