@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { Survey } from '../models/survey.model.js';
 import setup from '../services/setup.js';
 import logger from '../services/logger.js';
+import settingsService from 'services/settings.service.js';
 
 class SurveyController {
   async createSurvey(req: Request, res: Response): Promise<void> {
@@ -9,6 +10,7 @@ class SurveyController {
       const survey = await Survey.create(req.body);
       res.status(201).json(survey);
       try {
+        const surveyUrl = new URL(`copilot/surveys/${survey.id}`, settingsService.baseUrl);
         const octokit = await setup.getOctokit();
         const comments = await octokit.rest.issues.listComments({
           owner: survey.owner,
@@ -25,7 +27,7 @@ class SurveyController {
             owner: survey.owner,
             repo: survey.repo,
             comment_id: comment.id,
-            body: `Thanks for filling out the copilot survey @${survey.userId}!`
+            body: `Thanks for filling out the [copilot survey](${surveyUrl.toString()}) @${survey.userId}!`
           });
         } else {
           logger.info(`No comment found for survey from ${setup.installation?.slug}`)

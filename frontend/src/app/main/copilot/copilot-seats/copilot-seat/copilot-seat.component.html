@@ -13,7 +13,7 @@
       <p><strong>Last Active: </strong>{{ seat.last_activity_at | date: 'medium' }}</p>
       <p><strong>Editor: </strong>{{ seat.last_activity_editor }}</p>
       <p><strong>Site Admin: </strong>{{ seat.assignee.site_admin ? 'Yes' : 'No' }}</p>
-      <p><strong>Copilot Usage: </strong>{{ hoursSpent }}</p>
+      <p><strong>Copilot Usage: </strong>{{ timeSpent }}</p>
     </mat-card-content>
   </mat-card>
 </div>

@@ -58,7 +58,7 @@ export class CopilotSeatComponent implements OnInit {
   id?: number;
   seat?: Seat;
   seatActivity?: Seat[];
-  hoursSpent?: string;
+  timeSpent?: string;
 
   constructor(
     private copilotSeatService: SeatService,
@@ -81,13 +81,10 @@ export class CopilotSeatComponent implements OnInit {
         ...this.chartOptions,
         ...this._chartOptions
       };
-      const totalTime = (this.chartOptions.series as Highcharts.SeriesGanttOptions[])?.reduce((acc, series) => {
-        return acc += series.data?.reduce((acc: number, data) => {
-          return acc += (data.end || 0) - (data.start || 0);
-        }, 0) || 0;
-      }, 0);
-      this.hoursSpent = dayjs.duration({
-        milliseconds: totalTime
+      this.timeSpent = dayjs.duration({
+        milliseconds: (this.chartOptions.series as Highcharts.SeriesGanttOptions[])?.reduce((total, series) => {
+          return total += series.data?.reduce((dataTotal, data) => dataTotal += (data.end || 0) - (data.start || 0), 0) || 0;
+        }, 0)
       }).humanize();
       this.updateFlag = true;
       this.cdr.detectChanges();
