@@ -64,7 +64,6 @@ export class DateRangeSelectComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.range.valueChanges.subscribe(value => {
         if (value.start && value.end) {
-          console.log(value);
           this.dateRangeChange.emit({
             start: value.start,
             end: value.end

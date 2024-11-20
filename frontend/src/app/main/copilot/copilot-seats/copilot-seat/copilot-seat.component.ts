@@ -69,13 +69,11 @@ export class CopilotSeatComponent implements OnInit {
     this.copilotSeatService.getSeat(this.id).subscribe(seatActivity => {
       this.seatActivity = seatActivity;
       this.seat = seatActivity[this.seatActivity.length - 1];
-      console.log('seat', seatActivity);
       this._chartOptions = this.highchartsService.transformSeatActivityToGantt(seatActivity);
       this.chartOptions = {
         ...this.chartOptions,
         ...this._chartOptions
       };
-      console.log('chartOptions', this.chartOptions);
       this.updateFlag = true;
       this.cdr.detectChanges();
     });

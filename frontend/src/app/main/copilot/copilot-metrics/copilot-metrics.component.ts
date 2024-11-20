@@ -37,14 +37,12 @@ export class CopilotMetricsComponent {
       until: endModified.toISOString()
     }).subscribe((metrics) => {
       this.metrics = metrics;
-      console.log(metrics);
     });
     this.metricsService.getMetricsTotals({
       since: startModified.toISOString(),
       until: endModified.toISOString()
     }).subscribe((metricsTotals) => {
       this.metricsTotals = metricsTotals;
-      console.log(metricsTotals);
     })
   }
 }
