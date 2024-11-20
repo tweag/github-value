@@ -8,12 +8,11 @@ import { ActivatedRoute } from '@angular/router';
 import { HighchartsService } from '../../../../services/highcharts.service';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
-import dayjs, { Dayjs } from "dayjs";
+import dayjs from "dayjs";
 import duration from 'dayjs/plugin/duration';
 import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(duration);
 dayjs.extend(relativeTime);
-const _day: Dayjs = dayjs();
 
 @Component({
   selector: 'app-copilot-seat',
