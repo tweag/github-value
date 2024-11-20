@@ -40,6 +40,7 @@ export class CopilotValueComponent implements OnInit {
   charts = [] as Highcharts.Chart[];
   chartOptions: Highcharts.Options = {
     chart: {
+      // spacingTop: 50,
       zooming: {
         type: 'x'
       },
@@ -48,7 +49,6 @@ export class CopilotValueComponent implements OnInit {
     xAxis: {
       type: 'datetime',
       dateTimeLabelFormats: {
-        // don't display the year
         month: '%b',
         year: '%b'
       },
@@ -63,6 +63,11 @@ export class CopilotValueComponent implements OnInit {
     },
     exporting: {
       enabled: true,
+      buttons: {
+        contextButton: {
+          y: 0
+        }
+      }
     }
   };
 

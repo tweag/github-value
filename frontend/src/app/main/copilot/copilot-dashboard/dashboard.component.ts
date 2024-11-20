@@ -48,23 +48,30 @@ export class CopilotDashboardComponent implements OnInit {
       enabled: false,
     },
     xAxis: {
+      crosshair: true,
       visible: false,
     },
     yAxis: {
       visible: false,
+      title: undefined
+    },
+    tooltip: {
+      positioner: function () {
+        return { x: 0, y: 0 };
+      },
+      distance: 40,
+      outside: true,
+      backgroundColor: undefined
     },
     plotOptions: {
       spline: {
         lineWidth: 4,
-        states: {
-            hover: {
-                lineWidth: 5,
-                fillColor: '#000',
-            }
-        },
         marker: {
-            enabled: false,
-            fillColor: 'transparent'
+          enabled: false,
+          fillColor: 'transparent',
+          color: 'transparent',
+          lineColor: 'transparent',
+          fillOpacity: 0,
         },
       }
     }
@@ -112,17 +119,17 @@ export class CopilotDashboardComponent implements OnInit {
       this.metricsData = data;
       this.activeToday = data[data.length - 1].total_active_users;
       const currentWeekData = data.slice(-7);
-      this.activeCurrentWeekAverage = currentWeekData.reduce((sum, day) => 
+      this.activeCurrentWeekAverage = currentWeekData.reduce((sum, day) =>
         sum + day.total_active_users, 0) / currentWeekData.length;
       const lastWeekData = data.slice(-14, -7);
-      this.activeLastWeekAverage = lastWeekData.length > 0 
-        ? lastWeekData.reduce((sum, day) => sum + day.total_active_users, 0) / lastWeekData.length 
+      this.activeLastWeekAverage = lastWeekData.length > 0
+        ? lastWeekData.reduce((sum, day) => sum + day.total_active_users, 0) / lastWeekData.length
         : 0;
 
       const percentChange = this.activeLastWeekAverage === 0
         ? 100
         : ((this.activeCurrentWeekAverage - this.activeLastWeekAverage) / this.activeLastWeekAverage) * 100;
-    
+
       this.activeWeeklyChangePercent = Math.round(percentChange * 10) / 10;
     });
   }

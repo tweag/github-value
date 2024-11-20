@@ -85,7 +85,9 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
   ) { }
 
   ngOnInit() {
-    this._chartOptions = Object.assign({}, this._chartOptions, this.chartOptions);
+    this._chartOptions.yAxis = Object.assign({}, this.chartOptions?.yAxis, this._chartOptions.yAxis);
+    this._chartOptions.tooltip = Object.assign({}, this.chartOptions?.tooltip, this._chartOptions.tooltip);
+    this._chartOptions = Object.assign({}, this.chartOptions, this._chartOptions);
   }
   
   ngOnChanges() {

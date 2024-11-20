@@ -510,11 +510,11 @@ export class HighchartsService {
         pointFormatter: function () {
           return [
             `User: `,
-            '<b>' + this.raw.userId + '</b>',
+            '<b>' + this.raw?.userId + '</b>',
             `</br>Time saved: `,
             '<b>' + Math.round(this.y || 0) + '%</b>',
             `</br>PR: `,
-            '<b>#' + this.raw.prNumber + '</b>',
+            '<b>#' + this.raw?.prNumber + '</b>',
           ].join('');
         } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
       }
