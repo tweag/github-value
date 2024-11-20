@@ -30,25 +30,34 @@ export class CopilotSeatComponent implements OnInit {
   Highcharts: typeof Highcharts = Highcharts;
   updateFlag = false;
   chartOptions: Highcharts.Options = {
-    "title": {
-      "text": "Seat Activity by Editor"
+    title: {
+      text: "Seat Activity by Editor"
     },
-    "xAxis": {
-      "type": "datetime"
+    xAxis: {
+      type: "datetime"
     },
     legend: {
       enabled: false
     },
-    "series": [
+    series: [
       {
-        "name": "Seat Activity",
-        "type": "gantt",
-        "data": []
+        name: "Seat Activity",
+        type: "gantt",
+        data: []
       }
     ],
-    "tooltip": {},
-    "yAxis": {
-      "categories": [
+    plotOptions: {
+      gantt: {
+        borderWidth: 0,
+        borderColor: undefined,
+        dataLabels: {
+          enabled: true
+        }
+      }
+    },
+    tooltip: {},
+    yAxis: {
+      categories: [
         "vscode",
         "copilot-summarization-pr"
       ]
