@@ -1,4 +1,4 @@
-import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
+import * as Highcharts from 'highcharts';
 
 const tooltipHeaderFormat =
   '<table><tr><th style="color: var(--sys-on-surface-variant); font-weight: 600; padding-bottom: 2px">{point.key}</th></tr>';
@@ -36,7 +36,7 @@ const yAxisConfig: Highcharts.YAxisOptions = {
   ...xAxisConfig
 };
 
-Highcharts.theme = {
+const theme: Highcharts.Options = {
   colors: [
     'var(--sys-primary)',
     'var(--sys-secondary)',
@@ -49,7 +49,7 @@ Highcharts.theme = {
     'var(--sys-on-error)'
   ],
   chart: {
-    backgroundColor: 'var(--sys-surface)',
+    backgroundColor: undefined, // 'var(--sys-surface)',
     borderRadius: 16,
     style: {
       fontFamily: 'var(--sys-body-large-font)'
@@ -131,8 +131,7 @@ Highcharts.theme = {
               color: 'var(--sys-on-surface)'
             }
           }
-        },
-        borderRadius: 4
+        }
       },
       separator: {
         style: {
@@ -255,16 +254,18 @@ Highcharts.theme = {
     pie: {
       borderWidth: 0,
       borderRadius: 4,
-      dataLabels: {  style: {
-        font: 'var(--sys-label-large)',            
-        fontSize: '14px',                         
-        opacity: 0.87,                             
-        fontWeight: 'var(--sys-label-large-weight)',   
-        textOutline: 'none',        
-      },
-      distance: 20,                               
-      connectorWidth: 1,                          
-      connectorColor: 'var(--sys-outline-variant)'
+      dataLabels: {
+        style: {
+          font: 'var(--sys-label-large)',
+          color: 'var(--sys-on-surface)',
+          fontSize: '14px',
+          opacity: 0.87,
+          fontWeight: 'var(--sys-label-large-weight)',
+          textOutline: 'none',
+        },
+        distance: 20,
+        connectorWidth: 1,
+        connectorColor: 'var(--sys-outline-variant)'
       }
     }
   },
@@ -286,4 +287,4 @@ Highcharts.theme = {
     enabled: false
   }
 };
-Highcharts.setOptions(Highcharts.theme);
+Highcharts.setOptions(theme);

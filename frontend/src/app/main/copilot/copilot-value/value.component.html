@@ -30,19 +30,19 @@
       <mat-card-header>
         <mat-card-title>Adoption</mat-card-title>
       </mat-card-header>
-      <app-adoption-chart [data]="activityData"></app-adoption-chart>
+      <app-adoption-chart [data]="activityData" [chartOptions]="chartOptions" (chartInstanceChange)="chartChanged($event)"></app-adoption-chart>
     </mat-card>
     <mat-card class="chart-card" id="activity" appearance="outlined">
       <mat-card-header>
         <mat-card-title>Daily Activity (Usage)</mat-card-title>
       </mat-card-header>
-      <app-daily-activity-chart [activity]="activityData" [metrics]="metricsData"></app-daily-activity-chart>
+      <app-daily-activity-chart [activity]="activityData" [chartOptions]="chartOptions" [metrics]="metricsData" (chartInstanceChange)="chartChanged($event)"></app-daily-activity-chart>
     </mat-card>
     <mat-card class="chart-card" id="time-saved" appearance="outlined">
       <mat-card-header>
         <mat-card-title>Time Saved</mat-card-title>
       </mat-card-header>
-      <app-time-saved-chart [surveys]="surveysData"></app-time-saved-chart>
+      <app-time-saved-chart [surveys]="surveysData" [chartOptions]="chartOptions" (chartInstanceChange)="chartChanged($event)"></app-time-saved-chart>
     </mat-card>
   </div>
 </div>

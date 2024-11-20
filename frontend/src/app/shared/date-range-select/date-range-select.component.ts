@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, Output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, EventEmitter, OnDestroy, OnInit, Output } from '@angular/core';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -38,7 +38,7 @@ export enum DateRangeOption {
   templateUrl: './date-range-select.component.html',
   styleUrl: './date-range-select.component.scss'
 })
-export class DateRangeSelectComponent implements OnDestroy {
+export class DateRangeSelectComponent implements OnInit, OnDestroy {
   @Output() dateRangeChange = new EventEmitter<{ start: Date, end: Date }>();
   private subscriptions: Subscription[] = [];
   type = new FormControl();
@@ -64,6 +64,7 @@ export class DateRangeSelectComponent implements OnDestroy {
     this.subscriptions.push(
       this.range.valueChanges.subscribe(value => {
         if (value.start && value.end) {
+          console.log(value);
           this.dateRangeChange.emit({
             start: value.start,
             end: value.end
@@ -73,7 +74,7 @@ export class DateRangeSelectComponent implements OnDestroy {
     )
   }
 
-  ngOnInit() { 
+  ngOnInit() {
     this.dateRangeChange.emit({
       start: this.range.value.start,
       end: this.range.value.end

@@ -9,6 +9,7 @@ import { MetricsService } from '../../../services/metrics.service';
 import { FormControl } from '@angular/forms';
 import { combineLatest, startWith } from 'rxjs';
 import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
+import * as Highcharts from 'highcharts';
 
 @Component({
   selector: 'app-value',
@@ -20,7 +21,10 @@ import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.s
     TimeSavedChartComponent
   ],
   templateUrl: './value.component.html',
-  styleUrl: './value.component.scss'
+  styleUrls: [
+    './value.component.scss',
+    // '../copilot-dashboard/dashboard.component.scss'
+  ]
 })
 export class CopilotValueComponent implements OnInit {
   activityData?: ActivityResponse;
@@ -28,6 +32,32 @@ export class CopilotValueComponent implements OnInit {
   surveysData?: Survey[];
   daysInactive = new FormControl(30);
   adoptionFidelity = new FormControl<'day' | 'hour'>('day');
+  Highcharts: typeof Highcharts = Highcharts;
+  charts = [] as Highcharts.Chart[];
+  chartOptions: Highcharts.Options = {
+    chart: {
+      zooming: {
+        type: 'x'
+      },
+      width: undefined,
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        // don't display the year
+        month: '%b',
+        year: '%b'
+      },
+      crosshair: true
+    },
+    plotOptions: {
+      series: {
+        animation: {
+          duration: 300
+        }
+      }
+    },
+  };
 
   constructor(
     private seatService: SeatService,
@@ -50,5 +80,23 @@ export class CopilotValueComponent implements OnInit {
     this.copilotSurveyService.getAllSurveys().subscribe(data => {
       this.surveysData = data;
     });
+  }
+
+  chartChanged(chart: Highcharts.Chart) {
+    this.charts.push(chart);
+    const charts = this.charts;
+    for (chart of charts) {
+      chart.xAxis[0].update({
+        events: {
+          afterSetExtremes: function (event) {
+            charts.forEach(otherChart => {
+              if (otherChart.xAxis[0].min != event.min || otherChart.xAxis[0].max != event.max) {
+                otherChart.xAxis[0].setExtremes(event.min, event.max)
+              }
+            })
+          }
+        }
+      })
+    }
   }
 }

@@ -1,28 +1,26 @@
 import { Injectable } from '@angular/core';
-import { CopilotMetrics } from './metrics.service.interfaces';
+import { ChatModel, CodeModel, CopilotMetrics, DotComChatShared, DotComPullRequestsShared, IdeChatShared, IdeCodeCompletionsShared } from './metrics.service.interfaces';
 import { DashboardCardBarsInput } from '../main/copilot/copilot-dashboard/dashboard-card/dashboard-card-bars/dashboard-card-bars.component';
 import { ActivityResponse, Seat } from './seat.service';
-import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
+import * as Highcharts from 'highcharts';
 import { Survey } from './copilot-survey.service';
-import { DecimalPipe } from '@angular/common';
+import { DatePipe, DecimalPipe } from '@angular/common';
 
-interface CustomHighchartsPoint extends Highcharts.PointOptionsObject {
+interface CustomHighchartsPoint extends Highcharts.Point {
   date?: Date;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   raw?: any;
+  customTooltipInfo?: () => string;
 }
 
 interface CustomHighchartsGanttPoint extends Highcharts.GanttPointOptionsObject {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   raw?: any;
 }
 @Injectable({
   providedIn: 'root'
 })
 export class HighchartsService {
-
-  constructor(
-  ) { }
-
   transformCopilotMetricsToBarChartDrilldown(data: CopilotMetrics[]): Highcharts.Options {
     const engagedUsersSeries: Highcharts.SeriesOptionsType = {
       name: 'Users',
@@ -43,6 +41,15 @@ export class HighchartsService {
 
     data.forEach(dateData => {
       const dateSeriesId = `date_${dateData.date}`;
+      const customTooltipInfo = {
+        'copilot_ide_code_completions': (data: IdeCodeCompletionsShared) => `Suggestions: ${data.total_code_suggestions}
+            <br>Accepted: ${data.total_code_acceptances} (${((data.total_code_acceptances / data.total_code_suggestions) * 100).toFixed(2)}%)
+            <br>LoC suggested: ${data.total_code_lines_suggested}
+            <br>LoC accepted: ${data.total_code_lines_accepted}`,
+        'copilot_ide_chat': (data: IdeChatShared) => `Chats: ${data.total_chats}`,
+        'copilot_dotcom_chat': (data: DotComChatShared) => `Chats: ${data.total_chats}`,
+        'copilot_dotcom_pull_requests': (data: DotComPullRequestsShared) => `Summaries: ${data.total_pr_summaries_created}`
+      }
       drilldownSeries.push({
         type: 'column',
         name: new Date(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'long' }),
@@ -51,22 +58,26 @@ export class HighchartsService {
           {
             name: 'IDE Completions',
             y: dateData.copilot_ide_code_completions?.total_engaged_users || 0,
-            drilldown: `ide_${dateData.date}`
+            drilldown: `ide_${dateData.date}`,
+            customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(dateData.copilot_ide_code_completions!)
           },
           {
             name: 'IDE Chat',
             y: dateData.copilot_ide_chat?.total_engaged_users || 0,
-            drilldown: `chat_${dateData.date}`
+            drilldown: `chat_${dateData.date}`,
+            customTooltipInfo: () => customTooltipInfo.copilot_ide_chat(dateData.copilot_ide_chat!)
           },
           {
             name: 'GitHub.com Chat',
             y: dateData.copilot_dotcom_chat?.total_engaged_users || 0,
-            drilldown: `dotcom_chat_${dateData.date}`
+            drilldown: `dotcom_chat_${dateData.date}`,
+            customTooltipInfo: () => customTooltipInfo.copilot_dotcom_chat(dateData.copilot_dotcom_chat!)
           },
           {
             name: 'Pull Requests',
             y: dateData.copilot_dotcom_pull_requests?.total_engaged_users || 0,
-            drilldown: `pr_${dateData.date}`
+            drilldown: `pr_${dateData.date}`,
+            customTooltipInfo: () => customTooltipInfo.copilot_dotcom_pull_requests(dateData.copilot_dotcom_pull_requests!)
           }
         ].sort((a, b) => b.y - a.y)
       });
@@ -79,7 +90,9 @@ export class HighchartsService {
         data: dateData.copilot_ide_code_completions?.editors.map((editor) => ({
           name: editor.name,
           y: editor.total_engaged_users,
-          drilldown: `ide_${editor.name}_${dateData.date}`
+          drilldown: `ide_${editor.name}_${dateData.date}`,
+          color: this.getEditorColor(editor.name.split('/')[0]),
+          customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(editor)
         })).sort((a, b) => b.y - a.y)
       });
 
@@ -92,23 +105,61 @@ export class HighchartsService {
           data: editor.models.map((model) => ({
             name: model.name,
             y: model.total_engaged_users,
-            drilldown: `ide_${editor.name}_${model.name}_${dateData.date}`
+            drilldown: `ide_${editor.name}_${model.name}_${dateData.date}`,
+            customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(model)
           })).sort((a, b) => b.y - a.y)
         });
 
         // Model languages drilldown
         editor.models.forEach((model) => {
-          if ('languages' in model) {
+          drilldownSeries.push({
+            type: 'column',
+            name: `${model.name} Languages`,
+            id: `ide_${editor.name}_${model.name}_${dateData.date}`,
+            data: (model as CodeModel).languages.map((language) => ({
+              name: language.name,
+              y: language.total_engaged_users,
+              color: this.getLanguageColor(language.name),
+              drilldown: `lang_${editor.name}_${model.name}_${language.name}_${dateData.date}`,
+              customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(language)
+            })).sort((a, b) => b.y - a.y)
+          });
+          // Add acceptance stats drilldown for each language
+          (model as CodeModel).languages.forEach((language) => {
             drilldownSeries.push({
               type: 'column',
-              name: `${model.name} Languages`,
-              id: `ide_${editor.name}_${model.name}_${dateData.date}`,
-              data: model.languages.map((lang): [string, number] => [
-                lang.name,
-                lang.total_engaged_users
-              ]).sort((a, b) => b[1] - a[1])
+              name: `${language.name} Suggestions`,
+              id: `lang_${editor.name}_${model.name}_${language.name}_${dateData.date}`,
+              data: [
+                {
+                  name: 'Suggestions',
+                  y: (language.total_code_lines_suggested || 0),
+                  color: '#007ACC'
+                },
+                {
+                  name: 'Accepted',
+                  y: language.total_code_acceptances || 0,
+                  color: '#4CAF50'
+                },
+                {
+                  name: 'LoC Suggested',
+                  y: language.total_code_lines_suggested,
+                  color: '#FFC107'
+                },
+                {
+                  name: 'LoC Accepted',
+                  y: language.total_code_lines_accepted,
+                  color: '#FF5722'
+                }
+              ],
+              tooltip: {
+                headerFormat: '',
+                pointFormatter: function () {
+                  return `<b>${this.name}</b>: ${this.y}`;
+                }
+              }
             });
-          }
+          });
         });
       });
 
@@ -120,7 +171,9 @@ export class HighchartsService {
         data: dateData.copilot_ide_chat?.editors?.map((editor) => ({
           name: editor.name,
           y: editor.total_engaged_users,
-          drilldown: `chat_${editor.name}_${dateData.date}`
+          drilldown: `chat_${editor.name}_${dateData.date}`,
+          color: this.getEditorColor(editor.name.split('/')[0]),
+          customTooltipInfo: () => customTooltipInfo.copilot_ide_chat(editor)
         })).sort((a, b) => b.y - a.y)
       });
 
@@ -133,23 +186,76 @@ export class HighchartsService {
           data: editor.models.map((model) => ({
             name: model.name,
             y: model.total_engaged_users,
+            drilldown: `chat_${editor.name}_${model.name}_${dateData.date}`,
+            customTooltipInfo: () => customTooltipInfo.copilot_ide_chat(model)
           })).sort((a, b) => b.y - a.y)
+        });
+        (editor.models as ChatModel[]).forEach((model) => {
+          drilldownSeries.push({
+            type: 'column',
+            name: `${model.name} Suggestions`,
+            id: `chat_${editor.name}_${model.name}_${dateData.date}`,
+            data: [
+              {
+                name: 'Chats',
+                y: model.total_chats,
+                color: '#007ACC'
+              },
+              {
+                name: 'Copys',
+                y: (model.total_chat_copy_events || 0),
+                color: '#4CAF50'
+              },
+              {
+                name: 'Inertions',
+                y: model.total_chat_insertion_events || 0,
+                color: '#FFC107'
+              }
+            ],
+            tooltip: {
+              headerFormat: '',
+              pointFormatter: function () {
+                return `<b>${this.name}</b>: ${this.y}`;
+              }
+            }
+          });
         });
       });
 
       // GitHub.com Chat drilldown (Model level)
-      drilldownSeries.push({
-        type: 'column',
-        name: 'GitHub.com Chat',
-        id: `dotcom_chat_${dateData.date}`,
-        data: dateData.copilot_dotcom_chat?.models?.map((model) => ({
-          name: model.name,
-          y: model.total_engaged_users,
-          custom: {
-            totalChats: model.total_chats
-          }
-        })).sort((a, b) => b.y - a.y) || []
-      });
+      if (dateData.copilot_dotcom_chat) {
+        drilldownSeries.push({
+          type: 'column',
+          name: 'GitHub.com Chat',
+          id: `dotcom_chat_${dateData.date}`,
+          data: dateData.copilot_dotcom_chat.models?.map((model) => ({
+            name: model.name,
+            y: model.total_engaged_users,
+            drilldown: `dotcom_chat_${model.name}_${dateData.date}`,
+            customTooltipInfo: () => customTooltipInfo.copilot_dotcom_chat(model)
+          })).sort((a, b) => b.y - a.y) || []
+        });
+        dateData.copilot_dotcom_chat.models?.forEach((model) => {
+          drilldownSeries.push({
+            type: 'column',
+            name: `${model.name} Suggestions`,
+            id: `dotcom_chat_${model.name}_${dateData.date}`,
+            data: [
+              {
+                name: 'Chats',
+                y: model.total_chats,
+                color: '#007ACC'
+              }
+            ],
+            tooltip: {
+              headerFormat: '',
+              pointFormatter: function () {
+                return `<b>${this.name}</b>: ${this.y}`;
+              }
+            }
+          });
+        });
+      }
 
       // PR drilldown (Repo level)
       drilldownSeries.push({
@@ -159,7 +265,8 @@ export class HighchartsService {
         data: dateData.copilot_dotcom_pull_requests?.repositories.map((repo) => ({
           name: repo.name || 'Unknown',
           y: repo.total_engaged_users,
-          drilldown: `pr_${repo.name}_${dateData.date}`
+          drilldown: `pr_${repo.name}_${dateData.date}`,
+          customTooltipInfo: () => customTooltipInfo.copilot_dotcom_pull_requests(repo)
         })).sort((a, b) => b.y - a.y)
       });
 
@@ -172,12 +279,39 @@ export class HighchartsService {
           data: repo.models.map((model) => ({
             name: model.name,
             y: model.total_engaged_users,
+            drilldown: `pr_${repo.name}_${model.name}_${dateData.date}`,
+            customTooltipInfo: () => customTooltipInfo.copilot_dotcom_pull_requests(model)
           })).sort((a, b) => b.y - a.y)
+        });
+        (repo.models).forEach((model) => {
+          drilldownSeries.push({
+            type: 'column',
+            name: `${model.name} Suggestions`,
+            id: `pr_${repo.name}_${model.name}_${dateData.date}`,
+            data: [
+              {
+                name: 'Created Summaries',
+                y: model.total_pr_summaries_created,
+                color: '#007ACC'
+              }
+            ],
+            tooltip: {
+              headerFormat: '',
+              pointFormatter: function () {
+                return `<b>${this.name}</b>: ${this.y}`;
+              }
+            }
+          });
         });
       });
     });
 
     return {
+      chart: {
+        events: {
+          drilldown: this.drilldownIfSinglePoint()
+        }
+      },
       series: [engagedUsersSeries],
       drilldown: {
         series: drilldownSeries
@@ -186,7 +320,11 @@ export class HighchartsService {
         headerFormat: '<span>{series.name}</span><br>',
         pointFormatter: function (this: CustomHighchartsPoint) {
           const formatted = this.date ? this.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' }) : this.name;
-          return `<span style="color:${this.color}">${formatted}</span>: <b>${this.y}</b> users<br/>`;
+          const parts = [
+            `<span style="color:${this.color}">${formatted}</span>: <b>${this.y}</b> users<br/>`
+          ]
+          if (this.customTooltipInfo) parts.push(this.customTooltipInfo());
+          return parts.join('');
         }
       }
     };
@@ -224,9 +362,22 @@ export class HighchartsService {
         }
       }
     };
-
+    const dateTimes = Object.keys(data);
+    const isDaily = Math.abs(new Date(dateTimes[1]).getTime() - new Date(dateTimes[0]).getTime()) > 3600000;
+    const dateFormat = isDaily ? undefined : 'short';
     return {
       series: [activeUsersSeries],
+      tooltip: {
+        pointFormatter: (function () {
+          const parts = [
+            `<b>${new DatePipe('en-US').transform(this.x, dateFormat)}</b><br/>`,
+            `${this.series.name}: `,
+            `<b>${this.raw}</b>`,
+            `(<b>${this.y?.toFixed(1)}%</b>)`
+          ]
+          return parts.join('');
+        }) as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
+      }
     };
   }
 
@@ -355,13 +506,13 @@ export class HighchartsService {
         pointFormatter: function () {
           return [
             `User: `,
-            '<b>' + (this as any).raw.userId + '</b>',
+            '<b>' + this.raw.userId + '</b>',
             `</br>Time saved: `,
             '<b>' + Math.round(this.y || 0) + '%</b>',
             `</br>PR: `,
-            '<b>#' + (this as any).raw.prNumber + '</b>',
+            '<b>#' + this.raw.prNumber + '</b>',
           ].join('');
-        }
+        } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
       }
     };
   }
@@ -397,7 +548,7 @@ export class HighchartsService {
         data: seatActivity.reduce((acc, seat, index) => {
           const lastSeatActivity = seatActivity[index - 1];
 
-          // Skip if same activity timestamp as previous (no new activity) 🕐
+          // Skip if same activity timestamp as previous (no new activity)
           if (
             lastSeatActivity?.last_activity_at === seat.last_activity_at &&
             lastSeatActivity?.last_activity_editor === seat.last_activity_editor
@@ -405,16 +556,13 @@ export class HighchartsService {
             return acc;
           }
 
-          const activityTime = new Date(Date.parse(seat.last_activity_at || seat.created_at));
+          const activityStartTime = new Date(Date.parse(seat.last_activity_at || seat.created_at));
+          const activityEndTime = new Date(Date.parse(seatActivity[index + 1]?.last_activity_at || seatActivity[index + 1]?.created_at));
 
-          // For first activity or new activity timestamp 📊
           acc.push({
             name: String(seat.assignee?.login || `Seat ${seat.assignee?.id}`),
-            start: activityTime.getTime(),
-            // End time is either next activity or current time
-            end: index < seatActivity.length - 1
-              ? new Date(Date.parse(seatActivity[index + 1].last_activity_at || seatActivity[index + 1].created_at)).getTime()
-              : activityTime.getTime() + (60 * 60 * 1000), // Add 1 hour for last activity
+            start: activityStartTime.getTime(),
+            end: index < seatActivity.length - 1 ? activityEndTime.getTime() : activityStartTime.getTime() + (60 * 60 * 1000),
             y: getEditorIndex(seat),
             color: getEditorColor(seat),
             raw: seat,
@@ -446,10 +594,21 @@ export class HighchartsService {
   }
 
   transformMetricsToPieDrilldown(metrics: CopilotMetrics): Highcharts.Options {
-    // Main pie series showing top level categories 🔝
-    console.log(metrics)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sharedSeriesOptions: any = {
       colorByPoint: true,
+      innerSize: '40%',
+    };
+    const suggestionsSeries: Highcharts.SeriesOptionsType = {
+      type: 'pie' as const,
+      name: 'Copilot Usage',
+      data: metrics.copilot_ide_code_completions?.editors.map(editor => ({
+        name: editor.name,
+        y: editor.total_code_suggestions,
+        raw: editor,
+        drilldown: `editor_${editor.name}`,
+        color: this.getEditorColor(editor.name.split('/')[0])
+      })),
       dataLabels: [{
         enabled: true,
         distance: 20
@@ -462,18 +621,7 @@ export class HighchartsService {
           property: 'percentage',
           value: 10
         }
-      }]
-    };
-    const suggestionsSeries: Highcharts.SeriesOptionsType = {
-      type: 'pie',
-      name: 'Copilot Usage',
-      data: metrics.copilot_ide_code_completions?.editors.map(editor => ({
-        name: editor.name,
-        y: editor.total_code_suggestions,
-        raw: editor,
-        drilldown: `editor_${editor.name}`,
-        color: this.getEditorColor(editor.name.split('/')[0])
-      })),
+      }],
       ...sharedSeriesOptions
     };
 
@@ -488,14 +636,13 @@ export class HighchartsService {
           id: `editor_${editor.name}`,
           data: editor.models.map(model => ({
             name: model.name,
-            y: 'languages' in model ? model.total_code_suggestions : model.total_chats,
+            y: (model as CodeModel).total_code_suggestions,
             raw: model,
-            drilldown: 'languages' in model ? `model_${editor.name}_${model.name}` : undefined
+            drilldown: `model_${editor.name}_${model.name}`
           })),
           ...sharedSeriesOptions
         });
 
-        // Model languages drilldown 📊
         editor.models.forEach(model => {
           if ('languages' in model) {
             drilldownSeries.push({
@@ -512,9 +659,7 @@ export class HighchartsService {
               ...sharedSeriesOptions
             });
 
-            // Language details drilldown 🔍
             model.languages.forEach(lang => {
-              console.log(lang.name)
               drilldownSeries.push({
                 type: 'pie',
                 name: `${lang.name} Details`,
@@ -524,11 +669,13 @@ export class HighchartsService {
                     name: 'Accepted',
                     y: lang.total_code_acceptances,
                     raw: lang,
+                    color: '#4CAF50'
                   },
                   {
                     name: 'Ignored',
                     y: (lang.total_code_suggestions || 0) - (lang.total_code_acceptances || 0),
                     raw: lang,
+                    color: '#757575'
                   }
                 ] as CustomHighchartsPoint[],
                 ...sharedSeriesOptions
@@ -540,24 +687,28 @@ export class HighchartsService {
     }
 
     return {
+      chart: {
+        events: {
+          drilldown: this.drilldownIfSinglePoint()
+        }
+      },
       series: [suggestionsSeries],
       drilldown: {
-        series: drilldownSeries
+        series: drilldownSeries,
       },
       tooltip: {
         headerFormat: undefined,
         pointFormatter: function () {
-          const point: any = this;
           const decimalPipe = new DecimalPipe('en-US');
           const parts = [
-            `<b>${point.name}</b><br>`,
-            `Suggestions: <b>${decimalPipe.transform(point.y)}</b><br>`,
-            `Accepted: <b>${decimalPipe.transform(point.raw.total_code_acceptances)} (${decimalPipe.transform(point.raw.total_code_acceptances / point.y * 100, '1.2-2')}%)</b><br>`,
-            `LoC Suggested: <b>${decimalPipe.transform(point.raw.total_code_lines_suggested)}</b><br>`,
-            `LoC Accepted: <b>${decimalPipe.transform(point.raw.total_code_lines_accepted)}</b><br>`
+            `<b>${this.name}</b><br>`,
+            `Suggestions: <b>${decimalPipe.transform(this.y)}</b><br>`,
+            `Accepted: <b>${decimalPipe.transform(this.raw.total_code_acceptances)} (${decimalPipe.transform(this.raw.total_code_acceptances / this.raw.total_code_suggestions * 100, '1.2-2')}%)</b><br>`,
+            `LoC Suggested: <b>${decimalPipe.transform(this.raw.total_code_lines_suggested)}</b><br>`,
+            `LoC Accepted: <b>${decimalPipe.transform(this.raw.total_code_lines_accepted)}</b><br>`
           ];
           return parts.join('');
-        }
+        } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
       }
     };
   }
@@ -566,7 +717,7 @@ export class HighchartsService {
     return ({
       'visualstudio': '#5C2D91',
       'vscode': '#007ACC',
-      'jetbrains': '#000000',
+      'jetbrains': '#FF6B6B',
       'xcode': '#157EFB',
       'neovim': '#57A143',
       'emacs': '#7F5AB6',
@@ -633,5 +784,19 @@ export class HighchartsService {
     };
 
     return colorMap[language.toLowerCase()]
+  }
+
+  drilldownIfSinglePoint(): Highcharts.DrilldownCallbackFunction {
+    return function (e) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((e.seriesOptions as any)?.data.length === 1) {
+        setTimeout(() => {
+          const point = this.series[0].points[0];
+          if (point && point.doDrilldown) {
+            point.doDrilldown();
+          }
+        }, 0);
+      }
+    }
   }
 }

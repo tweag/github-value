@@ -1,7 +1,8 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
-import 'highcharts/es-modules/masters/modules/drilldown.src';
+import * as Highcharts from 'highcharts';
+import HC_drilldown from 'highcharts/modules/drilldown';
+HC_drilldown(Highcharts);
 import { HighchartsChartModule } from 'highcharts-angular';
 import { CommonModule } from '@angular/common';
 import { HighchartsService } from '../../../../../services/highcharts.service';

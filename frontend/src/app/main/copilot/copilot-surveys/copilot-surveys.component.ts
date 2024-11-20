@@ -58,7 +58,7 @@ export class CopilotSurveysComponent implements OnInit {
     }
   }
 
-  onSurveyClick(survey: any) {
+  onSurveyClick(survey: Survey) {
     this.router.navigate(['/copilot/surveys', survey.id]);
   }
 }

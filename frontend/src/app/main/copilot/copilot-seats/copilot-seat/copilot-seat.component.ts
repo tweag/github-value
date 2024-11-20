@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
-import 'highcharts/es-modules/masters/modules/gantt.src';
+import * as Highcharts from 'highcharts';
+import HC_gantt from 'highcharts/modules/gantt';
+HC_gantt(Highcharts);
 import { HighchartsChartModule } from 'highcharts-angular';
 import { Seat, SeatService } from '../../../../services/seat.service';
 import { ActivatedRoute } from '@angular/router';
