@@ -42,7 +42,7 @@
       <mat-card-header>
         <mat-card-title>Time Saved</mat-card-title>
       </mat-card-header>
-      <app-time-saved-chart [surveys]="surveysData" [chartOptions]="chartOptions" (chartInstanceChange)="chartChanged($event)"></app-time-saved-chart>
+      <app-time-saved-chart [surveys]="surveysData" [chartOptions]="chartOptions" (chartInstanceChange)="chartChanged($event, false)"></app-time-saved-chart>
     </mat-card>
   </div>
 </div>

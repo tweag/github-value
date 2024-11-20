@@ -89,22 +89,26 @@ export class CopilotValueComponent implements OnInit {
     });
   }
 
-  chartChanged(chart: Highcharts.Chart) {
-    if (chart) this.charts.push(chart);
-    const charts = this.charts;
-    for (chart of charts) {
-      if (chart.xAxis) {
-        chart.xAxis[0]?.update({
+  chartChanged(chart: Highcharts.Chart, include = true) {
+    if (chart && !this.charts.includes(chart)) {
+      const _chart = chart;
+      this.charts.push(chart);
+      if (include && chart.xAxis && chart.xAxis[0]) {
+        chart.xAxis[0].update({
           events: {
-            afterSetExtremes: function (event) {
-              charts.forEach(otherChart => {
-                if (otherChart.xAxis[0].min != event.min || otherChart.xAxis[0].max != event.max) {
-                  otherChart.xAxis[0].setExtremes(event.min, event.max)
-                }
-              })
+            afterSetExtremes: (event) => {
+              this.charts
+                .filter(otherChart => otherChart !== _chart)
+                .forEach(otherChart => {
+                  if (otherChart.xAxis?.[0] &&
+                      (otherChart.xAxis[0].min !== event.min || 
+                       otherChart.xAxis[0].max !== event.max)) {
+                    otherChart.xAxis[0].setExtremes(event.min, event.max);
+                  }
+                });
             }
           }
-        })
+        });
       }
     }
   }
