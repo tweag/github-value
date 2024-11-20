@@ -264,11 +264,76 @@ const theme: Highcharts.Options = {
       theme: {
         fill: 'var(--sys-surface-container)',
         stroke: 'var(--sys-outline)',
-      }
+        states: {
+          hover: {
+            fill: 'var(--sys-surface-container-high)',
+            style: {
+              color: 'var(--sys-on-surface)'
+            }
+          },
+          select: {
+            fill: 'var(--sys-surface-container-highest)',
+            style: {
+              color: 'var(--sys-on-surface)'
+            }
+          }
+        },
+      } as any
+    },
+    menuStyle: {
+      background: 'var(--sys-surface-container)',
+      color: 'var(--sys-on-surface)',
+      border: '0px solid var(--sys-outline)',
+      borderRadius: 4,
+      padding: '8px 0',
+      boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+      zIndex: 1000,
+    },
+    menuItemHoverStyle: {
+      background: 'var(--sys-surface-container-highest)',
+      color: 'var(--sys-on-surface)',
+      cursor: 'pointer',
+      transition: 'background 200ms cubic-bezier(0.4, 0, 0.2, 1)'
+    },
+    menuItemStyle: {
+      color: 'var(--sys-on-surface)',
+      fontSize: '14px',
+      padding: '8px 16px',
+      fontFamily: 'var(--sys-body-large-font)',
+      fontWeight: 'var(--sys-body-large-weight)',
+      transition: 'background 200ms cubic-bezier(0.4, 0, 0.2, 1)',
     }
   },
   credits: {
     enabled: false
+  },
+  exporting: {
+    enabled: false,
+    buttons: {
+      contextButton: {
+        symbol: 'menu',
+        symbolStroke: 'var(--sys-on-surface)',
+        symbolStrokeWidth: 2,
+        theme: {
+          fill: 'var(--sys-surface-container)',
+          stroke: '0px var(--sys-outline)'
+        },
+      }
+    },
+    chartOptions: {
+      plotOptions: {
+        series: {
+          dataLabels: {
+            enabled: true,
+            style: {
+              fontSize: '14px',
+              fontWeight: 'normal',
+              textOutline: 'none'
+            }
+          }
+        }
+      }
+    }
   }
 };
 Highcharts.setOptions(theme);

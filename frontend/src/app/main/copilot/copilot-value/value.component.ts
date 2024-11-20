@@ -10,6 +10,10 @@ import { FormControl } from '@angular/forms';
 import { combineLatest, startWith } from 'rxjs';
 import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
 import * as Highcharts from 'highcharts';
+import HC_exporting from 'highcharts/modules/exporting';
+HC_exporting(Highcharts);
+import HC_full_screen from 'highcharts/modules/full-screen';
+HC_full_screen(Highcharts);
 
 @Component({
   selector: 'app-value',
@@ -57,6 +61,9 @@ export class CopilotValueComponent implements OnInit {
         }
       }
     },
+    exporting: {
+      enabled: true,
+    }
   };
 
   constructor(

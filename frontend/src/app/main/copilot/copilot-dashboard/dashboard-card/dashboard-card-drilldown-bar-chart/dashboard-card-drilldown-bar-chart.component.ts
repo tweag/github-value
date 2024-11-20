@@ -25,7 +25,6 @@ import { LoadingSpinnerComponent } from '../../../../../shared/loading-spinner/l
   ]
 })
 export class DashboardCardDrilldownBarChartComponent implements OnChanges {
-  @Input() title?: string;
   Highcharts: typeof Highcharts = Highcharts;
   @Input() data?: CopilotMetrics[] = [];
   chartOptions: Highcharts.Options = {

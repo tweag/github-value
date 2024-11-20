@@ -5,13 +5,18 @@
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
 
-  app-dashboard-card-drilldown-bar-chart {
+  mat-card-content {
+    min-height: 400px;
+    height: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  #drilldown-bar-chart {
     // grid-row: span 4;
     grid-column: span 2;
   }
-  app-dashboard-card-bars {
+  #card-bars {
     // grid-row: span 4;
-    max-height: 400px;
   }
   #adoption, #activity, #time-saved {
     max-height: 300px;

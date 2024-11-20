@@ -11,13 +11,10 @@
   justify-content: center;
 }
 
-.chart-card {
-  // padding: 12px;
-}
-
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(800px, 1fr));
+  grid-template-columns: 100%;
+  grid-template-rows: repeat(auto-fit, minmax(400px, 1fr));
   gap: 24px;
 }
 
