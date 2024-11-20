@@ -44,6 +44,12 @@ export class CopilotDashboardComponent implements OnInit {
   activeCurrentWeekAverage?: number;
   activeLastWeekAverage?: number;
   chartOptions: Highcharts.Options = {
+    chart: {
+      marginTop: 0,
+      marginBottom: 0,
+      marginLeft: 0,
+      marginRight: 0,
+    },
     legend: {
       enabled: false,
     },
@@ -57,9 +63,8 @@ export class CopilotDashboardComponent implements OnInit {
     },
     tooltip: {
       positioner: function () {
-        return { x: 0, y: 0 };
+        return { x: 4, y: -10 };
       },
-      distance: 40,
       outside: true,
       backgroundColor: undefined
     },

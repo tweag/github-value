@@ -35,10 +35,17 @@ export class HighchartsService {
           type: 'column',
           name: date,
           y: dateData.total_engaged_users,
+          // x: new Date(dateData.date).getTime(),
           date: new Date(dateData.date),
           drilldown: `date_${dateData.date}`,
         }
-      })
+      }),
+      tooltip: {
+        headerFormat: '',
+        pointFormatter: function () {
+          return `<b>${new Date(this.date || 0).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</b></br>${this.y} users`;
+        } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
+      }
     };
 
     const drilldownSeries: Highcharts.SeriesOptionsType[] = [];
@@ -321,7 +328,7 @@ export class HighchartsService {
         series: drilldownSeries
       },
       tooltip: {
-        headerFormat: '<span>{series.name}</span><br>',
+        headerFormat: '<span><b>{series.name}</b></span><br>',
         pointFormatter: function (this: CustomHighchartsPoint) {
           const formatted = this.date ? this.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' }) : this.name;
           const parts = [
