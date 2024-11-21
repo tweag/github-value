@@ -51,10 +51,10 @@
       </button>
     }
     <ng-container *ngIf="installation.owner as owner">
-      <mat-card-header>
-        <div mat-card-avatar style="background-size: cover;" [style.background-image]="'url(' + owner.avatar_url + ')'"></div>
-        <mat-card-title>{{owner.login}}</mat-card-title>
-      </mat-card-header>
+      <div class="header">
+        <div class="mat-card-avatar" mat-card-avatar style="background-size: cover;" [style.background-image]="'url(' + owner.avatar_url + ')'"></div>
+        <h1>{{owner.login}}</h1>
+      </div>
     </ng-container>
     <span class="spacer"></span>
   </mat-toolbar>
