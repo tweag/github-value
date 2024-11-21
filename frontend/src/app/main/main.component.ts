@@ -59,7 +59,6 @@ export class MainComponent {
     });
 
    this.installation = this.setupService.installation;
-   console.log('MainComponent constructor', this.installation);
   }
 
   toggleNavText(): void {

@@ -28,7 +28,6 @@ export class SeatService {
   }
 
   getSeat(id: number | string) {
-    console.log(id)
     return this.http.get<Seat[]>(`${this.apiUrl}/${id}`);
   }
 

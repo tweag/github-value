@@ -126,7 +126,6 @@ export class CopilotDashboardComponent implements OnInit {
 
     this.seatService.getActivityTotals().subscribe(totals => {
       Object.keys(totals).forEach((key, index) => index > 10 ? delete totals[key] : null);
-      console.log(totals)
       this.activityTotals = totals;
     });
 
