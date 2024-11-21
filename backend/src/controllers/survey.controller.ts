@@ -76,8 +76,8 @@ class SurveyController {
   async updateSurvey(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const { daytime, userId, usedCopilot, pctTimesaved, timeUsedFor } = req.body;
-      const [updated] = await Survey.update({ daytime, userId, usedCopilot, pctTimesaved, timeUsedFor }, {
+      const { userId, usedCopilot, percentTimeSaved, timeUsedFor } = req.body;
+      const [updated] = await Survey.update({ userId, usedCopilot, percentTimeSaved, timeUsedFor }, {
         where: { id }
       });
       if (updated) {
