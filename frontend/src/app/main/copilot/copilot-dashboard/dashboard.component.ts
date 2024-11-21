@@ -68,7 +68,6 @@ export class CopilotDashboardComponent implements OnInit {
       positioner: function () {
         return { x: 4, y: -10 };
       },
-      outside: true,
       backgroundColor: undefined
     },
     plotOptions: {
