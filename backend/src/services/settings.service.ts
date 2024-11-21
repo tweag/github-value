@@ -109,54 +109,6 @@ class SettingsService {
       throw new Error('Settings not found');
     }
   }
-
-  async getDeveloperTotal() {
-    return await this.getSettingsByName('developerTotal');
-  }
-
-  async updateDeveloperTotal(value: string) {
-    return await this.updateSetting('developerTotal', value);
-  }
-
-  async getAdopterCount() {
-    return await this.getSettingsByName('adopterCount');
-  }
-
-  async updateAdopterCount(value: string) {
-    return await this.updateSetting('adopterCount', value);
-  }
-
-  async getPerLicenseCost() {
-    return await this.getSettingsByName('perLicenseCost');
-  }
-
-  async updatePerLicenseCost(value: string) {
-    return await this.updateSetting('perLicenseCost', value);
-  }
-
-  async getPerDevCostPerYear() {
-    return await this.getSettingsByName('perDevCostPerYear');
-  }
-
-  async updatePerDevCostPerYear(value: string) {
-    return await this.updateSetting('perDevCostPerYear', value);
-  }
-
-  async getPerDevHoursPerYear() {
-    return await this.getSettingsByName('perDevHoursPerYear');
-  }
-
-  async updatePerDevHoursPerYear(value: string) {
-    return await this.updateSetting('perDevHoursPerYear', value);
-  }
-
-  async getPercentofHoursCoding() {
-    return await this.getSettingsByName('percentofHoursCoding');
-  }
-
-  async updatePercentofHoursCoding(value: string) {
-    return await this.updateSetting('percentofHoursCoding', value);
-  }
 }
 
 export default new SettingsService();
