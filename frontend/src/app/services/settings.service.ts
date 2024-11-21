@@ -12,6 +12,12 @@ export interface Settings {
   baseUrl?: string | null;
   webhookProxyUrl?: string | null;
   webhookSecret?: string | null;
+  developerTotal?: string | null;
+  adopterCount?: string | null;
+  perLicenseCost?: string | null;
+  perDevCostPerYear?: string | null;
+  perDevHoursPerYear?: string | null;
+  percentofHoursCoding?: string | null;
   [key: string]: string | null | undefined;
 }
 
@@ -42,4 +48,5 @@ export class SettingsHttpService {
   deleteSettings(name: string) {
     return this.http.delete<void>(`${this.apiUrl}/${name}`);
   }
+
 }
