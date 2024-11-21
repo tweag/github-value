@@ -57,6 +57,24 @@ class SeatsService {
     });
   }
 
+  async getAssigneeByLogin(login: string) {
+    const assignee = await Assignee.findOne({
+      where: {
+        login
+      }
+    });
+    if (!assignee) throw new Error(`Assignee ${login} not found`);
+    return Seat.findAll({
+      include: [{
+        model: Assignee,
+        as: 'assignee'
+      }],
+      where: {
+        assignee_id: assignee.id
+      }
+    });
+  }
+
   async insertSeats(data: SeatEntry[]) {
     for (const seat of data) {
       const assignee = await Assignee.findOrCreate({

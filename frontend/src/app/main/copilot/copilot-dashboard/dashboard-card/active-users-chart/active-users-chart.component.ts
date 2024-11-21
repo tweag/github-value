@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { HighchartsChartModule } from 'highcharts-angular';
 import * as Highcharts from 'highcharts';
-import { Seat } from '../../../../../services/seat.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-active-users-chart',
@@ -16,7 +16,6 @@ import { Seat } from '../../../../../services/seat.service';
 })
 export class ActiveUsersChartComponent {
   @Input() data?: Record<string, number>;
-  @Input() allSeats?: Seat[];
   @Input() chartOptions?: Highcharts.Options;
   Highcharts: typeof Highcharts = Highcharts;
   updateFlag = false;
@@ -61,9 +60,23 @@ export class ActiveUsersChartComponent {
           useHTML: true,
           align: 'left'
         }]
+      },
+      series: {
+        cursor: 'pointer',
+        point: {
+          events: {
+            click: (event) => {
+              this.router.navigate(['/copilot/seats', event.point.name]);
+            }
+          }
+        }
       }
     }
   }
+
+  constructor(
+    private router: Router
+  ) { }
 
   ngOnChanges() {
     this._chartOptions = Object.assign({}, this.chartOptions, this._chartOptions);

@@ -13,8 +13,9 @@ class SeatsController {
 
   async getSeat(req: Request, res: Response): Promise<void> {
     const { id } = req.params;
+    const idNumber = Number(id);
     try {
-      const seat = await SeatsService.getAssignee(Number(id));
+      const seat = isNaN(idNumber) ? await SeatsService.getAssigneeByLogin(id) : await SeatsService.getAssignee(idNumber);
       res.status(200).json(seat);
     } catch (error) {
       res.status(500).json(error);

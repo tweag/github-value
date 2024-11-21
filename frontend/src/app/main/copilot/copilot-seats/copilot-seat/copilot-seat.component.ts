@@ -64,7 +64,7 @@ export class CopilotSeatComponent implements OnInit {
     }
   }
   _chartOptions?: Highcharts.Options;
-  id?: number;
+  id?: number | string;
   seat?: Seat;
   seatActivity?: Seat[];
   timeSpent?: string;
@@ -77,9 +77,9 @@ export class CopilotSeatComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    const routeId = this.activatedRoute.snapshot.paramMap.get('id');
-    if (!routeId) return;
-    this.id = parseInt(routeId);
+    const id = this.activatedRoute.snapshot.paramMap.get('id');
+    if (!id) return;
+    this.id = id;
 
     this.copilotSeatService.getSeat(this.id).subscribe(seatActivity => {
       this.seatActivity = seatActivity;

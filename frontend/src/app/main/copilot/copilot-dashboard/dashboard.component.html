@@ -55,12 +55,12 @@
         </ng-container>
       </mat-card-content>
     </mat-card>
-    <mat-card id="active-users" appearance="outlined" routerLink="/copilot/seats">
+    <mat-card id="active-users" appearance="outlined">
       <mat-card-header>
         <mat-card-title>Most Active Users</mat-card-title>
       </mat-card-header>
       <ng-container *ngIf="activityTotals; else loading">
-        <app-active-users-chart [data]="activityTotals" [allSeats]="allSeats" [chartOptions]="chartOptions"></app-active-users-chart>
+        <app-active-users-chart [data]="activityTotals" [chartOptions]="chartOptions"></app-active-users-chart>
       </ng-container>
     </mat-card>
   </div>
