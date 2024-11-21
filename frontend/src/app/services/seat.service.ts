@@ -41,4 +41,8 @@ export class SeatService {
       }
     );
   };
+
+  getActivityTotals() {
+    return this.http.get<Record<string, number>>(`${this.apiUrl}/activity/totals`);
+  }
 }

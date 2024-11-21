@@ -5,7 +5,7 @@ import { DashboardCardValueComponent } from './dashboard-card/dashboard-card-val
 import { DashboardCardDrilldownBarChartComponent } from './dashboard-card/dashboard-card-drilldown-bar-chart/dashboard-card-drilldown-bar-chart.component';
 import { MetricsService } from '../../../services/metrics.service';
 import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
-import { ActivityResponse, SeatService } from '../../../services/seat.service';
+import { ActivityResponse, Seat, SeatService } from '../../../services/seat.service';
 import { MembersService } from '../../../services/members.service';
 import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
 import { forkJoin } from 'rxjs';
@@ -13,6 +13,7 @@ import { AdoptionChartComponent } from '../copilot-value/adoption-chart/adoption
 import { DailyActivityChartComponent } from '../copilot-value/daily-activity-chart/daily-activity-chart.component';
 import { TimeSavedChartComponent } from '../copilot-value/time-saved-chart/time-saved-chart.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+import { ActiveUsersChartComponent } from './dashboard-card/active-users-chart/active-users-chart.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,12 +26,14 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
     AdoptionChartComponent,
     DailyActivityChartComponent,
     TimeSavedChartComponent,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    ActiveUsersChartComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class CopilotDashboardComponent implements OnInit {
+  allSeats?: Seat[];
   totalMembers?: number;
   totalSeats?: number;
   surveysData?: Survey[];
@@ -82,6 +85,8 @@ export class CopilotDashboardComponent implements OnInit {
     }
   }
 
+  activityTotals?: Record<string, number>;
+
   constructor(
     private metricsService: MetricsService,
     private membersService: MembersService,
@@ -109,6 +114,7 @@ export class CopilotDashboardComponent implements OnInit {
       members: this.membersService.getAllMembers(),
       seats: this.seatService.getAllSeats()
     }).subscribe(result => {
+      this.allSeats = result.seats;
       this.totalMembers = result.members.length;
       this.totalSeats = result.seats.length;
       this.seatPercentage = (this.totalSeats / this.totalMembers) * 100;
@@ -117,6 +123,12 @@ export class CopilotDashboardComponent implements OnInit {
     this.seatService.getActivity(30).subscribe((activity) => {
       this.activityData = activity;
     })
+
+    this.seatService.getActivityTotals().subscribe(totals => {
+      Object.keys(totals).forEach((key, index) => index > 10 ? delete totals[key] : null);
+      console.log(totals)
+      this.activityTotals = totals;
+    });
 
     this.metricsService.getMetrics({
       since: formattedSince,

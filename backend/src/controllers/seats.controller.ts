@@ -36,6 +36,17 @@ class SeatsController {
     }
   }
 
+  async getActivityTotals(req: Request, res: Response): Promise<void> {
+    try {
+      const totals = await SeatsService.getAssigneesActivityTotals();
+      console.log('totals', totals);
+      res.status(200).json(totals);
+    } catch (error) {
+      console.log(error)
+      res.status(500).json(error);
+    }
+  }
+
   async getActivityHighcharts(req: Request, res: Response): Promise<void> {
     try {
       const { daysInactive } = req.query;

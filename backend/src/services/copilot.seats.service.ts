@@ -167,14 +167,46 @@ class SeatsService {
       activityDays[date].totalSeats = Object.values(activity.active).length + Object.values(activity.inactive).length
       activityDays[date].totalActive = Object.values(activity.active).length
       activityDays[date].totalInactive = Object.values(activity.inactive).length
-    });    
+    });
 
     const sortedActivityDays = Object.fromEntries(
       Object.entries(activityDays)
         .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
     );
-    
+
     return sortedActivityDays;
+  }
+
+  async getAssigneesActivityTotals() {
+    // Get all assignees with their activity
+    const assignees = await Assignee.findAll({
+      attributes: ['login', 'id'],
+      include: [{
+        model: Seat,
+        as: 'activity',
+        attributes: ['last_activity_at'],
+        order: [['last_activity_at', 'ASC']]
+      }]
+    });
+
+    const activityTotals = assignees.reduce((totals, assignee) => {
+      totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {
+        if (index === 0) return totalMs;
+        const prev = assignee.activity[index - 1];
+        const diff = activity.last_activity_at?.getTime() - prev.last_activity_at?.getTime();
+        if (diff) {
+          if (diff > 1000 * 60 * 30) {
+            totalMs += 1000 * 60 * 30;
+          } else {
+            totalMs += diff;
+          }
+        }
+        return totalMs;
+      }, 0);
+      return totals;
+    }, {} as { [assignee: string]: number });
+
+    return Object.entries(activityTotals).sort((a, b) => b[1] - a[1]);
   }
 }
 
