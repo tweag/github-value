@@ -52,7 +52,9 @@ class SurveyController {
 
   async getAllSurveys(req: Request, res: Response): Promise<void> {
     try {
-      const surveys = await Survey.findAll();
+      const surveys = await Survey.findAll({
+        order: [['updatedAt', 'DESC']]
+      });
       res.status(200).json(surveys);
     } catch (error) {
       res.status(500).json(error);

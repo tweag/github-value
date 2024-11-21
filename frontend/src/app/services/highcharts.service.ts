@@ -501,16 +501,10 @@ export class HighchartsService {
           y: survey.percentTimeSaved,
           raw: survey
         })),
-        lineWidth: 2,
         marker: {
           enabled: true,
           radius: 4,
           symbol: 'circle'
-        },
-        states: {
-          hover: {
-            lineWidth: 3
-          }
         }
       }],
       tooltip: {
