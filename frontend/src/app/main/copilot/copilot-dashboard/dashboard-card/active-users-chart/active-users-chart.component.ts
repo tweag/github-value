@@ -46,7 +46,7 @@ export class ActiveUsersChartComponent {
         return `<span style="padding:0">@${this.key}</span><br>
         <span style="padding:0">${hours.toFixed(1)} hours</span>`;
       },
-      outside: false,
+      outside: true,
       distance: 30
     },
     plotOptions: {
