@@ -43,7 +43,7 @@ export class CopilotSeatsComponent implements OnInit {
     { 
       columnDef: 'created_at', 
       header: 'Created', 
-      cell: (element: Seat) => new Date(element.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })
+      cell: (element: Seat) => new Date(element.created_at).toLocaleString([], { dateStyle: 'short' })
     },
     { 
       columnDef: 'plan_type', 
