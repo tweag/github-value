@@ -20,7 +20,7 @@ export class CopilotSurveysComponent implements OnInit {
   surveysColumns: ColumnOptions[] = [
     { columnDef: 'id', header: 'ID', cell: (element: Survey) => `${element.id}` },
     { columnDef: 'userId', header: 'Author', cell: (element: Survey) => `${element.userId}`, link: (element: Survey) => `https://github.com/${element.userId}` },
-    { columnDef: 'usedCopilot', header: 'Used Copilot', cell: (element: Survey) => element.usedCopilot ? 'svg:github-copilot' : 'close', isIcon: true, iconColor: (element: Survey) => 'var(--sys-on-surface)' },
+    { columnDef: 'usedCopilot', header: 'Used Copilot', cell: (element: Survey) => element.status === 'pending' ? 'pending' : element.usedCopilot ? 'svg:github-copilot' : 'close', isIcon: true, iconColor: () => 'var(--sys-on-surface)' },
     { columnDef: 'percentTimeSaved', header: 'Time Saved', cell: (element: Survey) => element.percentTimeSaved < 0 ? '-' : `${element.percentTimeSaved}%` },
     { columnDef: 'timeUsedFor', header: 'Time Used For', cell: (element: Survey) => this.formatTimeUsedFor(element.timeUsedFor) },
     { columnDef: 'prNumber', header: 'PR', cell: (element: Survey) => `${element.repo}#${element.prNumber}`, link: (element: Survey) => `https://github.com/${element.owner}/${element.repo}/pull/${element.prNumber}` },
