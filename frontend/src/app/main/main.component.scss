@@ -66,3 +66,27 @@ mat-divider {
 .date-selector {
   caret-color: transparent;
 }
+
+.header {
+    display: flex;
+    box-sizing: border-box;
+    width: 100%;
+    flex-direction: row;
+    align-items: center;
+    white-space: nowrap;
+    height: var(--mat-toolbar-standard-height);
+    .mat-card-avatar {
+      background-size: cover;
+      border-radius: 6px;
+      box-shadow: 0 0 0 1px rgba(31, 35, 40, 0.15);
+      background-color: var(--sys-inverse-on-surface);
+      width: 48px;
+      height: 48px;
+      vertical-align: middle;
+      margin: 0;
+    }
+    h1 {
+      padding: 0 16px;
+      font-size: 32px;
+    }
+}
