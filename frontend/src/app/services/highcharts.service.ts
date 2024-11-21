@@ -473,6 +473,7 @@ export class HighchartsService {
   }
 
   transformSurveysToScatter(surveys: Survey[]): Highcharts.Options {
+    surveys = surveys.filter(survey => survey.status !== 'pending');
     return {
       series: [{
         name: 'Time Saved',

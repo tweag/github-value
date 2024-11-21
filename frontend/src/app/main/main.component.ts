@@ -13,6 +13,7 @@ import { ThemeService } from '../services/theme.service';
 import { NavigationEnd, Router } from '@angular/router';
 import { Endpoints } from '@octokit/types';
 import { SetupService } from '../services/setup.service';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-main',
@@ -26,7 +27,8 @@ import { SetupService } from '../services/setup.service';
     MatListModule,
     MatIconModule,
     AsyncPipe,
-    AppModule
+    AppModule,
+    MatCardModule
   ]
 })
 export class MainComponent {
@@ -56,7 +58,8 @@ export class MainComponent {
       this.closeSidenav();
     });
 
-    this.installation = this.setupService.installation;
+   this.installation = this.setupService.installation;
+   console.log('MainComponent constructor', this.installation);
   }
 
   toggleNavText(): void {
