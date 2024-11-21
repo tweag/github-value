@@ -20,6 +20,11 @@ export class CopilotMetricsPieChartComponent implements OnChanges {
     @Input() metricsTotals?: CopilotMetrics;
     chartOptions: Highcharts.Options = {
         tooltip: {
+            positioner: function () {
+              return { x: 0, y: 0 };
+            },
+            outside: true,
+            backgroundColor: undefined,
             headerFormat: '<span style="font-size:11px">{series.name}</span><br>',
             pointFormat: '<span style="color:{point.color}">{point.name}</span>: ' +
                 '<b>{point.y:.2f}%</b> of total<br/>'

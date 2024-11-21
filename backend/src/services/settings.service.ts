@@ -118,6 +118,9 @@ class SettingsService {
         console.warn('failed to create app from env')
       }
     }
+    if (name === 'baseUrl') {
+      this.baseUrl = value;
+    }
     if (name === 'metricsCronExpression') QueryService.getInstance()?.updateCronJob(value);
     return await Settings.findOne({ where: { name } });
   }

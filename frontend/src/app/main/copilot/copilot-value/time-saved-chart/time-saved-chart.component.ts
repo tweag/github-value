@@ -3,6 +3,7 @@ import * as Highcharts from 'highcharts';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { Survey } from '../../../../services/copilot-survey.service';
 import { HighchartsService } from '../../../../services/highcharts.service';
+import { ActivityResponse } from '../../../../services/seat.service';
 
 @Component({
   selector: 'app-time-saved-chart',
@@ -15,6 +16,7 @@ import { HighchartsService } from '../../../../services/highcharts.service';
 })
 export class TimeSavedChartComponent implements OnInit, OnChanges {
   @Input() surveys?: Survey[];
+  @Input() activity?: ActivityResponse;
   @Input() chartOptions?: Highcharts.Options;
   @Output() chartInstanceChange = new EventEmitter<Highcharts.Chart>();
   Highcharts: typeof Highcharts = Highcharts;
@@ -93,7 +95,7 @@ export class TimeSavedChartComponent implements OnInit, OnChanges {
     if (this.surveys) {
       this._chartOptions = {
         ...this._chartOptions,
-        ...this.highchartsService.transformSurveysToScatter(this.surveys)
+        ...this.highchartsService.transformSurveysToScatter(this.surveys, this.activity)
       };
       this.updateFlag = true;
     }

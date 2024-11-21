@@ -22,7 +22,7 @@ export class SetupGuard implements CanActivate, CanActivateChild {
     if (this.cache.isSetup && this.cache.dbInitialized) {
       return of(true);
     }
-    return this.setupService.getSetupStatus(['isSetup', 'dbInitialized']).pipe(
+    return this.setupService.getSetupStatus().pipe(
       map((response) => {
         this.cache = response;
         if (!response.isSetup) {

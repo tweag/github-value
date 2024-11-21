@@ -1,7 +1,7 @@
 <div class="page-container" *ngIf="seat && seat.assignee">
   <div class="page-header">
     <h1>
-      <img [src]="seat.assignee.avatar_url" class="avatar" alt="User avatar" width="50" height="50">
+      <img [src]="seat.assignee.avatar_url" class="avatar" alt="User avatar" width="75" height="75">
       {{ seat.assignee.login }}
     </h1>
   </div>
@@ -13,6 +13,7 @@
       <p><strong>Last Active: </strong>{{ seat.last_activity_at | date: 'medium' }}</p>
       <p><strong>Editor: </strong>{{ seat.last_activity_editor }}</p>
       <p><strong>Site Admin: </strong>{{ seat.assignee.site_admin ? 'Yes' : 'No' }}</p>
+      <p><strong>Copilot Usage: </strong>{{ timeSpent }}</p>
     </mat-card-content>
   </mat-card>
 </div>

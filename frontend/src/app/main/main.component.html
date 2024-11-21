@@ -50,7 +50,12 @@
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
     }
-    <h1>Octodemo</h1>
+    <ng-container *ngIf="installation.owner as owner">
+      <mat-card-header>
+        <div mat-card-avatar style="background-size: cover;" [style.background-image]="'url(' + owner.avatar_url + ')'"></div>
+        <mat-card-title>{{owner.login}}</mat-card-title>
+      </mat-card-header>
+    </ng-container>
     <span class="spacer"></span>
   </mat-toolbar>
     <div class="sidenav-content">

@@ -35,10 +35,17 @@ export class HighchartsService {
           type: 'column',
           name: date,
           y: dateData.total_engaged_users,
+          // x: new Date(dateData.date).getTime(),
           date: new Date(dateData.date),
           drilldown: `date_${dateData.date}`,
         }
-      })
+      }),
+      tooltip: {
+        headerFormat: '',
+        pointFormatter: function () {
+          return `<b>${new Date(this.date || 0).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</b></br>${this.y} users`;
+        } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
+      }
     };
 
     const drilldownSeries: Highcharts.SeriesOptionsType[] = [];
@@ -321,7 +328,7 @@ export class HighchartsService {
         series: drilldownSeries
       },
       tooltip: {
-        headerFormat: '<span>{series.name}</span><br>',
+        headerFormat: '<span><b>{series.name}</b></span><br>',
         pointFormatter: function (this: CustomHighchartsPoint) {
           const formatted = this.date ? this.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' }) : this.name;
           const parts = [
@@ -465,15 +472,63 @@ export class HighchartsService {
     }
   }
 
-  transformSurveysToScatter(surveys: Survey[]): Highcharts.Options {
+  transformSurveysToScatter(surveys: Survey[], activity?: ActivityResponse): Highcharts.Options {
+    surveys = surveys.filter(survey => survey.status !== 'pending');
+    console.log(surveys, activity);
+    if (!activity) return { series: [] };
+
+    const surveyAverages = Object.keys(activity).reduce((acc, activityDate) => {
+      const dateKey = activityDate.split('T')[0];
+      acc[dateKey] = {
+          sum: 0,
+          count: 0
+      };
+  
+      const dateSurveys = surveys.filter(survey => 
+          new Date(survey.createdAt!).toISOString().split('T')[0] === dateKey
+      );
+  
+      if (dateSurveys.length > 0) {
+          acc[dateKey].sum = dateSurveys.reduce((sum, survey) => 
+              sum + survey.percentTimeSaved, 0);
+          acc[dateKey].count = dateSurveys.length;
+      }
+  
+      return acc;
+  }, {} as Record<string, { sum: number; count: number }>);
+
+
+    // Generate series with 7-day rolling average
+    const seriesData = Object.keys(activity)
+      .map(activityDate => ({
+        x: new Date(activityDate).getTime(),
+        y: ((targetDate: string, surveyAverages: Record<string, { sum: number; count: number }>) => {
+          const target = new Date(targetDate);
+          const sevenDaysAgo = new Date(target);
+          sevenDaysAgo.setDate(target.getDate() - 6); // -6 to include current day
+
+          let totalSum = 0;
+          let totalCount = 0;
+
+          // Loop through last 7 days
+          for (let d = new Date(sevenDaysAgo); d <= target; d.setDate(d.getDate() + 1)) {
+            const key = d.toISOString().split('T')[0];
+            if (surveyAverages[key]) {
+              totalSum += surveyAverages[key].sum;
+              totalCount += surveyAverages[key].count;
+            }
+          }
+
+          return totalCount > 0 ? totalSum / totalCount : 0;
+        })(activityDate, surveyAverages)
+      }))
+      .sort((a, b) => a.x - b.x);
+
     return {
       series: [{
         name: 'Time Saved',
         type: 'spline' as const,
-        data: surveys.map(survey => ({
-          x: new Date(survey.dateTime).getTime(),
-          y: survey.percentTimeSaved,
-        })),
+        data: seriesData,
         lineWidth: 2,
         marker: {
           enabled: true,
@@ -489,35 +544,29 @@ export class HighchartsService {
         type: 'scatter' as const,
         name: 'Survey',
         data: surveys.map(survey => ({
-          x: new Date(survey.dateTime).getTime(),
+          x: new Date(survey.createdAt!).getTime(),
           y: survey.percentTimeSaved,
           raw: survey
         })),
-        lineWidth: 2,
         marker: {
           enabled: true,
           radius: 4,
-          symbol: 'circle'
+          symbol: 'triangle',
         },
-        states: {
-          hover: {
-            lineWidth: 3
-          }
+        tooltip: {
+          headerFormat: '<b>{point.x:%b %d, %Y}</b><br/>',
+          pointFormatter: function () {
+            return [
+              `User: `,
+              '<b>' + this.raw?.userId + '</b>',
+              `</br>Time saved: `,
+              '<b>' + Math.round(this.y || 0) + '%</b>',
+              `</br>PR: `,
+              '<b>#' + this.raw?.prNumber + '</b>',
+            ].join('');
+          } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
         }
-      }],
-      tooltip: {
-        headerFormat: '<b>{point.x:%b %d, %Y}</b><br/>',
-        pointFormatter: function () {
-          return [
-            `User: `,
-            '<b>' + this.raw?.userId + '</b>',
-            `</br>Time saved: `,
-            '<b>' + Math.round(this.y || 0) + '%</b>',
-            `</br>PR: `,
-            '<b>#' + this.raw?.prNumber + '</b>',
-          ].join('');
-        } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
-      }
+      }]
     };
   }
 
@@ -562,7 +611,9 @@ export class HighchartsService {
 
           const activityStartTime = new Date(Date.parse(seat.last_activity_at || seat.created_at));
           const activityEndTime = new Date(Date.parse(seatActivity[index + 1]?.last_activity_at || seatActivity[index + 1]?.created_at));
-
+          if (activityEndTime.getTime() === activityStartTime.getTime()) {
+            activityEndTime.setHours(activityEndTime.getHours() + 1);
+          }
           acc.push({
             name: String(seat.assignee?.login || `Seat ${seat.assignee?.id}`),
             start: activityStartTime.getTime(),

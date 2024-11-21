@@ -9,6 +9,7 @@ import { Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatChipsModule } from '@angular/material/chips';
 
 
 export interface ColumnOptions {
@@ -18,7 +19,9 @@ export interface ColumnOptions {
   link?: (element: any) => string;
   isImage?: boolean;
   isIcon?: boolean;
-  iconColor?: string;
+  chipList?: boolean;
+  chipListIcon?: (element: any) => string;
+  iconColor?: (element: any) => string;
   noWrap?: boolean;
 };
 
@@ -33,7 +36,8 @@ export interface ColumnOptions {
     MatPaginatorModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    CommonModule
+    CommonModule,
+    MatChipsModule
   ],
   templateUrl: './table.component.html',
   styleUrl: './table.component.scss'

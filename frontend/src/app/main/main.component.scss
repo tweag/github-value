@@ -32,6 +32,16 @@ mat-sidenav {
   }
 }
 
+mat-card-header {
+  mat-card-title {
+    font-size: 32px;
+  }
+  > * {
+    margin: 0;
+  }
+  padding: 0 0 0 8px;
+}
+
 .hide-nav-text {
   span {
     display: none;

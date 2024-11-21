@@ -24,12 +24,15 @@ export class NewCopilotSurveyComponent implements OnInit {
   surveyForm: FormGroup;
   params: Params = {};
   defaultPercentTimeSaved = 30;
+  id: number;
 
   constructor(
     private fb: FormBuilder,
     private copilotSurveyService: CopilotSurveyService,
     private route: ActivatedRoute
   ) {
+    const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.id = isNaN(id) ? 0 : id
     this.surveyForm = this.fb.group({
       usedCopilot: new FormControl(true, Validators.required),
       percentTimeSaved: new FormControl(this.defaultPercentTimeSaved, Validators.required),
@@ -50,7 +53,12 @@ export class NewCopilotSurveyComponent implements OnInit {
   }
 
   parseGitHubPRUrl(url: string) {
-    const urlObj = new URL(url);
+    let urlObj;
+    try {
+      urlObj = new URL(url);
+    } catch {
+      return { owner: '', repo: '', prNumber: NaN };
+    }
     const pathSegments = urlObj.pathname.split('/');
   
     const owner = pathSegments[1];    const repo = pathSegments[2];    const prNumber = Number(pathSegments[4]);  
@@ -60,7 +68,7 @@ export class NewCopilotSurveyComponent implements OnInit {
   onSubmit() {
     const { owner, repo, prNumber } = this.parseGitHubPRUrl(this.params['url']);
     this.copilotSurveyService.createSurvey({
-      dateTime: new Date(),
+      id: this.id,
       userId: this.params['author'],
       owner: owner,
       repo: repo,

@@ -5,7 +5,7 @@ import { DashboardCardValueComponent } from './dashboard-card/dashboard-card-val
 import { DashboardCardDrilldownBarChartComponent } from './dashboard-card/dashboard-card-drilldown-bar-chart/dashboard-card-drilldown-bar-chart.component';
 import { MetricsService } from '../../../services/metrics.service';
 import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
-import { ActivityResponse, SeatService } from '../../../services/seat.service';
+import { ActivityResponse, Seat, SeatService } from '../../../services/seat.service';
 import { MembersService } from '../../../services/members.service';
 import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
 import { forkJoin } from 'rxjs';
@@ -13,6 +13,7 @@ import { AdoptionChartComponent } from '../copilot-value/adoption-chart/adoption
 import { DailyActivityChartComponent } from '../copilot-value/daily-activity-chart/daily-activity-chart.component';
 import { TimeSavedChartComponent } from '../copilot-value/time-saved-chart/time-saved-chart.component';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+import { ActiveUsersChartComponent } from './dashboard-card/active-users-chart/active-users-chart.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,12 +26,14 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
     AdoptionChartComponent,
     DailyActivityChartComponent,
     TimeSavedChartComponent,
-    LoadingSpinnerComponent
+    LoadingSpinnerComponent,
+    ActiveUsersChartComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
 export class CopilotDashboardComponent implements OnInit {
+  allSeats?: Seat[];
   totalMembers?: number;
   totalSeats?: number;
   surveysData?: Survey[];
@@ -44,6 +47,12 @@ export class CopilotDashboardComponent implements OnInit {
   activeCurrentWeekAverage?: number;
   activeLastWeekAverage?: number;
   chartOptions: Highcharts.Options = {
+    chart: {
+      marginTop: 0,
+      marginBottom: 0,
+      marginLeft: 0,
+      marginRight: 0,
+    },
     legend: {
       enabled: false,
     },
@@ -57,10 +66,8 @@ export class CopilotDashboardComponent implements OnInit {
     },
     tooltip: {
       positioner: function () {
-        return { x: 0, y: 0 };
+        return { x: 4, y: -10 };
       },
-      distance: 40,
-      outside: true,
       backgroundColor: undefined
     },
     plotOptions: {
@@ -76,6 +83,8 @@ export class CopilotDashboardComponent implements OnInit {
       }
     }
   }
+
+  activityTotals?: Record<string, number>;
 
   constructor(
     private metricsService: MetricsService,
@@ -93,7 +102,7 @@ export class CopilotDashboardComponent implements OnInit {
       this.surveysData = data;
       this.totalSurveys = data.length;
       this.totalSurveysThisWeek = data.reduce((acc, survey) => {
-        const surveyDate = new Date(survey.dateTime);
+        const surveyDate = new Date(survey.createdAt!);
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         return surveyDate > oneWeekAgo ? acc + 1 : acc;
@@ -104,6 +113,7 @@ export class CopilotDashboardComponent implements OnInit {
       members: this.membersService.getAllMembers(),
       seats: this.seatService.getAllSeats()
     }).subscribe(result => {
+      this.allSeats = result.seats;
       this.totalMembers = result.members.length;
       this.totalSeats = result.seats.length;
       this.seatPercentage = (this.totalSeats / this.totalMembers) * 100;
@@ -112,6 +122,11 @@ export class CopilotDashboardComponent implements OnInit {
     this.seatService.getActivity(30).subscribe((activity) => {
       this.activityData = activity;
     })
+
+    this.seatService.getActivityTotals().subscribe(totals => {
+      Object.keys(totals).forEach((key, index) => index > 10 ? delete totals[key] : null);
+      this.activityTotals = totals;
+    });
 
     this.metricsService.getMetrics({
       since: formattedSince,

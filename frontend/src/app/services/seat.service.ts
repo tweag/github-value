@@ -27,7 +27,7 @@ export class SeatService {
     return this.http.get<Seat[]>(`${this.apiUrl}`);
   }
 
-  getSeat(id: number) {
+  getSeat(id: number | string) {
     return this.http.get<Seat[]>(`${this.apiUrl}/${id}`);
   }
 
@@ -41,4 +41,8 @@ export class SeatService {
       }
     );
   };
+
+  getActivityTotals() {
+    return this.http.get<Record<string, number>>(`${this.apiUrl}/activity/totals`);
+  }
 }

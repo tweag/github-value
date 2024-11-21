@@ -29,6 +29,7 @@ export const routes: Routes = [
       { path: 'copilot/seats', component: CopilotSeatsComponent, title: 'Seats' },
       { path: 'copilot/seats/:id', component: CopilotSeatComponent, title: 'Seat' },
       { path: 'copilot/surveys', component: CopilotSurveysComponent, title: 'Surveys' },
+      { path: 'copilot/surveys/new/:id', component: NewCopilotSurveyComponent, title: 'New Survey' },
       { path: 'copilot/surveys/:id', component: CopilotSurveyComponent, title: 'Survey' },
       { path: 'copilot/surveys/new', component: NewCopilotSurveyComponent, title: 'New Survey' },
       { path: 'copilot/predictive-modeling', component: PredictiveModelingComponent, title: 'Predictive Modeling' },
