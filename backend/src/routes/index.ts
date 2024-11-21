@@ -1,12 +1,12 @@
 import { Router, Request, Response } from 'express';
-import SurveyController from '../controllers/survey.controller.js';
+import surveyController from '../controllers/survey.controller.js';
 import usageController from '../controllers/usage.controller.js';
 import settingsController from '../controllers/settings.controller.js';
 import setupController from '../controllers/setup.controller.js';
 import SeatsController from '../controllers/seats.controller.js';
 import metricsController from '../controllers/metrics.controller.js';
-import TeamsController from '../controllers/teams.controller.js';
-import targetValuesController from 'controllers/target-values.controller.js';
+import teamsController from '../controllers/teams.controller.js';
+import targetValuesController from '../controllers/target-values.controller.js';
 
 const router = Router();
 
@@ -14,11 +14,11 @@ router.get('/', (req: Request, res: Response) => {
   res.send('Hello World!');
 });
 
-router.get('/survey', SurveyController.getAllSurveys);
-router.post('/survey', SurveyController.createSurvey);
-router.get('/survey/:id', SurveyController.getSurveyById);
-router.put('/survey/:id', SurveyController.updateSurvey);
-router.delete('/survey/:id', SurveyController.deleteSurvey);
+router.get('/survey', surveyController.getAllSurveys);
+router.post('/survey', surveyController.createSurvey);
+router.get('/survey/:id', surveyController.getSurveyById);
+router.put('/survey/:id', surveyController.updateSurvey);
+router.delete('/survey/:id', surveyController.deleteSurvey);
 
 router.get('/usage', usageController.getUsage);
 
@@ -32,8 +32,8 @@ router.get('/seats/:id', SeatsController.getSeat);
 // TODO - remove this route
 router.get('/seats/activity/highcharts', SeatsController.getActivityHighcharts);
 
-router.get('/teams', TeamsController.getAllTeams);
-router.get('/members', TeamsController.getAllMembers);
+router.get('/teams', teamsController.getAllTeams);
+router.get('/members', teamsController.getAllMembers);
 
 router.get('/settings', settingsController.getAllSettings);
 router.post('/settings', settingsController.createSettings);

@@ -59,36 +59,6 @@ class SettingsService {
     } catch {
       this.updateSetting('metricsCronExpression', '0 0 * * *');
     }
-    try {
-      if (!await this.getSettingsByName('developerTotal')) throw new Error('Developer total is not set');
-    } catch {
-      this.updateSetting('developerTotal', '100');
-    }
-    try {
-      if (!await this.getSettingsByName('adopterCount')) throw new Error('Adopter count is not set');
-    } catch {
-      this.updateSetting('adopterCount', '10');
-    }
-    try {
-      if (!await this.getSettingsByName('perLicenseCost')) throw new Error('Per license cost is not set');
-    } catch {
-      this.updateSetting('perLicenseCost', '20');
-    }
-    try {
-      if (!await this.getSettingsByName('perDevCostPerYear')) throw new Error('Per developer cost per year is not set');
-    } catch {
-      this.updateSetting('perDevCostPerYear', '150000');
-    }
-    try {
-      if (!await this.getSettingsByName('perDevHoursPerYear')) throw new Error('Per developer hours per year is not set');
-    } catch {
-      this.updateSetting('perDevHoursPerYear', '2080');
-    }
-    try {
-      if (!await this.getSettingsByName('percentofHoursCoding')) throw new Error('Percent of hours coding is not set');
-    } catch {
-      this.updateSetting('percentofHoursCoding', '60');
-    }
   }
 
   async getAllSettings() {
