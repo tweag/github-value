@@ -1,0 +1,17 @@
+.predictive-modeling-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;  // Two equal columns
+  gap: 20px;                       // Space between columns
+}
+
+.left-column, .right-column {
+  width: 100%;                     // Full width within grid cell
+}
+
+.settings-section, .targets-section {
+  margin-bottom: 20px;
+}
+
+mat-form-field {
+  width: 100%;
+}

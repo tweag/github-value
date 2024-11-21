@@ -6,6 +6,7 @@ import setupController from '../controllers/setup.controller.js';
 import SeatsController from '../controllers/seats.controller.js';
 import metricsController from '../controllers/metrics.controller.js';
 import TeamsController from '../controllers/teams.controller.js';
+import targetValuesController from 'controllers/target-values.controller.js';
 
 const router = Router();
 
@@ -46,6 +47,9 @@ router.get('/setup/install', setupController.getInstall);
 router.get('/setup/status', setupController.setupStatus);
 router.get('/setup/manifest', setupController.getManifest);
 router.post('/setup/existing-app', setupController.addExistingApp);
+
+router.get('/predictive-modeling/targets', targetValuesController.getTargetValues);
+router.post('/predictive-modeling/targets', targetValuesController.updateTargetValues);
 
 router.get('*', (req: Request, res: Response) => {
   res.status(404).send('Route not found');

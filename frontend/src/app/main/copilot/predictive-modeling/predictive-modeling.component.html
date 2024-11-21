@@ -2,47 +2,59 @@
   <div class="page-header">
     <h1>Predictive Modeling</h1>
   </div>
-  <form [formGroup]="form" (ngSubmit)="onSubmit()">
-    <div class="form-group">
-      <label for="developerTotal">Total Developers</label>
-      <input type="number" id="developerTotal" formControlName="developerTotal">
+</div>
+<div class="page-container">
+  <div class="predictive-modeling-container">
+    <div class="left-column">
+      <div class="settings-section">
+        <h3>Settings</h3>
+        <form [formGroup]="settingsForm">
+          <mat-form-field>
+            <mat-label>Developer Count</mat-label>
+            <input matInput formControlName="developerCount" readonly>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Dev Cost Per Year</mat-label>
+            <input matInput formControlName="devCostPerYear" readonly>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Hours Per Year</mat-label>
+            <input matInput formControlName="hoursPerYear" readonly>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Percent Coding</mat-label>
+            <input matInput formControlName="percentCoding" readonly>
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Percent Time Saved</mat-label>
+            <input matInput formControlName="percentTimeSaved" readonly>
+          </mat-form-field>
+        </form>
+      </div>
+      <div class="targets-section">
+        <h3>Targets</h3>
+        <form [formGroup]="targetForm">
+          <mat-form-field>
+            <mat-label>Number of Developers</mat-label>
+            <input matInput formControlName="targetedNumberOfDevelopers">
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Room for Improvement</mat-label>
+            <input matInput formControlName="targetedRoomForImprovement">
+          </mat-form-field>
+          <mat-form-field>
+            <mat-label>Time saved</mat-label>
+            <input matInput formControlName="targetedPercentOfTimeSaved">
+          </mat-form-field>
+        </form>
+      </div>
     </div>
-    <div class="form-group">
-      <label for="adopterCount">Adopter Count</label>
-      <input type="number" id="adopterCount" formControlName="adopterCount">
+    <div class="right-column">
+      <h3>Calculated Fields</h3>
+      <!-- <div *ngFor="let field of calculatedFields">
+      <p>{{ field.name }}: {{ field.value }}</p>
+    </div> -->
     </div>
-    <div class="form-group">
-      <label for="perLicenseCost">Per License Cost</label>
-      <input type="number" id="perLicenseCost" formControlName="perLicenseCost">
-    </div>
-    <div class="form-group">
-      <label for="perDevCostPerYear">Per Developer Cost Per Year</label>
-      <input type="number" id="perDevCostPerYear" formControlName="perDevCostPerYear">
-    </div>
-    <div class="form-group">
-      <label for="perDevHoursPerYear">Per Developer Hours Per Year</label>
-      <input type="number" id="perDevHoursPerYear" formControlName="perDevHoursPerYear">
-    </div>
-    <div class="form-group">
-      <label for="percentofHoursCoding">Percent of Hours Coding</label>
-      <input type="number" id="percentofHoursCoding" formControlName="percentofHoursCoding">
-    </div>
-    <div class="form-group">
-      <label for="targetedNumberOfDevelopers">Targeted Number of Developers</label>
-      <input type="number" id="targetedNumberOfDevelopers" formControlName="targetedNumberOfDevelopers">
-    </div>
-    <div class="form-group">
-      <label for="targetedPercentOfTimeSaved">Targeted Percent of Time Saved</label>
-      <input type="number" id="targetedPercentOfTimeSaved" formControlName="targetedPercentOfTimeSaved">
-    </div>
-    <div class="form-group">
-      <label for="targetedRoomForImprovement">Targeted Room for Improvement</label>
-      <input type="number" id="targetedRoomForImprovement" formControlName="targetedRoomForImprovement" readonly>
-    </div>
-    <div class="form-group">
-      <label for="roomForImprovement">Room for Improvement</label>
-      <input type="number" id="roomForImprovement" formControlName="roomForImprovement" readonly>
-    </div>
-    <button type="submit">Save</button>
-  </form>
+  </div>
+  <button mat-raised-button color="primary" (click)="saveTargets()">Save Targets to DB</button>
 </div>
