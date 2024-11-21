@@ -32,8 +32,8 @@
       <mat-card-header>
         <mat-card-title>Time Saved</mat-card-title>
       </mat-card-header>
-      <ng-container *ngIf="surveysData; else loading">
-        <app-time-saved-chart [surveys]="surveysData" [chartOptions]="chartOptions"></app-time-saved-chart>
+      <ng-container *ngIf="surveysData && activityData; else loading">
+        <app-time-saved-chart [surveys]="surveysData" [activity]="activityData" [chartOptions]="chartOptions"></app-time-saved-chart>
       </ng-container>
     </mat-card>
     <mat-card appearance="outlined" id="card-bars">
