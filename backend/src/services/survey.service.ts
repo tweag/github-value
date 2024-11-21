@@ -1,4 +1,4 @@
-import { Survey, SurveyType } from "models/survey.model.js";
+import { Survey, SurveyType } from "../models/survey.model.js";
 
 class SurveyService {
 
