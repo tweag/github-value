@@ -16,6 +16,7 @@
   },
   "default_events": [
     "pull_request",
-    "teams"
+    "team",
+    "team_add"
   ]
 }

@@ -26,6 +26,7 @@ router.get('/metrics/totals', metricsController.getMetricsTotals);
 
 router.get('/seats', SeatsController.getAllSeats);
 router.get('/seats/activity', SeatsController.getActivity);
+router.get('/seats/activity/totals', SeatsController.getActivityTotals);
 router.get('/seats/:id', SeatsController.getSeat);
 // TODO - remove this route
 router.get('/seats/activity/highcharts', SeatsController.getActivityHighcharts);

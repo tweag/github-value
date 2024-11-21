@@ -2,6 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { serverUrl } from './server.service';
 import { Endpoints } from '@octokit/types';
+import { tap } from 'rxjs';
 
 export interface SetupStatusResponse {
   isSetup?: boolean;
@@ -19,6 +20,7 @@ export interface SetupStatusResponse {
 })
 export class SetupService {
   private apiUrl = `${serverUrl}/api/setup`;
+  installation?: Endpoints["GET /app/installations"]["response"]["data"][0];
 
   constructor(private http: HttpClient) { }
 
@@ -26,7 +28,11 @@ export class SetupService {
     const params = fields ? new HttpParams().set('fields', fields.join(',')) : undefined;
     return this.http.get<SetupStatusResponse>(`${this.apiUrl}/status`, {
       params
-    });
+    }).pipe(
+      tap((status) => {
+        if (status.installation) this.installation = status.installation;
+      })
+    );
   }
 
   getInstall() {

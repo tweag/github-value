@@ -33,7 +33,6 @@ export interface DashboardCardBarsInput {
   ]
 })
 export class DashboardCardBarsComponent implements OnChanges {
-  @Input() title?: string;
   @Input() data?: CopilotMetrics;
   @Input() totalSeats?: number;
   sections?: DashboardCardBarsInput[];

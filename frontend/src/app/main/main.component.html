@@ -2,11 +2,9 @@
   <mat-sidenav #drawer class="sidenav" [class.full-width]="isHandset$ | async" fixedInViewport [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
     [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
     <mat-toolbar>
-      @if ((isHandset$ | async) === false) {
-      <button mat-icon-button (click)="toggleNavText();" aria-label="Toggle sidebar navigation">
+      <button mat-icon-button (click)="toggleNavText();" aria-label="Toggle sidebar navigation" [style]="{ display: (isHandset$ | async) ? 'none' : 'inline-block' }">
         <mat-icon>menu</mat-icon>
       </button>
-      }
       <img *ngIf="!hideNavText || (isHandset$ | async)" routerLink="/" [src]="(themeService.isDarkTheme() | async) ? 
         'assets/images/GitHub_Logo_White.png' : 
         'assets/images/GitHub_Logo.png'" alt="GitHub Copilot Logo" style="height: 50px;">
@@ -52,7 +50,12 @@
         <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
       </button>
     }
-    <h1>Octodemo</h1>
+    <ng-container *ngIf="installation.owner as owner">
+      <mat-card-header>
+        <div mat-card-avatar style="background-size: cover;" [style.background-image]="'url(' + owner.avatar_url + ')'"></div>
+        <mat-card-title>{{owner.login}}</mat-card-title>
+      </mat-card-header>
+    </ng-container>
     <span class="spacer"></span>
   </mat-toolbar>
     <div class="sidenav-content">

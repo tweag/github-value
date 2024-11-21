@@ -18,10 +18,25 @@
         @if (column.isImage) {
         <img [src]="column.cell(row)" [alt]="'Avatar for ' + row.assignee?.login" class="table-avatar" width="32"
           height="32">
+        } @else if (column.chipList) {
+        <mat-chip-set aria-label="Fish selection">
+          <ng-container *ngIf="column?.chipListIcon(row) as icon; else noIcon">
+            <mat-chip color="primary">
+              {{column.cell(row)}}
+              <mat-icon *ngIf="column.chipListIcon" [svgIcon]="icon.startsWith('svg') ? icon.substring(4) : ''"
+                matChipTrailingIcon>{{icon.startsWith('svg') ? '' : icon}}</mat-icon>
+            </mat-chip>
+          </ng-container>
+          <ng-template #noIcon>
+            <mat-chip color="primary">{{column.cell(row)}}</mat-chip>
+          </ng-template>
+        </mat-chip-set>
         } @else if (column.isIcon) {
-        <mat-icon [color]="column.iconColor || 'primary'">
-          {{column.cell(row)}}
-        </mat-icon>
+          <ng-container *ngIf="column.cell(row) as icon">
+            <mat-icon [style.color]="column?.iconColor(row) || 'primary'" [svgIcon]="icon.startsWith('svg') ? icon.substring(4) : ''">
+              {{icon.startsWith('svg') ? '' : icon}}
+            </mat-icon>
+          </ng-container>
         } @else if (column.link) {
         <a [href]="column.link(row)" target="_blank">{{column.cell(row)}}</a>
         } @else {
@@ -32,7 +47,8 @@
     }
 
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.clickable]="isClickable" (click)="rowClick.emit(row)"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.clickable]="isClickable"
+      (click)="rowClick.emit(row)"></tr>
 
     <!-- Row shown when there is no matching data. -->
     <tr class="mat-row" *matNoDataRow class="filter-not-found-row">

@@ -2,11 +2,20 @@
   <div class="page-header">
     <h1>Metrics</h1>
   </div>
-  <!-- content goes here -->
-   <app-date-range-select (dateRangeChange)="dateRangeChange($event)"></app-date-range-select>
-
+  <p>
+    <app-date-range-select (dateRangeChange)="dateRangeChange($event)"></app-date-range-select>
+  </p>
    <!-- Make a chart that shows lines suggested each day and the activity rate on timeUsedForGroup
    Allow filter table by editor, model, and language. -->
    <!-- IDE Completion https://www.highcharts.com/demo/highcharts/pie-donut -->
-    <app-copilot-metrics-ide-completion-pie-chart [metricsTotals]="metricsTotals"></app-copilot-metrics-ide-completion-pie-chart>
+    <div class="cards-grid">
+      <mat-card appearance="outlined">
+        <mat-card-header>
+          <mat-card-title>IDE Completions</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <app-copilot-metrics-ide-completion-pie-chart [metricsTotals]="metricsTotals"></app-copilot-metrics-ide-completion-pie-chart>
+        </mat-card-content>
+      </mat-card>
+    </div>
 </div>

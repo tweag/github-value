@@ -222,7 +222,7 @@ const deleteMember = async (memberId: number) => {
 const getLastUpdatedAt = async () => {
   const team = await Team.findOne({
     order: [
-      ['updatedAt', 'ASC']
+      ['updatedAt', 'DESC']
     ]
   });
   if (!team?.updatedAt) {

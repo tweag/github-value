@@ -9,6 +9,11 @@ import { MetricsService } from '../../../services/metrics.service';
 import { FormControl } from '@angular/forms';
 import { combineLatest, startWith } from 'rxjs';
 import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
+import * as Highcharts from 'highcharts';
+import HC_exporting from 'highcharts/modules/exporting';
+HC_exporting(Highcharts);
+import HC_full_screen from 'highcharts/modules/full-screen';
+HC_full_screen(Highcharts);
 
 @Component({
   selector: 'app-value',
@@ -20,7 +25,10 @@ import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.s
     TimeSavedChartComponent
   ],
   templateUrl: './value.component.html',
-  styleUrl: './value.component.scss'
+  styleUrls: [
+    './value.component.scss',
+    // '../copilot-dashboard/dashboard.component.scss'
+  ]
 })
 export class CopilotValueComponent implements OnInit {
   activityData?: ActivityResponse;
@@ -28,6 +36,40 @@ export class CopilotValueComponent implements OnInit {
   surveysData?: Survey[];
   daysInactive = new FormControl(30);
   adoptionFidelity = new FormControl<'day' | 'hour'>('day');
+  Highcharts: typeof Highcharts = Highcharts;
+  charts = [] as Highcharts.Chart[];
+  chartOptions: Highcharts.Options = {
+    chart: {
+      // spacingTop: 50,
+      zooming: {
+        type: 'x'
+      },
+      width: undefined,
+    },
+    xAxis: {
+      type: 'datetime',
+      dateTimeLabelFormats: {
+        month: '%b',
+        year: '%b'
+      },
+      crosshair: true
+    },
+    plotOptions: {
+      series: {
+        animation: {
+          duration: 300
+        }
+      }
+    },
+    exporting: {
+      enabled: true,
+      buttons: {
+        contextButton: {
+          y: 0
+        }
+      }
+    }
+  };
 
   constructor(
     private seatService: SeatService,
@@ -50,5 +92,29 @@ export class CopilotValueComponent implements OnInit {
     this.copilotSurveyService.getAllSurveys().subscribe(data => {
       this.surveysData = data;
     });
+  }
+
+  chartChanged(chart: Highcharts.Chart, include = true) {
+    if (chart && !this.charts.includes(chart)) {
+      const _chart = chart;
+      this.charts.push(chart);
+      if (include && chart.xAxis && chart.xAxis[0]) {
+        chart.xAxis[0].update({
+          events: {
+            afterSetExtremes: (event) => {
+              this.charts
+                .filter(otherChart => otherChart !== _chart)
+                .forEach(otherChart => {
+                  if (otherChart.xAxis?.[0] &&
+                      (otherChart.xAxis[0].min !== event.min || 
+                       otherChart.xAxis[0].max !== event.max)) {
+                    otherChart.xAxis[0].setExtremes(event.min, event.max);
+                  }
+                });
+            }
+          }
+        });
+      }
+    }
   }
 }

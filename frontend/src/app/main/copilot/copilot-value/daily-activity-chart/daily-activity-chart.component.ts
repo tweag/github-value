@@ -1,5 +1,5 @@
-import { Component, Input, OnChanges } from '@angular/core';
-import Highcharts from 'highcharts/es-modules/masters/highcharts.src';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output } from '@angular/core';
+import * as Highcharts from 'highcharts';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { ActivityResponse } from '../../../../services/seat.service';
 import { CopilotMetrics } from '../../../../services/metrics.service.interfaces';
@@ -14,38 +14,19 @@ import { HighchartsService } from '../../../../services/highcharts.service';
   templateUrl: './daily-activity-chart.component.html',
   styleUrl: './daily-activity-chart.component.scss'
 })
-export class DailyActivityChartComponent implements OnChanges {
+export class DailyActivityChartComponent implements OnInit, OnChanges {
   Highcharts: typeof Highcharts = Highcharts;
   updateFlag = false;
-  totalUsers = 500;
   @Input() activity?: ActivityResponse;
   @Input() metrics?: CopilotMetrics[];
-
-  chartOptions: Highcharts.Options = {
-    chart: {
-      zooming: {
-        type: 'x'
-      },
-      width: undefined,
-    },
-    xAxis: {
-      type: 'datetime',
-      dateTimeLabelFormats: {
-        // don't display the year
-        month: '%b',
-        year: '%b'
-      },
-      crosshair: true
-    },
+  @Input() chartOptions?: Highcharts.Options;
+  @Output() chartInstanceChange = new EventEmitter<Highcharts.Chart>();
+  _chartOptions: Highcharts.Options = {
     yAxis: {
       title: {
         text: 'Average Activity Per User'
       },
       min: 0,
-      // max: 100,
-      // labels: {
-      //   format: '{value}%'
-      // },
       plotBands: [{
         from: 500,
         to: 750,
@@ -96,31 +77,24 @@ export class DailyActivityChartComponent implements OnChanges {
     }, {
       name: '.COM Pull Requests',
       type: 'spline',
-    }],
-    // legend: {
-    //   enabled: false
-    // },
-    plotOptions: {
-      series: {
-        animation: {
-          duration: 300
-        }
-      }
-    }
+    }]
   };
-  _chartOptions?: Highcharts.Options;
 
   constructor(
     private highchartsService: HighchartsService
-  ) {
-  }
+  ) { }
 
+  ngOnInit() {
+    this._chartOptions.yAxis = Object.assign({}, this.chartOptions?.yAxis, this._chartOptions.yAxis);
+    this._chartOptions.tooltip = Object.assign({}, this.chartOptions?.tooltip, this._chartOptions.tooltip);
+    this._chartOptions = Object.assign({}, this.chartOptions, this._chartOptions);
+  }
+  
   ngOnChanges() {
     if (this.activity && this.metrics) {
-      this._chartOptions = this.highchartsService.transformMetricsToDailyActivityLine(this.activity, this.metrics);
-      this.chartOptions = {
-        ...this.chartOptions,
-        ...this._chartOptions
+      this._chartOptions = {
+        ...this._chartOptions,
+        ...this.highchartsService.transformMetricsToDailyActivityLine(this.activity, this.metrics)
       };
       this.updateFlag = true;
     }

@@ -11,6 +11,9 @@ import { filter, map, shareReplay, tap } from 'rxjs/operators';
 import { AppModule } from '../app.module';
 import { ThemeService } from '../services/theme.service';
 import { NavigationEnd, Router } from '@angular/router';
+import { Endpoints } from '@octokit/types';
+import { SetupService } from '../services/setup.service';
+import { MatCardModule } from '@angular/material/card';
 
 @Component({
   selector: 'app-main',
@@ -24,7 +27,8 @@ import { NavigationEnd, Router } from '@angular/router';
     MatListModule,
     MatIconModule,
     AsyncPipe,
-    AppModule
+    AppModule,
+    MatCardModule
   ]
 })
 export class MainComponent {
@@ -39,10 +43,12 @@ export class MainComponent {
     map(result => result.matches),
     shareReplay()
   );
+  installation?: any;
 
   constructor(
     public themeService: ThemeService,
-    private router: Router
+    private router: Router,
+    private setupService: SetupService
   ) {
     this.hideNavText = localStorage.getItem('hideNavText') === 'true';
 
@@ -51,6 +57,8 @@ export class MainComponent {
     ).subscribe(() => {
       this.closeSidenav();
     });
+
+   this.installation = this.setupService.installation;
   }
 
   toggleNavText(): void {

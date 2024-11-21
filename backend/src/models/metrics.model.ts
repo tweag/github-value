@@ -431,34 +431,35 @@ export async function insertMetrics(data: CopilotMetrics[]) {
       });
 
       for (const editor of day.copilot_ide_chat.editors) {
-        const chatTotalsEditor = {
-          chats: 0,
-          copyEvents: 0,
-          insertionEvents: 0
-        };
+        const chatTotalsEditor = { chats: 0, copyEvents: 0, insertionEvents: 0 };
+
         const editorRecord = await MetricIdeChatEditor.create({
           chat_metrics_id: chatMetrics.id,
           name: editor.name,
           total_engaged_users: editor.total_engaged_users
         });
 
-        await Promise.all(editor.models.map(model => {
-          if ('total_chats' in model) {
-            chatTotals.chats += model.total_chats || 0;
-            chatTotals.copyEvents += model.total_chat_copy_events || 0;
-            chatTotals.insertionEvents += model.total_chat_insertion_events || 0;
+        // Sum up totals for each model in this editor
+        for (const model of editor.models) {
+          chatTotalsEditor.chats += model.total_chats;
+          chatTotalsEditor.copyEvents += model.total_chat_copy_events || 0;
+          chatTotalsEditor.insertionEvents += model.total_chat_insertion_events || 0;
 
-            return MetricIdeChatModelStats.create({
-              editor_id: editorRecord.id,
-              name: model.name,
-              is_custom_model: model.is_custom_model,
-              total_engaged_users: model.total_engaged_users,
-              total_chats: model.total_chats,
-              total_chat_copy_events: model.total_chat_copy_events,
-              total_chat_insertion_events: model.total_chat_insertion_events
-            })
-          }
-        }));
+          // Add to overall totals
+          chatTotals.chats += model.total_chats;
+          chatTotals.copyEvents += model.total_chat_copy_events || 0;
+          chatTotals.insertionEvents += model.total_chat_insertion_events || 0;
+
+          await MetricIdeChatModelStats.create({
+            editor_id: editorRecord.id,
+            name: model.name,
+            is_custom_model: model.is_custom_model,
+            total_engaged_users: model.total_engaged_users,
+            total_chats: model.total_chats,
+            total_chat_copy_events: model.total_chat_copy_events,
+            total_chat_insertion_events: model.total_chat_insertion_events
+          });
+        }
 
         await editorRecord.update({
           total_chats: chatTotalsEditor.chats,
@@ -513,23 +514,21 @@ export async function insertMetrics(data: CopilotMetrics[]) {
 
           const modelTotals = { acceptances: 0, suggestions: 0, linesAccepted: 0, linesSuggested: 0 };
 
-          if ('languages' in model) {
-            for (const lang of model.languages) {
-              await MetricLanguageStats.create({
-                name: lang.name,
-                total_engaged_users: lang.total_engaged_users,
-                total_code_acceptances: lang.total_code_acceptances,
-                total_code_suggestions: lang.total_code_suggestions,
-                total_code_lines_accepted: lang.total_code_lines_accepted,
-                total_code_lines_suggested: lang.total_code_lines_suggested,
-                model_stat_id: modelRecord.id
-              });
+          for (const lang of model.languages) {
+            await MetricLanguageStats.create({
+              name: lang.name,
+              total_engaged_users: lang.total_engaged_users,
+              total_code_acceptances: lang.total_code_acceptances,
+              total_code_suggestions: lang.total_code_suggestions,
+              total_code_lines_accepted: lang.total_code_lines_accepted,
+              total_code_lines_suggested: lang.total_code_lines_suggested,
+              model_stat_id: modelRecord.id
+            });
 
-              modelTotals.acceptances += lang.total_code_acceptances || 0;
-              modelTotals.suggestions += lang.total_code_suggestions || 0;
-              modelTotals.linesAccepted += lang.total_code_lines_accepted || 0;
-              modelTotals.linesSuggested += lang.total_code_lines_suggested || 0;
-            }
+            modelTotals.acceptances += lang.total_code_acceptances || 0;
+            modelTotals.suggestions += lang.total_code_suggestions || 0;
+            modelTotals.linesAccepted += lang.total_code_lines_accepted || 0;
+            modelTotals.linesSuggested += lang.total_code_lines_suggested || 0;
           }
 
           await modelRecord.update({
