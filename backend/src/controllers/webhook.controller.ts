@@ -4,6 +4,7 @@ import logger from '../services/logger.js';
 import settingsService from '../services/settings.service.js';
 import { QueryService } from '../services/query.service.js';
 import { deleteMember, deleteMemberFromTeam, deleteTeam } from '../models/teams.model.js';
+import surveyService from 'services/survey.service.js';
 
 const webhooks = new Webhooks({
   secret: process.env.GITHUB_WEBHOOK_SECRET || 'your-secret',
@@ -16,8 +17,21 @@ const webhooks = new Webhooks({
 });
 
 export const setupWebhookListeners = (github: App) => {
-  github.webhooks.on("pull_request.opened", ({ octokit, payload }) => {
-    const surveyUrl = new URL(`copilot/surveys/new`, settingsService.baseUrl);
+  github.webhooks.on("pull_request.opened", async ({ octokit, payload }) => {
+    const survey = await surveyService.createSurvey({
+      status: 'pending',
+      hits: 0,
+      userId: payload.pull_request.user.login,
+      owner: payload.repository.owner.login,
+      repo: payload.repository.name,
+      prNumber: payload.pull_request.number,
+      usedCopilot: false,
+      percentTimeSaved: -1,
+      reason: '',
+      timeUsedFor: '',
+    })
+    
+    const surveyUrl = new URL(`copilot/surveys/new/${survey.id}`, settingsService.baseUrl);
 
     surveyUrl.searchParams.append('url', payload.pull_request.html_url);
     surveyUrl.searchParams.append('author', payload.pull_request.user.login);

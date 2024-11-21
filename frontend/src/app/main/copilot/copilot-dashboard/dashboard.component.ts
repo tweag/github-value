@@ -98,7 +98,7 @@ export class CopilotDashboardComponent implements OnInit {
       this.surveysData = data;
       this.totalSurveys = data.length;
       this.totalSurveysThisWeek = data.reduce((acc, survey) => {
-        const surveyDate = new Date(survey.dateTime);
+        const surveyDate = new Date(survey.createdAt!);
         const oneWeekAgo = new Date();
         oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
         return surveyDate > oneWeekAgo ? acc + 1 : acc;

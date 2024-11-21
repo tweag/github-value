@@ -5,14 +5,21 @@
   <mat-card appearance="outlined">
     <mat-card-header>
       <mat-card-title><a [href]="'https://github.com/' + survey.userId">{{ '@' + survey.userId }}</a></mat-card-title>
-      <mat-card-subtitle>{{ survey.dateTime| date: 'short' }}</mat-card-subtitle>
+      <mat-card-subtitle>{{ survey.createdAt | date: 'short' }}</mat-card-subtitle>
     </mat-card-header>
     <mat-card-content>
-      <p></p>
-      <p><strong>Used Copilot: </strong>{{ survey.usedCopilot ? 'Yes' : 'No' }}</p>
-      <p><strong>Time Saved: </strong>{{ survey.percentTimeSaved }}%</p>
-      <p><strong>Reason: </strong>{{ survey.reason }}</p>
-      <p><strong>Time Used For: </strong>{{ survey.timeUsedFor }}</p>
+      <mat-chip-set aria-label="Fish selection">
+        <mat-chip color="primary">
+          <mat-icon matChipTrailingIcon>pending</mat-icon>
+          {{ survey.status | titlecase }}
+        </mat-chip>
+      </mat-chip-set>
+      <ng-container *ngIf="survey.status !== 'pending'">
+        <p><strong>Used Copilot: </strong>{{ survey.usedCopilot ? 'Yes' : 'No' }}</p>
+        <p><strong>Time Saved: </strong>{{ survey.percentTimeSaved }}%</p>
+        <p><strong>Reason: </strong>{{ survey.reason }}</p>
+        <p><strong>Time Used For: </strong>{{ survey.timeUsedFor }}</p>
+      </ng-container>
       <p><strong>PR: </strong><a [href]="'https://github.com/' + survey.owner + '/' + survey.repo + '/pull/' + survey.prNumber">{{ survey.repo }}#{{ survey.prNumber }}</a></p>
     </mat-card-content>
   </mat-card>

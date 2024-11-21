@@ -478,7 +478,7 @@ export class HighchartsService {
         name: 'Time Saved',
         type: 'spline' as const,
         data: surveys.map(survey => ({
-          x: new Date(survey.dateTime).getTime(),
+          x: new Date(survey.createdAt!).getTime(),
           y: survey.percentTimeSaved,
         })),
         lineWidth: 2,
@@ -496,7 +496,7 @@ export class HighchartsService {
         type: 'scatter' as const,
         name: 'Survey',
         data: surveys.map(survey => ({
-          x: new Date(survey.dateTime).getTime(),
+          x: new Date(survey.createdAt!).getTime(),
           y: survey.percentTimeSaved,
           raw: survey
         })),

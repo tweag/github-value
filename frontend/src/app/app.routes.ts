@@ -30,7 +30,7 @@ export const routes: Routes = [
       { path: 'copilot/seats/:id', component: CopilotSeatComponent, title: 'Seat' },
       { path: 'copilot/calculator', component: CopilotCalculatorComponent, title: 'Calculator' },
       { path: 'copilot/surveys', component: CopilotSurveysComponent, title: 'Surveys' },
-      { path: 'copilot/surveys/new', component: NewCopilotSurveyComponent, title: 'New Survey' },
+      { path: 'copilot/surveys/new/:id', component: NewCopilotSurveyComponent, title: 'New Survey' },
       { path: 'copilot/surveys/:id', component: CopilotSurveyComponent, title: 'Survey' },
       { path: 'settings', component: SettingsComponent, title: 'Settings' },
       { path: '', redirectTo: 'copilot', pathMatch: 'full' }

@@ -3,6 +3,8 @@ import { ActivatedRoute } from '@angular/router';
 import { CopilotSurveyService, Survey } from '../../../../services/copilot-survey.service';
 import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-copilot-survey',
@@ -11,7 +13,9 @@ import { CommonModule } from '@angular/common';
   styleUrls: ['./copilot-survey.component.scss'],
   imports: [
     MatCardModule,
-    CommonModule
+    CommonModule,
+    MatChipsModule,
+    MatIconModule
   ]
 })
 export class CopilotSurveyComponent implements OnInit {

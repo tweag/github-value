@@ -4,15 +4,18 @@ import { serverUrl } from './server.service';
 
 export interface Survey {
   id?: number;
-  dateTime: Date;
-  userId: number;
+  owner: string;
+  repo: string;
+  prNumber: number;
+  status?: 'pending' | 'completed';
+  hits?: number;
+  userId: string;
   usedCopilot: boolean;
   percentTimeSaved: number;
-  owner: string,
-  repo: string,
-  prNumber: number,
-  reason: string;
   timeUsedFor: string;
+  reason: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 @Injectable({

@@ -1,16 +1,36 @@
 import { Model, DataTypes } from 'sequelize';
 import { sequelize } from '../database.js';
 
-class Survey extends Model {
-  public id!: number;
-  public dateTime!: Date;
-  public userId!: number;
-  public usedCopilot!: boolean;
-  public percentTimeSaved!: number;
-  public timeUsedFor!: string;
-  public owner!: string;
-  public repo!: string;
-  public prNumber!: number;
+type SurveyType = {
+  id?: number;
+  owner: string;
+  repo: string;
+  prNumber: number;
+  status: 'pending' | 'completed';
+  hits: number;
+  userId: string;
+  usedCopilot: boolean;
+  percentTimeSaved: number;
+  timeUsedFor: string;
+  reason: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+class Survey extends Model<SurveyType> {
+  declare id?: number;
+  declare owner: string;
+  declare repo: string;
+  declare prNumber: number;
+  declare status: 'pending' | 'completed';
+  declare hits: number;
+  declare userId: string;
+  declare usedCopilot: boolean;
+  declare percentTimeSaved: number;
+  declare timeUsedFor: string;
+  declare reason: string;
+  declare createdAt?: Date;
+  declare updatedAt?: Date;
 }
 
 Survey.init({
@@ -19,13 +39,17 @@ Survey.init({
     autoIncrement: true,
     primaryKey: true,
   },
-  dateTime: {
-    type: DataTypes.DATE,
-    allowNull: false,
+  status: {
+    type: DataTypes.STRING,
+    allowNull: true,
+  },
+  hits: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
   },
   userId: {
     type: DataTypes.STRING,
-    allowNull: false,
+    allowNull: true,
   },
   usedCopilot: {
     type: DataTypes.BOOLEAN,
@@ -56,11 +80,14 @@ Survey.init({
   },
   prNumber: {
     type: DataTypes.INTEGER,
-    allowNull: false,
-  }
+    allowNull: true,
+  },
+  createdAt: DataTypes.DATE,
+  updatedAt: DataTypes.DATE
 }, {
   sequelize,
   modelName: 'Survey',
+  timestamps: true,
 });
 
-export { Survey };
+export { Survey, SurveyType };
