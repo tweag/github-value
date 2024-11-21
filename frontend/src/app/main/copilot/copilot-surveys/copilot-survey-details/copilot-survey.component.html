@@ -10,7 +10,7 @@
     <mat-card-content>
       <mat-chip-set aria-label="Fish selection">
         <mat-chip color="primary">
-          <mat-icon matChipTrailingIcon>pending</mat-icon>
+          <mat-icon matChipTrailingIcon>{{survey.status === 'pending' ? 'pending' : 'check'}}</mat-icon>
           {{ survey.status | titlecase }}
         </mat-chip>
       </mat-chip-set>
