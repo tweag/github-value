@@ -8,14 +8,12 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
     :host {
       display: block;
     }
-    `]
-    , templateUrl: `predictive-modeling.component.html`,
-    imports: [ReactiveFormsModule],
-    standalone: true
+  `], templateUrl: 'predictive-modeling.component.html',
+  imports: [ReactiveFormsModule],
+  standalone: true
 })
 export class PredictiveModelingComponent implements OnInit {
   form: FormGroup;
-
   inputFields = [
     {
       id: 'developerTotal',
@@ -55,7 +53,6 @@ export class PredictiveModelingComponent implements OnInit {
       required: true
     }
   ];
-
   targetFields = [
     {
       id: 'targetedNumberOfDevelopers',
@@ -144,7 +141,7 @@ export class PredictiveModelingComponent implements OnInit {
     }
     if (control.errors['pattern']) return 'Must be a whole number';
     if (control.errors['exceedsTotal']) return 'Cannot exceed total developers';
-    
+
     return 'Invalid value';
   }
 
@@ -158,21 +155,21 @@ export class PredictiveModelingComponent implements OnInit {
       targetedPercentOfTimeSaved: Number(this.form.get('targetedPercentOfTimeSaved')?.value) || 0
     };
 
-    const roomForImprovement = 
-      values.developerTotal * 
-      (values.percentofHoursCoding / 100) * 
-      values.perDevHoursPerYear * 
+    const roomForImprovement =
+      values.developerTotal *
+      (values.percentofHoursCoding / 100) *
+      values.perDevHoursPerYear *
       (values.perDevCostPerYear / values.perDevHoursPerYear);
 
-    const targetedRoomForImprovement = 
-      values.targetedNumberOfDevelopers * 
-      (values.targetedPercentOfTimeSaved / 100) * 
-      (values.percentofHoursCoding / 100) * 
-      values.perDevHoursPerYear * 
+    const targetedRoomForImprovement =
+      values.targetedNumberOfDevelopers *
+      (values.targetedPercentOfTimeSaved / 100) *
+      (values.percentofHoursCoding / 100) *
+      values.perDevHoursPerYear *
       (values.perDevCostPerYear / values.perDevHoursPerYear);
 
-    const impact = roomForImprovement !== 0 
-      ? (targetedRoomForImprovement / roomForImprovement) * 100 
+    const impact = roomForImprovement !== 0
+      ? (targetedRoomForImprovement / roomForImprovement) * 100
       : 0;
 
     const hoursPerDevPerWeek = (values.perDevCostPerYear !== 0 && values.targetedNumberOfDevelopers !== 0)
@@ -207,5 +204,9 @@ export class PredictiveModelingComponent implements OnInit {
       default:
         return value.toString();
     }
+  }
+
+  onSubmit() {
+    console.log('submitted');
   }
 }
