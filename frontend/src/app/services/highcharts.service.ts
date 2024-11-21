@@ -570,7 +570,9 @@ export class HighchartsService {
 
           const activityStartTime = new Date(Date.parse(seat.last_activity_at || seat.created_at));
           const activityEndTime = new Date(Date.parse(seatActivity[index + 1]?.last_activity_at || seatActivity[index + 1]?.created_at));
-
+          if (activityEndTime.getTime() === activityStartTime.getTime()) {
+            activityEndTime.setHours(activityEndTime.getHours() + 1);
+          }
           acc.push({
             name: String(seat.assignee?.login || `Seat ${seat.assignee?.id}`),
             start: activityStartTime.getTime(),
