@@ -3,7 +3,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { PredictiveModelingService } from '../../../services/predictive-modeling.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AppModule } from '../../../app.module';
-import { CommonModule, DecimalPipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { SettingsHttpService } from '../../../services/settings.service';
 
 @Component({
@@ -14,38 +14,35 @@ import { SettingsHttpService } from '../../../services/settings.service';
   imports: [
     AppModule,
     CommonModule,
-  ],
-  providers: [DecimalPipe]
+  ]
 })
 export class PredictiveModelingComponent implements OnInit {
   settingsForm = new FormGroup({
-    developerCount: new FormControl(''),
-    devCostPerYear: new FormControl(''),
-    hoursPerYear: new FormControl(''),
-    percentCoding: new FormControl(''),
-    percentTimeSaved: new FormControl(''),
-    percentDevsAdopting: new FormControl('') // Added percentDevsAdopting
+    developerCount: new FormControl(0, [Validators.min(0)]),
+    devCostPerYear: new FormControl(0, [Validators.min(0)]),
+    hoursPerYear: new FormControl(0, [Validators.min(0)]),
+    percentCoding: new FormControl(0, [Validators.min(0)]),
+    percentTimeSaved: new FormControl(0, [Validators.min(0)]),
+    percentDevsAdopting: new FormControl(0, [Validators.min(0)])
   })
   targetForm = new FormGroup({
     targetedRoomForImprovement: new FormControl(0, [Validators.required, Validators.min(0)]),
     targetedNumberOfDevelopers: new FormControl(0, [Validators.required, Validators.min(0)]),
     targetedPercentOfTimeSaved: new FormControl(0, [Validators.required, Validators.min(0), Validators.max(100)]),
   });
-
   calculatedFields = {
-    maxTimeSavings: 0, // Added maxTimeSavings
-    roomForImprovement: '',
+    maxTimeSavings: 0,
+    roomForImprovement: 0,
     hoursCodingPerWeek: 0,
     hoursSavedPerWeek: 0,
-    maxCopilotUsersActivePerDay: 0, // Added maxCopilotUsersActivePerDay
-    copilotUsersActivePerDay: 0 // Added copilotUsersActivePerDay
+    maxCopilotUsersActivePerDay: 0,
+    copilotUsersActivePerDay: 0
   };
 
   constructor(
     private predictiveModelingService: PredictiveModelingService,
     private settingsService: SettingsHttpService,
-    private snackBar: MatSnackBar,
-    private decimalPipe: DecimalPipe // Inject DecimalPipe
+    private snackBar: MatSnackBar
   ) { }
 
   ngOnInit(): void {
@@ -57,12 +54,12 @@ export class PredictiveModelingComponent implements OnInit {
   loadSettings(): void {
     this.settingsService.getAllSettings().subscribe(settings => {
       this.settingsForm.patchValue({
-        developerCount: settings.developerCount,
-        devCostPerYear: settings.devCostPerYear,
-        hoursPerYear: settings.hoursPerYear,
-        percentCoding: settings.percentCoding,
-        percentTimeSaved: settings.percentTimeSaved,
-        percentDevsAdopting: settings.percentofHoursCoding // Added percentDevsAdopting
+        developerCount: Number(settings.developerCount),
+        devCostPerYear: Number(settings.devCostPerYear),
+        hoursPerYear: Number(settings.hoursPerYear),
+        percentCoding: Number(settings.percentCoding),
+        percentTimeSaved: Number(settings.percentTimeSaved),
+        percentDevsAdopting: Number(settings.percentofHoursCoding),
       });
       this.calculateFields();
     });
@@ -75,12 +72,12 @@ export class PredictiveModelingComponent implements OnInit {
   }
 
   calculateFields(): void {
-    const developerCount = Number(this.settingsForm.get('developerCount')?.value) || 0;
-    const devCostPerYear = Number(this.settingsForm.get('devCostPerYear')?.value) || 0;
-    const hoursPerYear = Number(this.settingsForm.get('hoursPerYear')?.value) || 0; // Added hoursPerYear
-    const percentCoding = Number(this.settingsForm.get('percentCoding')?.value) || 0;
-    const percentTimeSaved = Number(this.settingsForm.get('percentTimeSaved')?.value) || 0;
-    const percentDevsAdopting = Number(this.settingsForm.get('percentDevsAdopting')?.value) || 0;
+    const developerCount = this.settingsForm.get('developerCount')?.value || 0;
+    const devCostPerYear = this.settingsForm.get('devCostPerYear')?.value || 0;
+    const hoursPerYear = this.settingsForm.get('hoursPerYear')?.value || 0;
+    const percentCoding = this.settingsForm.get('percentCoding')?.value || 0;
+    const percentTimeSaved = this.settingsForm.get('percentTimeSaved')?.value || 0;
+    const percentDevsAdopting = this.settingsForm.get('percentDevsAdopting')?.value || 0;
 
     // Calculate "Max Time Savings"
     // Formula: Developer Count * Dev Hours Per Year * Percent Coding * 0.50
@@ -89,7 +86,7 @@ export class PredictiveModelingComponent implements OnInit {
     // Calculate "Room for Improvement"
     // Formula: Developer Count * Dev Cost Per Year * Percent Coding * 0.50
     const roomForImprovement = developerCount * devCostPerYear * (percentCoding / 100) * 0.50;
-    this.calculatedFields.roomForImprovement = `$${this.decimalPipe.transform(roomForImprovement, '1.2-2')}`;
+    this.calculatedFields.roomForImprovement = roomForImprovement;
 
     // Calculate "Hours Coding per Week"
     // Formula: 40 * Percent Coding
@@ -132,7 +129,7 @@ export class PredictiveModelingComponent implements OnInit {
       });
     });
 
-    this.settingsService.saveSettings(settings).subscribe(() => {
+    this.settingsService.updateSettings(settings).subscribe(() => {
       this.snackBar.open('Settings saved successfully', 'Close', {
         duration: 2000,
       });
