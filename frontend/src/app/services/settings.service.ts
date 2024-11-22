@@ -49,4 +49,9 @@ export class SettingsHttpService {
     return this.http.delete<void>(`${this.apiUrl}/${name}`);
   }
 
+  // Add saveSettings method
+  saveSettings(data: Settings) {
+    return this.http.post<void>(`${this.apiUrl}/save`, data);
+  }
+
 }
