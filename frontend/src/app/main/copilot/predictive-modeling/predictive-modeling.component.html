@@ -56,12 +56,12 @@
     <div class="right-column">
       <h3>Calculated Fields</h3>
       <div>
-        <p>Max Time Savings: {{ calculatedFields.maxTimeSavings }}</p> <!-- Added maxTimeSavings -->
-        <p>Max Room for Improvement: {{ calculatedFields.roomForImprovement }}</p>
-        <p>Hours Coding per Week: {{ calculatedFields.hoursCodingPerWeek }}</p>
-        <p>Hours Saved per Week: {{ calculatedFields.hoursSavedPerWeek }}</p>
-        <p>Max Number of Copilot Users Active per Day: {{ calculatedFields.maxCopilotUsersActivePerDay }}</p> <!-- Added maxCopilotUsersActivePerDay -->
-        <p>Number of Copilot Users Active per Day: {{ calculatedFields.copilotUsersActivePerDay }}</p> <!-- Added copilotUsersActivePerDay -->
+        <p>Max Time Savings: {{ calculatedFields.maxTimeSavings | number: '1.0-0' }}</p> <!-- Added maxTimeSavings -->
+        <p>Max Room for Improvement: {{ calculatedFields.roomForImprovement | number: '1.0-0' }}</p>
+        <p>Hours Coding per Week: {{ calculatedFields.hoursCodingPerWeek | number: '1.0-0' }}</p>
+        <p>Hours Saved per Week: {{ calculatedFields.hoursSavedPerWeek | number: '1.0-0' }}</p>
+        <p>Max Number of Copilot Users Active per Day: {{ calculatedFields.maxCopilotUsersActivePerDay | number: '1.0-0' }}</p> <!-- Added maxCopilotUsersActivePerDay -->
+        <p>Number of Copilot Users Active per Day: {{ calculatedFields.copilotUsersActivePerDay | number: '1.0-0' }}</p> <!-- Added copilotUsersActivePerDay -->
       </div>
     </div>
   </div>
