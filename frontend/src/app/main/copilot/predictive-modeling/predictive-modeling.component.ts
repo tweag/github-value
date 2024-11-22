@@ -120,14 +120,8 @@ export class PredictiveModelingComponent implements OnInit {
   }
 
   saveTargets(): void {
-    this.predictiveModelingService.saveTargets(this.targetForm.value).subscribe(() => {
-      this.snackBar.open('Targets saved successfully', 'Close', {
-        duration: 2000,
-      });
-    });
-
     this.settingsService.updateSettings(this.settingsForm.value).subscribe(() => {
-      this.snackBar.open('Settings saved successfully', 'Close', {
+      this.snackBar.open('Targets saved successfully', 'Close', {
         duration: 2000,
       });
     });
