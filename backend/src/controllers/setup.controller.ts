@@ -1,7 +1,18 @@
 import { Request, Response } from 'express';
 import setup, { SetupStatus } from '../services/setup.js';
+import { dbConnect } from 'database.js';
 
 class SetupController {
+
+  async databaseConnect(req: Request, res: Response) {
+    try {
+      await dbConnect();
+      res.json({ message: 'Connected to the database' });
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
   async registrationComplete(req: Request, res: Response) {
     try {
       const { code } = req.query;

@@ -1,5 +1,4 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../database.js';
 class Seat extends Model {
   public created_at!: Date;
   public updated_at!: Date;

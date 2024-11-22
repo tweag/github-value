@@ -1,5 +1,4 @@
 import { Model, DataTypes } from 'sequelize';
-import { sequelize } from '../database.js';
 
 type SurveyType = {
   id?: number;
