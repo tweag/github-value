@@ -9,14 +9,16 @@ import { CopilotDashboardComponent } from './main/copilot/copilot-dashboard/dash
 import { CopilotValueComponent } from './main/copilot/copilot-value/value.component';
 import { CopilotMetricsComponent } from './main/copilot/copilot-metrics/copilot-metrics.component';
 import { CopilotSeatsComponent } from './main/copilot/copilot-seats/copilot-seats.component';
-import { DbLoadingComponent } from './install/db-loading/db-loading.component';
+import { DbLoadingComponent } from './database/db-loading.component';
 import { CopilotSurveyComponent } from './main/copilot/copilot-surveys/copilot-survey-details/copilot-survey.component';
 import { CopilotSeatComponent } from './main/copilot/copilot-seats/copilot-seat/copilot-seat.component';
 import { PredictiveModelingComponent } from './main/copilot/predictive-modeling/predictive-modeling.component';
+import { DatabaseComponent } from './database/database.component';
 
 export const routes: Routes = [
   { path: 'setup', component: InstallComponent },
   { path: 'setup/loading', component: DbLoadingComponent },
+  { path: 'setup/db', component: DatabaseComponent },
   {
     path: '',
     component: MainComponent,

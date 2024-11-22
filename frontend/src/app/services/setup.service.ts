@@ -7,6 +7,7 @@ import { tap } from 'rxjs';
 export interface SetupStatusResponse {
   isSetup?: boolean;
   dbInitialized?: boolean;
+  dbConnected?: boolean;
   dbsInitialized?: {
     usage: boolean;
     metrics: boolean;

@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { SetupService } from '../../services/setup.service';
+import { SetupService } from '../services/setup.service';
 import { Router } from '@angular/router';
 import { Subscription, timer } from 'rxjs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';

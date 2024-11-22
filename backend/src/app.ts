@@ -18,11 +18,8 @@ export const app = express();
 app.use(cors());
 app.use(expressLoggerMiddleware);
 
-(async () => {
-  await dbConnect();
-  logger.info('DB Connected ✅');
-  await settingsService.initializeSettings();
-  logger.info('Settings loaded ✅');
+
+const startGitHub = async () => {
   await SmeeService.createSmeeWebhookProxy(PORT);
   logger.info('Created Smee webhook proxy ✅');
 
@@ -30,8 +27,27 @@ app.use(expressLoggerMiddleware);
     await setup.createAppFromEnv();
     logger.info('Created GitHub App from environment ✅');
   } catch (error) {
-    logger.info('Failed to create app from environment. This is expected if the app is not yet installed.', error);
+    logger.warn('Failed to create app from environment. This is expected if the app is not yet installed.');
   }
+}
+
+(async () => {
+  try {
+    await dbConnect();
+    logger.info('DB Connected ✅');
+    await settingsService.initializeSettings();
+    try {
+      await setup.createAppFromEnv();
+      logger.info('Created GitHub App from environment ✅');
+    } catch (error) {
+      logger.debug(error);
+      logger.warn('Failed to create app from environment. This is expected if the app is not yet installed.');
+    }
+  } catch (error) {
+    logger.debug(error);
+    logger.error('DB Connection failed ❌');
+  }
+  logger.info('Settings loaded ✅');
 
   app.use((req, res, next) => {
     if (req.path === '/api/github/webhooks') {
