@@ -55,7 +55,7 @@ class GitHub {
   }
 
   connect = async (input?: GitHubInput) => {
-    this.input = { ...this.input, ...input };
+    if (input) this.setInput(input);
     if (!this.input.appId) throw new Error('App ID is required');
     if (!this.input.privateKey) throw new Error('Private key is required');
     if (!this.input.webhooks?.secret) throw new Error('Webhook secret is required');
@@ -77,11 +77,10 @@ class GitHub {
     await updateDotenv({ GITHUB_WEBHOOK_SECRET: this.input.webhooks.secret })
 
     try {
-      await this.smee.connect();
       this.webhooks = this.smee.webhookMiddlewareCreate(this.app, this.expressApp);
     } catch (error) {
       logger.debug(error);
-      logger.error('Failed to start webhooks')
+      logger.error('Failed to create webhook middleware')
     }
 
     this.app?.eachInstallation(async ({ installation, octokit }) => {
@@ -166,6 +165,9 @@ class GitHub {
     });
   }
 
+  setInput(input: GitHubInput) {
+    this.input = { ...this.input, ...input };
+  }
 }
 
 export default GitHub;

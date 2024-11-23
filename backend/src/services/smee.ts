@@ -32,16 +32,21 @@ class WebhookService {
       this.options.url = await this.createSmeeWebhookUrl();
     }
 
-    this.smee = new (await import("smee-client")).default({
-      source: this.options.url,
-      target: `http://localhost:${this.options.port}${this.options.path}`,
-      logger: {
-        info: (msg: string, ...args) => logger.info('Smee', msg, ...args),
-        error: (msg: string, ...args) => logger.error('Smee', msg, ...args),
-      }
-    });
+    try {
+      const SmeeClient = (await import("smee-client")).default;
+      this.smee = new SmeeClient({
+        source: this.options.url,
+        target: `http://localhost:${this.options.port}${this.options.path}`,
+        logger: {
+          info: (msg: string, ...args) => logger.info('Smee', msg, ...args),
+          error: (msg: string, ...args) => logger.error('Smee', msg, ...args),
+        }
+      });
     
-    this.eventSource = this.smee.start();
+      this.eventSource = await this.smee.start()
+    } catch {
+      logger.error('Failed to create Smee client');
+    };
 
     return this.eventSource;
   }

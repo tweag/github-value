@@ -1,4 +1,4 @@
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { serverUrl } from './server.service';
 import { Endpoints } from '@octokit/types';
@@ -26,11 +26,8 @@ export class SetupService {
 
   constructor(private http: HttpClient) { }
 
-  getSetupStatus(fields?: string[]) {
-    const params = fields ? new HttpParams().set('fields', fields.join(',')) : undefined;
-    return this.http.get<SetupStatusResponse>(`${this.apiUrl}/status`, {
-      params
-    }).pipe(
+  getSetupStatus() {
+    return this.http.get<SetupStatusResponse>(`${this.apiUrl}/status`).pipe(
       tap((status) => {
         if (status.installations) {
           this.installations.next(status.installations.map(i => i.installation!));

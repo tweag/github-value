@@ -11,7 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { SetupService, SetupStatusResponse } from '../services/setup.service';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs';
+import { finalize, takeWhile, timer } from 'rxjs';
 
 @Component({
   selector: 'app-database',
@@ -56,15 +56,16 @@ export class DatabaseComponent {
   ) { }
 
   ngAfterViewInit() {
-    this.stepper.selectedIndexChange.subscribe(async () => {
-      if (this.stepper.selectedIndex === 2) {
-        this.stepper.steps.get(2)!.interacted = true;
-        await this.router.navigate(['/setup/loading'], {
-          queryParams: { celebrate: true}
-        });
-      }
-    });
-    this.checkStatus();
+    timer(0, 1000).pipe(
+      takeWhile(() => {
+        return !this.status || !this.status.isSetup;
+      }),
+      finalize(async () => {
+        await this.router.navigate(['/copilot'], {
+          queryParams: { celebrate: true }
+        })
+      })
+    ).subscribe(() => this.checkStatus());
   }
 
   dbConnect() {
@@ -94,6 +95,10 @@ export class DatabaseComponent {
         const step = this.stepper.steps.get(1);
         if (step) step.completed = true;
         this.stepper.next();
+      }
+      if (this.status.isSetup && this.stepper.selectedIndex === 2) {
+        const step = this.stepper.steps.get(2);
+        if (step) step.interacted = true;
       }
     })
   }

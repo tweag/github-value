@@ -16,7 +16,7 @@ import SettingsService from './services/settings.service.js';
 
 class App {
   eListener?: http.Server;
-  
+
   constructor(
     public e: Express,
     public port: number,
@@ -32,43 +32,41 @@ class App {
     try {
       this.setupExpress();
       await this.database.connect();
-      
-      await this.settingsService.initialize();
+
+      await this.settingsService.initialize()
+        .then(async (settings) => {
+          console.log(settings)
+          if (settings.webhookProxyUrl) {
+            this.github.smee.options.url = settings.webhookProxyUrl
+          }
+          if (settings.webhookSecret) {
+            this.github.setInput({
+              webhooks: {
+                secret: settings.webhookSecret
+              }
+            });
+          }
+        })
+        .finally(async () => {
+          await this.github.smee.connect()
+        });
       logger.info('Settings loaded ✅');
-      
-      await this.setupGithubApp(
-        await this.settingsService.getSettingsByName('webhookProxyUrl'),
-        await this.settingsService.getSettingsByName('webhookSecret')
-      );
+
+      await this.github.connect();
+      logger.info('Created GitHub App from environment ✅');
 
       return this.e;
     } catch (error) {
+      this.github.smee.connect();
       logger.debug(error);
       logger.error('Failed to start application ❌');
     }
   }
-  
+
   public async stop() {
     await this.eListener?.close();
     await this.database.disconnect();
     await this.github.disconnect();
-  }
-
-  private async setupGithubApp(webhookProxyUrl?: string, webhookSecret?: string) {
-    try {
-      if (webhookProxyUrl) {
-        this.github.smee.options.url = webhookProxyUrl;
-      }
-      await this.github.connect(webhookSecret ? {
-        webhooks: {
-          secret: webhookSecret
-        }
-      } : undefined);
-      logger.info('Created GitHub App from environment ✅');
-    } catch (error) {
-      logger.debug(error);
-      logger.warn('Failed to create GitHub App. Navigate to the setup page on your browser.');
-    }
   }
 
   private setupExpress() {
@@ -80,7 +78,7 @@ class App {
       }
       bodyParser.json()(req, res, next);
     }, bodyParser.urlencoded({ extended: true }));
-    
+
     this.e.use('/api', apiRoutes);
 
     const __filename = fileURLToPath(import.meta.url);
