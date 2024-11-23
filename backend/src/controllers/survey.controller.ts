@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import { Survey } from '../models/survey.model.js';
 import logger from '../services/logger.js';
-import settingsService from '../services/settings.service.js';
 import surveyService from '../services/survey.service.js';
 import app from '../app.js';
 
@@ -15,8 +14,9 @@ class SurveyController {
       if (!survey) throw new Error('Survey not found');
       res.status(201).json(survey);
       try {
-        const surveyUrl = new URL(`copilot/surveys/${survey.id}`, settingsService.baseUrl);
         const { installation, octokit } = await app.github.getInstallation(survey.owner);
+        const surveyUrl = new URL(`copilot/surveys/${survey.id}`, installation.html_url);
+
         if (!survey.repo || !survey.owner || !survey.prNumber) {
           logger.warn('Cannot process survey comment: missing survey data');
           return;

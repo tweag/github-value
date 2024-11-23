@@ -56,42 +56,33 @@ class GitHub {
 
   connect = async (input?: GitHubInput) => {
     this.input = { ...this.input, ...input };
-    if (!this.input.appId || !this.input.privateKey || !this.input.webhooks?.secret) {
-      throw new Error('Missing required fields');
+    if (!this.input.appId) throw new Error('App ID is required');
+    if (!this.input.privateKey) throw new Error('Private key is required');
+    if (!this.input.webhooks?.secret) throw new Error('Webhook secret is required');
+
+    this.app = new App({
+      appId: this.input.appId,
+      privateKey: this.input.privateKey,
+      webhooks: {
+        secret: this.input.webhooks.secret
+      },
+      oauth: {
+        clientId: null!,
+        clientSecret: null!
+      }
+    });
+
+    await updateDotenv({ GITHUB_APP_ID: this.input.appId })
+    await updateDotenv({ GITHUB_APP_PRIVATE_KEY: String(this.input.privateKey) })
+    await updateDotenv({ GITHUB_WEBHOOK_SECRET: this.input.webhooks.secret })
+
+    try {
+      await this.smee.connect();
+      this.webhooks = this.smee.webhookMiddlewareCreate(this.app, this.expressApp);
+    } catch (error) {
+      logger.debug(error);
+      logger.error('Failed to start webhooks')
     }
-    if (this.input.appId || this.input.privateKey || this.input.webhooks?.secret) {
-      this.app = new App({
-        appId: this.input.appId,
-        privateKey: this.input.privateKey,
-        webhooks: {
-          secret: this.input.webhooks.secret
-        },
-        oauth: {
-          clientId: null!,
-          clientSecret: null!
-        }
-      });
-    }
-
-    if (typeof this.input !== 'string') {
-      if (this.input.appId) await updateDotenv({ GITHUB_APP_ID: this.input.appId })
-      if (this.input.privateKey) await updateDotenv({ GITHUB_APP_PRIVATE_KEY: String(this.input.privateKey) })
-      if (this.input.webhooks.secret) await updateDotenv({ GITHUB_WEBHOOK_SECRET: this.input.webhooks.secret })
-    }
-    await this.start();
-    return this.app;
-  }
-
-  disconnect = async () => {
-    delete this.app;
-    this.installations.forEach((i) => i.queryService.cronJob.stop())
-    this.installations = [];
-  }
-
-  start = async () => {
-    if (!this.app) throw new Error('App is not initialized');
-
-    this.webhooks = this.smee.webhookMiddlewareCreate(this.app, this.expressApp);
 
     this.app?.eachInstallation(async ({ installation, octokit }) => {
       logger.info(`Starting query service for ${installation.account?.login}`);
@@ -102,8 +93,14 @@ class GitHub {
         queryService
       });
     });
+    
+    return this.app;
+  }
 
-    logger.info(`GitHub App is ready to use`);
+  disconnect = async () => {
+    delete this.app;
+    this.installations.forEach((i) => i.queryService.cronJob.stop())
+    this.installations = [];
   }
 
   getAppManifest(baseUrl: string) {
@@ -113,7 +110,7 @@ class GitHub {
     manifest.hook_attributes.url = new URL('/api/github/webhooks', base).href;
     manifest.setup_url = new URL('/api/setup/install/complete', base).href;
     manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;
-    manifest.hook_attributes.url = this.smee.webhookProxyUrl;
+    manifest.hook_attributes.url = this.smee.options.url;
     return manifest;
   };
 

@@ -89,12 +89,17 @@ class Database {
       logger.info('Database initialized successfully. ✅');
       return this.sequelize;
     } catch (error) {
-      console.log(error);
       logger.debug(error);
       if (error instanceof Error) {
         logger.error(error.message);
       }
       throw error;
+    }
+  }
+
+  async disconnect() {
+    if (this.sequelize) {
+      await this.sequelize.close();
     }
   }
 

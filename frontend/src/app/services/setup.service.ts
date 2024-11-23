@@ -32,7 +32,6 @@ export class SetupService {
       params
     }).pipe(
       tap((status) => {
-        console.log('status', status);
         if (status.installations) {
           this.installations.next(status.installations.map(i => i.installation!));
         }

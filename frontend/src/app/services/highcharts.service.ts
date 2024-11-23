@@ -474,7 +474,6 @@ export class HighchartsService {
 
   transformSurveysToScatter(surveys: Survey[], activity?: ActivityResponse): Highcharts.Options {
     surveys = surveys.filter(survey => survey.status !== 'pending');
-    console.log(surveys, activity);
     if (!activity) return { series: [] };
 
     const surveyAverages = Object.keys(activity).reduce((acc, activityDate) => {

@@ -53,9 +53,7 @@ export class DatabaseComponent {
     private cdr: ChangeDetectorRef,
     private setupService: SetupService,
     private router: Router
-  ) {
-    console.log('DatabaseComponent');
-  }
+  ) { }
 
   ngAfterViewInit() {
     this.stepper.selectedIndexChange.subscribe(async () => {
@@ -86,7 +84,6 @@ export class DatabaseComponent {
 
   checkStatus() {
     this.setupService.getSetupStatus().subscribe(status => {
-      console.log('status', status, this.stepper.steps.get(0));
       this.status = status;
       if (this.status.dbConnected && this.stepper.selectedIndex === 0) {
         const step = this.stepper.steps.get(0);

@@ -42,7 +42,8 @@ const logger = bunyan.createLogger({
     {
       path: `${logsDir}/app.log`,
       period: '1d',
-      count: 14
+      count: 14,
+      level: 'debug'
     }
   ]
 });

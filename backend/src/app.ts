@@ -1,88 +1,105 @@
 import 'dotenv/config'
-import { Options } from 'sequelize';
 import express, { Express } from 'express';
 import rateLimit from 'express-rate-limit';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
+import * as http from 'http';
+import { AddressInfo } from 'net';
 import apiRoutes from "./routes/index.js"
 import Database from './database.js';
-import settingsService from './services/settings.service.js';
 import logger, { expressLoggerMiddleware } from './services/logger.js';
 import GitHub from './github.js';
 import WebhookService from './services/smee.js';
-import * as http from 'http';
-import { AddressInfo } from 'net';
+import SettingsService from './services/settings.service.js';
 
 class App {
   eListener?: http.Server;
-
+  
   constructor(
     public e: Express,
     public port: number,
     public database: Database,
-    public github: GitHub
+    public github: GitHub,
+    public settingsService: SettingsService
   ) {
     this.e = e;
     this.port = port;
   }
 
-  private async setupGithubApp() {
-    try {
-      await this.github.connect();
-      logger.info('Created GitHub App from environment ✅');
-    } catch (error) {
-      logger.debug(error);
-      logger.warn('Failed to create app from environment. This is expected if the app is not yet installed.');
-    }
-  }
-
-  private setupRoutes() {
-    this.e.use(cors());
-    this.e.use(expressLoggerMiddleware);
-
-    this.e.use((req, res, next) => {
-      if (req.path === '/api/github/webhooks') {
-        return next();
-      }
-      bodyParser.json()(req, res, next);
-    }, bodyParser.urlencoded({ extended: true }));
-    this.e.use('/api', apiRoutes);
-
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const frontendPath = path.resolve(__dirname, '../../frontend/dist/github-value/browser');
-
-    this.e.use(express.static(frontendPath));
-    this.e.get('*', rateLimit({
-      windowMs: 15 * 60 * 1000, max: 5000,
-    }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
-
-    this.eListener = this.e.listen(this.port, () => {
-      logger.info(`Server is running at http://localhost:${this.port} 🚀`);
-      if (process.env.WEB_URL) {
-        logger.debug(`Frontend is running at ${process.env.WEB_URL} 🚀`);
-      }
-    });
-
-    const address = this.eListener.address() as AddressInfo;
-    logger.info(`Server address: ${address.address}:${address.port}`);
-  }
-
   public async start() {
     try {
-      this.setupRoutes();
+      this.setupExpress();
       await this.database.connect();
-      await settingsService.initializeSettings();
+      
+      await this.settingsService.initialize();
       logger.info('Settings loaded ✅');
-      await this.setupGithubApp();
+      
+      await this.setupGithubApp(
+        await this.settingsService.getSettingsByName('webhookProxyUrl'),
+        await this.settingsService.getSettingsByName('webhookSecret')
+      );
 
       return this.e;
     } catch (error) {
       logger.debug(error);
       logger.error('Failed to start application ❌');
     }
+  }
+  
+  public async stop() {
+    await this.eListener?.close();
+    await this.database.disconnect();
+    await this.github.disconnect();
+  }
+
+  private async setupGithubApp(webhookProxyUrl?: string, webhookSecret?: string) {
+    try {
+      if (webhookProxyUrl) {
+        this.github.smee.options.url = webhookProxyUrl;
+      }
+      await this.github.connect(webhookSecret ? {
+        webhooks: {
+          secret: webhookSecret
+        }
+      } : undefined);
+      logger.info('Created GitHub App from environment ✅');
+    } catch (error) {
+      logger.debug(error);
+      logger.warn('Failed to create GitHub App. Navigate to the setup page on your browser.');
+    }
+  }
+
+  private setupExpress() {
+    this.e.use(cors());
+    this.e.use(expressLoggerMiddleware);
+    this.e.use((req, res, next) => {
+      if (req.path === '/api/github/webhooks') {
+        return next();
+      }
+      bodyParser.json()(req, res, next);
+    }, bodyParser.urlencoded({ extended: true }));
+    
+    this.e.use('/api', apiRoutes);
+
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = dirname(__filename);
+    const frontendPath = path.resolve(__dirname, '../../frontend/dist/github-value/browser');
+    this.e.use(express.static(frontendPath));
+    this.e.get('*', rateLimit({
+      windowMs: 15 * 60 * 1000, max: 5000,
+    }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
+
+    const listener = this.e.listen(this.port, () => {
+      const address = listener.address() as AddressInfo;
+      logger.info(`Server is running at http://${address.address}:${address.port} 🚀`);
+      if (this.settingsService.settings.baseUrl) {
+        logger.debug(`Frontend is running at ${this.settingsService.settings.baseUrl} 🌐`);
+      }
+    });
+    this.eListener = listener;
+
   }
 }
 
@@ -102,20 +119,33 @@ const app = new App(
     port: Number(process.env.MYSQL_PORT) || 3306,
     username: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
-    database: process.env.MYSQL_DATABASE
+    database: process.env.MYSQL_DATABASE || 'value'
   }),
   new GitHub(
     {
       appId: process.env.GITHUB_APP_ID,
       privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
-      installationId: Number(process.env.GITHUB_APP_INSTALLATION_ID),
       webhooks: {
         secret: process.env.GITHUB_WEBHOOK_SECRET
       }
     },
     e,
-    new WebhookService(port)
-  )
+    new WebhookService({
+      url: process.env.WEBHOOK_PROXY_URL,
+      path: '/api/github/webhooks',
+      port
+    })
+  ), new SettingsService({
+    baseUrl: process.env.BASE_URL,
+    webhookProxyUrl: process.env.GITHUB_WEBHOOK_SECRET,
+    webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
+    metricsCronExpression: '0 0 * * *',
+    devCostPerYear: '100000',
+    developerCount: '100',
+    hoursPerYear: '2080',
+    percentTimeSaved: '20',
+    percentCoding: '20'
+  })
 );
 app.start();
 

@@ -26,7 +26,6 @@ export class SetupGuard implements CanActivate, CanActivateChild {
     return this.setupService.getSetupStatus().pipe(
       map((response) => {
         this.cache = response;
-        console.log(response);
         if (!response.dbConnected) {
           this.router.navigate(['/setup/db'])
           return false;
@@ -35,12 +34,10 @@ export class SetupGuard implements CanActivate, CanActivateChild {
           this.router.navigate(['/setup/loading']);
           return false;
         }
-        console.log(response);
         if (!response.isSetup) throw new Error('Not setup');
         return true;
       }),
       catchError(() => {
-        console.log('moving')
         this.router.navigate(['/setup/db']);
         return of(false);
       })

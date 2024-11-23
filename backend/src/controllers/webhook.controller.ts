@@ -1,6 +1,5 @@
 import { App } from 'octokit';
 import logger from '../services/logger.js';
-import settingsService from '../services/settings.service.js';
 import { deleteMember, deleteMemberFromTeam, deleteTeam } from '../models/teams.model.js';
 import surveyService from '../services/survey.service.js';
 import app from '../app.js';
@@ -20,7 +19,8 @@ export const setupWebhookListeners = (github: App) => {
       timeUsedFor: '',
     })
     
-    const surveyUrl = new URL(`copilot/surveys/new/${survey.id}`, settingsService.baseUrl);
+    const installation = app.github.installations.find(i => i.installation.id === payload.installation?.id);
+    const surveyUrl = new URL(`copilot/surveys/new/${survey.id}`, installation?.installation.html_url);
 
     surveyUrl.searchParams.append('url', payload.pull_request.html_url);
     surveyUrl.searchParams.append('author', payload.pull_request.user.login);

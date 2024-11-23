@@ -69,7 +69,6 @@ export class MainComponent {
     this.setupService.installations.subscribe(installations => {
       this.installations = installations;
       this.currentInstallation = this.installations[0];
-      console.log('current', this.currentInstallation);
     });
   }
 
