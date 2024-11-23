@@ -1,6 +1,6 @@
 <div class="stepper-container">
   <mat-stepper linear #stepper>
-    <mat-step label="Database" state="phone" [completed]="status?.dbConnected">
+    <mat-step label="Database" state="database" [completed]="status?.dbConnected">
       <div *ngIf="status" class="stepper-content">
         <p>Enter your database credentials</p>
         <form [formGroup]="dbFormGroup" (ngSubmit)="dbConnect()" class="database-form">
@@ -34,9 +34,9 @@
         </form>
       </div>
     </mat-step>
-    <mat-step label="GitHub App" state="chat" [completed]="status?.isSetup">
+    <mat-step label="GitHub App" state="github" [completed]="status?.isSetup">
       <div class="stepper-content">
-        <app-install></app-install>
+        <app-install (finishedChange)="checkStatus()"></app-install>
       </div>
     </mat-step>
     <mat-step label="Done" state="rocket_launch">
@@ -44,10 +44,10 @@
     </mat-step>
 
     <!-- Icon overrides. -->
-    <ng-template matStepperIcon="phone">
+    <ng-template matStepperIcon="database">
       <mat-icon>table</mat-icon>
     </ng-template>
-    <ng-template matStepperIcon="chat">
+    <ng-template matStepperIcon="github">
       <mat-icon class="material-icons" svgIcon="github"></mat-icon>
     </ng-template>
     <ng-template matStepperIcon="rocket_launch">

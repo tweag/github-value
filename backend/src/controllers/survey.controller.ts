@@ -1,9 +1,9 @@
 import { Request, Response } from 'express';
 import { Survey } from '../models/survey.model.js';
-import setup from '../services/setup.js';
 import logger from '../services/logger.js';
 import settingsService from '../services/settings.service.js';
 import surveyService from '../services/survey.service.js';
+import app from '../app.js';
 
 class SurveyController {
   async createSurvey(req: Request, res: Response): Promise<void> {
@@ -16,7 +16,7 @@ class SurveyController {
       res.status(201).json(survey);
       try {
         const surveyUrl = new URL(`copilot/surveys/${survey.id}`, settingsService.baseUrl);
-        const octokit = await setup.getOctokit();
+        const { installation, octokit } = await app.github.getInstallation(survey.owner);
         if (!survey.repo || !survey.owner || !survey.prNumber) {
           logger.warn('Cannot process survey comment: missing survey data');
           return;
@@ -26,11 +26,11 @@ class SurveyController {
           repo: survey.repo,
           issue_number: survey.prNumber
         });
-        if (!setup.installation?.slug) {
+        if (installation.account?.login) {
           logger.warn('Cannot process survey comment: GitHub App installation or slug not found');
           return;
         }
-        const comment = comments.data.find(comment => comment.user?.login.startsWith(setup.installation!.slug!));
+        const comment = comments.data.find(comment => comment.user?.login.startsWith(survey.userId));
         if (comment) {
           octokit.rest.issues.updateComment({
             owner: survey.owner,
@@ -39,7 +39,7 @@ class SurveyController {
             body: `Thanks for filling out the [copilot survey](${surveyUrl.toString()}) @${survey.userId}!`
           });
         } else {
-          logger.info(`No comment found for survey from ${setup.installation?.slug}`)
+          logger.info(`No comment found for survey from ${installation.account?.login}`);
         }
       } catch (error) {
         logger.error('Error updating survey comment', error);

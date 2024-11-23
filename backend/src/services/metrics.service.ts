@@ -11,7 +11,7 @@ export interface MetricsQueryParams {
 };
 
 class MetricsService {
-  async queryMetrics(params: MetricsQueryParams) {
+  async getMetrics(params: MetricsQueryParams) {
     const { type, since, until, editor, language, model } = params;
     // consider the fact that these are UTC dates...
     const dateFilter = {
@@ -109,8 +109,8 @@ class MetricsService {
     });
   }
 
-  async queryMetricsTotals(params: MetricsQueryParams) {
-    const metrics = await this.queryMetrics(params);
+  async getMetricsTotals(params: MetricsQueryParams) {
+    const metrics = await this.getMetrics(params);
 
     // Initialize aggregated totals
     const periodMetrics = {

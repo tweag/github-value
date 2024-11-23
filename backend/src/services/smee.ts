@@ -1,25 +1,31 @@
+import { App, createNodeMiddleware } from "octokit";
+import { Express } from "express";
 import logger from "./logger.js";
 import settingsService from "./settings.service.js";
+import { setupWebhookListeners } from "../controllers/webhook.controller.js";
 
-class SmeeService {
-  private static instance: SmeeService;
-  private webhookProxyUrl?: string;
-  private port?: number;
+class WebhookService {
+  private port: number;
+  private _webhookProxyUrl?: string;
+  get webhookProxyUrl() {
+    if (!this._webhookProxyUrl) throw new Error('Webhook proxy URL is not set');
+    return this._webhookProxyUrl;
+  }
+  set webhookProxyUrl(url: string) {
+    this._webhookProxyUrl = url;
+  }
+  webhookProxy?: {
+    url: string;
+    eventSource: EventSource | undefined;
+}
 
-  private constructor() { }
-
-  public static getInstance(): SmeeService {
-    if (!SmeeService.instance) {
-      SmeeService.instance = new SmeeService();
-    }
-    return SmeeService.instance;
+  constructor(port: number) {
+    this.port = port;
+    this.connect();
   }
 
-  getWebhookProxyUrl = () => {
-    if (!this.webhookProxyUrl) {
-      throw new Error('Webhook proxy URL is not set');
-    }
-    return this.webhookProxyUrl;
+  async connect() {
+    this.webhookProxy = await this.createSmeeWebhookProxy(this.port);
   }
 
   private async createSmeeWebhookUrl() {
@@ -27,51 +33,50 @@ class SmeeService {
     if (!webhookProxyUrl) {
       throw new Error('Unable to create webhook channel');
     }
-    this.webhookProxyUrl = webhookProxyUrl;
+    this._webhookProxyUrl = webhookProxyUrl;
     return webhookProxyUrl;
   }
 
   public async createSmeeWebhookProxy(port?: number) {
     if (!port) port = this.port;
     try {
-      this.webhookProxyUrl = process.env.WEBHOOK_PROXY_URL || await settingsService.getSettingsByName('webhookProxyUrl');
-      if (!this.webhookProxyUrl) {
+      this._webhookProxyUrl = process.env.WEBHOOK_PROXY_URL || await settingsService.getSettingsByName('webhookProxyUrl');
+      if (!this._webhookProxyUrl) {
         throw new Error('Webhook proxy URL is not set');
       }
     } catch {
-      this.webhookProxyUrl = await this.createSmeeWebhookUrl();
+      this._webhookProxyUrl = await this.createSmeeWebhookUrl();
     }
     let eventSource: EventSource | undefined;
     try {
       eventSource = await this.createWebhookProxy({
-        url: this.webhookProxyUrl,
+        url: this._webhookProxyUrl,
         port,
         path: '/api/github/webhooks'
       });
     } catch (error) {
-      logger.error(`Unable to connect to ${this.webhookProxyUrl}. recreating webhook.`, error);
-      this.webhookProxyUrl = await this.createSmeeWebhookUrl();
+      logger.error(`Unable to connect to ${this._webhookProxyUrl}. recreating webhook.`, error);
+      this._webhookProxyUrl = await this.createSmeeWebhookUrl();
       eventSource = await this.createWebhookProxy({
-        url: this.webhookProxyUrl,
+        url: this._webhookProxyUrl,
         port,
         path: '/api/github/webhooks'
       });
       if (!eventSource) throw new Error('Unable to connect to smee.io');
     }
     this.port = port;
-    return { url: this.webhookProxyUrl, eventSource };
+    return { url: this._webhookProxyUrl, eventSource };
   }
 
-  createWebhookProxy = async (
+  async createWebhookProxy(
     opts: {
       url: string;
       port?: number;
       path?: string;
     },
-  ): Promise<EventSource | undefined> => {
+  ): Promise<EventSource | undefined> {
     try {
-      const SmeeClient = (await import("smee-client")).default;
-      const smee = new SmeeClient({
+      const smee = new (await import("smee-client")).default({
         source: opts.url,
         target: `http://localhost:${opts.port}${opts.path}`,
         logger: {
@@ -85,6 +90,20 @@ class SmeeService {
     }
   };
 
+  webhookMiddlewareCreate(app: App, e: Express) {
+    if (!app) throw new Error('GitHub App is not initialized')
+    if (!e) throw new Error('Express app is not initialized')
+    const webhookMiddlewareIndex = e._router.stack.findIndex((layer: {
+      name: string;
+    }) => layer.name === 'bound middleware');
+    if (webhookMiddlewareIndex > -1) {
+      e._router.stack.splice(webhookMiddlewareIndex, 1);
+    }
+    setupWebhookListeners(app);
+    const web = e.use(createNodeMiddleware(app));
+    return web;
+  };
+
 }
 
-export default SmeeService.getInstance();
+export default WebhookService;

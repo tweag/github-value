@@ -2,26 +2,27 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { serverUrl } from './server.service';
 import { Endpoints } from '@octokit/types';
-import { tap } from 'rxjs';
+import { BehaviorSubject, tap } from 'rxjs';
+
+export interface InstallationStatus {
+  installation?: Endpoints["GET /app/installations"]["response"]["data"][number],
+  usage: boolean;
+  metrics: boolean;
+  copilotSeats: boolean;
+  teamsAndMembers: boolean;
+}
 
 export interface SetupStatusResponse {
-  isSetup?: boolean;
-  dbInitialized?: boolean;
-  dbConnected?: boolean;
-  dbsInitialized?: {
-    usage: boolean;
-    metrics: boolean;
-    copilotSeats: boolean;
-    teamsAndMembers: boolean;
-  },
-  installation?: Endpoints["GET /app/installations"]["response"]["data"][0];
+  isSetup: boolean;
+  dbConnected: boolean;
+  installations: InstallationStatus[],
 }
 @Injectable({
   providedIn: 'root'
 })
 export class SetupService {
   private apiUrl = `${serverUrl}/api/setup`;
-  installation?: Endpoints["GET /app/installations"]["response"]["data"][0];
+  installations = new BehaviorSubject<Endpoints["GET /app/installations"]["response"]["data"]>([]);
 
   constructor(private http: HttpClient) { }
 
@@ -31,7 +32,10 @@ export class SetupService {
       params
     }).pipe(
       tap((status) => {
-        if (status.installation) this.installation = status.installation;
+        console.log('status', status);
+        if (status.installations) {
+          this.installations.next(status.installations.map(i => i.installation!));
+        }
       })
     );
   }
@@ -73,6 +77,16 @@ export class SetupService {
     return this.http.post<{
       installUrl: string
     }>(`${this.apiUrl}/existing-app`, request);
+  }
+
+  setupDB(request: { // should be url or fields
+    host?: string;
+    port?: number;
+    username?: string;
+    password?: string;
+    url?: string;
+  }) {
+    return this.http.post(`${this.apiUrl}/db`, request);
   }
 
 }

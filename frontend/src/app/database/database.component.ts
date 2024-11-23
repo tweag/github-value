@@ -10,7 +10,6 @@ import { InstallComponent } from '../install/install.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
 import { SetupService, SetupStatusResponse } from '../services/setup.service';
-import confetti from 'canvas-confetti';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
 
@@ -45,8 +44,8 @@ export class DatabaseComponent {
   isDbConnecting = false;
   dbFormGroup = new FormGroup({
     hostname: new FormControl('', Validators.required),
-    port: new FormControl('', [Validators.required, Validators.min(1), Validators.max(65535)]),
-    username: new FormControl('', Validators.required),
+    port: new FormControl(3306, [Validators.required, Validators.min(1), Validators.max(65535)]),
+    username: new FormControl('root', Validators.required),
     password: new FormControl(''),
   });
 
@@ -59,61 +58,47 @@ export class DatabaseComponent {
   }
 
   ngAfterViewInit() {
-    this.stepper.selectedIndexChange.subscribe(() => {
+    this.stepper.selectedIndexChange.subscribe(async () => {
       if (this.stepper.selectedIndex === 2) {
         this.stepper.steps.get(2)!.interacted = true;
-        this.celebrate();
-        setTimeout(async () => await this.router.navigate(['/setup/loading']), 1000);
+        await this.router.navigate(['/setup/loading'], {
+          queryParams: { celebrate: true}
+        });
       }
     });
-    this.checkStatus().subscribe();
+    this.checkStatus();
   }
 
   dbConnect() {
     if(this.dbFormGroup.invalid) return;
     this.isDbConnecting = true;
-    this.checkStatus().subscribe(() => {
+    this.setupService.setupDB({
+      host: this.dbFormGroup.value.hostname!,
+      port: this.dbFormGroup.value.port!,
+      username: this.dbFormGroup.value.username!,
+      password: this.dbFormGroup.value.password!,
+    }).subscribe(() => {
       this.isDbConnecting = false;
       this.cdr.detectChanges();
-      this.stepper.selectedIndex = 1;
+      this.checkStatus();
     });
   }
 
   checkStatus() {
-    return this.setupService.getSetupStatus().pipe(
-      tap(status => {
-        this.status = status;
-        if (this.status.dbConnected && this.stepper.selectedIndex === 0) {
-          this.stepper.next();
-        }
-        if (this.status.isSetup && this.stepper.selectedIndex === 1) {
-          this.stepper.next();
-        }
-      })
-    )
-  }
-
-  celebrate() {
-    const duration = 15 * 1000;
-    const animationEnd = Date.now() + duration;
-    const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
-    function randomInRange(min: number, max: number) {
-      return Math.random() * (max - min) + min;
-    }
-
-    const interval = setInterval(function () {
-      const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
+    this.setupService.getSetupStatus().subscribe(status => {
+      console.log('status', status, this.stepper.steps.get(0));
+      this.status = status;
+      if (this.status.dbConnected && this.stepper.selectedIndex === 0) {
+        const step = this.stepper.steps.get(0);
+        if (step) step.completed = true;
+        this.stepper.next();
       }
-
-      const particleCount = 50 * (timeLeft / duration);
-      // since particles fall down, start a bit higher than random
-      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } });
-      confetti({ ...defaults, particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } });
-    }, 250);
+      if (this.status.isSetup && this.stepper.selectedIndex === 1) {
+        const step = this.stepper.steps.get(1);
+        if (step) step.completed = true;
+        this.stepper.next();
+      }
+    })
   }
 
 }

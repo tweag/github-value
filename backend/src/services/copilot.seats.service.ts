@@ -1,10 +1,12 @@
 import { Endpoints } from '@octokit/types';
 import { Assignee, AssigningTeam, Seat } from "../models/copilot.seats.model.js";
 import { Op, Sequelize } from 'sequelize';
+import { components } from "@octokit/openapi-types";
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
   plan_type: string;
+  assignee: components['schemas']['simple-user'];
 }
 
 type AssigneeDailyActivity = {
@@ -40,7 +42,7 @@ class SeatsService {
               GROUP BY assignee_id
           )`)
         }
-      },
+      } as any,
       order: [['last_activity_at', 'DESC']]
     });
   }
@@ -80,10 +82,11 @@ class SeatsService {
       const assignee = await Assignee.findOrCreate({
         where: { id: seat.assignee.id },
         defaults: {
+          id: seat.assignee.id,
           login: seat.assignee.login,
           node_id: seat.assignee.node_id,
           avatar_url: seat.assignee.avatar_url,
-          gravatar_id: seat.assignee.gravatar_id,
+          gravatar_id: seat.assignee.gravatar_id || '',
           url: seat.assignee.url,
           html_url: seat.assignee.html_url,
           followers_url: seat.assignee.followers_url,
@@ -103,6 +106,7 @@ class SeatsService {
       const assigningTeam = seat.assigning_team ? await AssigningTeam.findOrCreate({
         where: { id: seat.assigning_team.id },
         defaults: {
+          id: seat.assigning_team.id,
           node_id: seat.assigning_team.node_id,
           url: seat.assigning_team.url,
           html_url: seat.assigning_team.html_url,

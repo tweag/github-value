@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { SetupService } from '../services/setup.service';
+import { InstallationStatus, SetupService } from '../services/setup.service';
 import { Router } from '@angular/router';
 import { Subscription, timer } from 'rxjs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
@@ -90,11 +90,12 @@ export class DbLoadingComponent implements OnInit, OnDestroy {
   private statusSubscription?: Subscription;
   statusText = 'Please wait while we set up your database...';
   statusProgress = 0;
-  dbStatus = {
+  dbStatus: InstallationStatus = {
     usage: false,
     metrics: false,
     copilotSeats: false,
-    teamsAndMembers: false
+    teamsAndMembers: false,
+    installation: undefined
   };
 
   constructor(
@@ -107,17 +108,28 @@ export class DbLoadingComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.setupService.getSetupStatus().subscribe((response) => {
           if (!response.isSetup) {
-            this.router.navigate(['/setup']);
+            this.router.navigate(['/setup/db']);
             return;
           }
-          if (response.dbsInitialized) {
-            this.dbStatus = response.dbsInitialized;
-            this.updateProgress();
-          }
+          this.dbStatus = response.installations.reduce((acc, intallation) => {
+            acc.usage = acc.usage || intallation.usage;
+            acc.metrics = acc.metrics || intallation.metrics;
+            acc.copilotSeats = acc.copilotSeats || intallation.copilotSeats;
+            acc.teamsAndMembers = acc.teamsAndMembers || intallation.teamsAndMembers;
+            return acc;
+          }, {
+            usage: false,
+            metrics: false,
+            copilotSeats: false,
+            teamsAndMembers: false
+          })
+          this.updateProgress();
 
-          if (response.dbInitialized) {
+          if (Object.values(this.dbStatus).every(value => value)) {
             this.statusSubscription?.unsubscribe()
-            this.router.navigate(['/']); // 🚀 Navigate
+            this.router.navigate(['/'], {
+              queryParamsHandling: 'preserve'
+            }); // 🚀 Navigate
           }
         });
       });

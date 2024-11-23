@@ -10,10 +10,11 @@ import { Observable } from 'rxjs';
 import { filter, map, shareReplay, tap } from 'rxjs/operators';
 import { AppModule } from '../app.module';
 import { ThemeService } from '../services/theme.service';
-import { NavigationEnd, Router } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Endpoints } from '@octokit/types';
 import { SetupService } from '../services/setup.service';
 import { MatCardModule } from '@angular/material/card';
+import { ConfettiService } from '../database/confetti.service';
 
 @Component({
   selector: 'app-main',
@@ -43,22 +44,33 @@ export class MainComponent {
     map(result => result.matches),
     shareReplay()
   );
-  installation?: any;
+  installations = [] as Endpoints["GET /app/installations"]["response"]["data"];
+  currentInstallation?: Endpoints["GET /app/installations"]["response"]["data"][number];
 
   constructor(
     public themeService: ThemeService,
+    private route: ActivatedRoute,
     private router: Router,
-    private setupService: SetupService
+    private setupService: SetupService,
+    private confettiService: ConfettiService
   ) {
     this.hideNavText = localStorage.getItem('hideNavText') === 'true';
-
+    this.route.queryParams.subscribe(params => {
+      if (params['celebrate'] === 'true') {
+        this.confettiService.celebrate()
+      }
+    });
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.closeSidenav();
     });
 
-   this.installation = this.setupService.installation;
+    this.setupService.installations.subscribe(installations => {
+      this.installations = installations;
+      this.currentInstallation = this.installations[0];
+      console.log('current', this.currentInstallation);
+    });
   }
 
   toggleNavText(): void {

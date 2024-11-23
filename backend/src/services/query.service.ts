@@ -1,69 +1,71 @@
 import { CronJob, CronTime } from 'cron';
 import logger from './logger.js';
-import setup from './setup.js';
 import { insertUsage } from '../models/usage.model.js';
 import SeatService from '../services/copilot.seats.service.js';
 import { insertMetrics } from '../models/metrics.model.js';
 import { CopilotMetrics } from '../models/metrics.model.interfaces.js';
 import { getLastUpdatedAt, Member, Team, TeamMemberAssociation } from '../models/teams.model.js';
+import { Endpoints } from '@octokit/types';
+import { Octokit } from 'octokit';
 
 const DEFAULT_CRON_EXPRESSION = '0 * * * *';
 class QueryService {
-  private static instance: QueryService;
-  private cronJob: CronJob;
+  cronJob: CronJob;
+  status = {
+    usage: false,
+    metrics: false,
+    copilotSeats: false,
+    teamsAndMembers: false,
+    dbInitialized: false
+  };
 
-  private constructor(cronExpression: string, timeZone: string) {
-    try {
-      this.cronJob = new CronJob(cronExpression, this.task.bind(this), null, true, timeZone);
-    } catch {
-      logger.error('Invalid cron expression. Using default cron expression.');
-      this.cronJob = new CronJob(DEFAULT_CRON_EXPRESSION, this.task, null, true, timeZone);
-    }
+  constructor(
+    public installation: Endpoints["GET /app/installations"]["response"]["data"][0],
+    public octokit: Octokit
+  ) {
+    this.cronJob = new CronJob(DEFAULT_CRON_EXPRESSION, this.task, null, true);
     this.task();
   }
 
   private async task() {
-    const queries = [
-      this.queryCopilotUsageMetrics().then(() =>
-        setup.setSetupStatusDbInitialized({ usage: true })),
-      this.queryCopilotUsageMetricsNew().then(() =>
-        setup.setSetupStatusDbInitialized({ metrics: true })),
-      this.queryCopilotSeatAssignments().then(() =>
-        setup.setSetupStatusDbInitialized({ copilotSeats: true })),
-    ]
-    
-    const lastUpdated = await getLastUpdatedAt();
-    const elapsedHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
-    logger.info(`It's been ${Math.floor(elapsedHours)} hours since last update 🕒`);
-    if (elapsedHours > 24) {
-      queries.push(
-        this.queryTeamsAndMembers().then(() =>
-          setup.setSetupStatusDbInitialized({ teamsAndMembers: true }))
-      );
-    }
-    await Promise.all(queries);
-    setup.setSetupStatus({
-      dbInitialized: true
-    })
-  }
-
-  public static createInstance(cronExpression: string, timeZone: string) {
-    if (!QueryService.instance) {
-      QueryService.instance = new QueryService(cronExpression, timeZone);
-    }
-    return QueryService.instance;
-  }
-
-  public static getInstance(): QueryService {
-    return QueryService.instance;
-  }
-
-  public async queryCopilotUsageMetricsNew() {
-    if (!setup.installation?.owner?.login) throw new Error('No installation found')
     try {
-      const octokit = await setup.getOctokit();
-      const response = await octokit.paginate<CopilotMetrics>('GET /orgs/{org}/copilot/metrics', {
-        org: setup.installation.owner?.login
+      if (!this.installation.account?.login) throw new Error('No installation found');
+      const queries = [
+        this.queryCopilotUsageMetrics().then(() =>
+          this.status.usage = true
+        ),
+        this.queryCopilotUsageMetricsNew(this.installation.account?.login).then(() =>
+          this.status.metrics = true
+        ),
+        this.queryCopilotSeatAssignments().then(() =>
+          this.status.copilotSeats = true
+        ),
+      ]
+      
+      const lastUpdated = await getLastUpdatedAt();
+      const elapsedHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
+      logger.info(`It's been ${Math.floor(elapsedHours)} hours since last update 🕒`);
+      if (elapsedHours > 24) {
+        queries.push(
+          this.queryTeamsAndMembers().then(() =>
+            this.status.teamsAndMembers = true
+          )
+        );
+      } else {
+        this.status.teamsAndMembers = true
+      }
+  
+      await Promise.all(queries);
+      this.status.dbInitialized = true;
+    } catch (error) {
+      logger.error(error);
+    }
+  }
+
+  public async queryCopilotUsageMetricsNew(org: string) {
+    try {
+      const response = await this.octokit.paginate<CopilotMetrics>('GET /orgs/{org}/copilot/metrics', {
+        org: org
       });
       const metricsArray = response;
 
@@ -76,11 +78,10 @@ class QueryService {
   }
 
   public async queryCopilotUsageMetrics() {
-    if (!setup.installation?.owner?.login) throw new Error('No installation found')
+    if (!this.installation.account?.login) throw new Error('No installation found')
     try {
-      const octokit = await setup.getOctokit();
-      const response = await octokit.rest.copilot.usageMetricsForOrg({
-        org: setup.installation.owner?.login
+      const response = await this.octokit.rest.copilot.usageMetricsForOrg({
+        org: this.installation.account?.login
       });
 
       insertUsage(response.data);
@@ -92,11 +93,10 @@ class QueryService {
   }
 
   public async queryCopilotSeatAssignments() {
-    if (!setup.installation?.owner?.login) throw new Error('No installation found')
+    if (!this.installation.account?.login) throw new Error('No installation found')
     try {
-      const octokit = await setup.getOctokit();
-      const _seatAssignments = await octokit.paginate(octokit.rest.copilot.listCopilotSeats, {
-        org: setup.installation.owner?.login
+      const _seatAssignments = await this.octokit.paginate(this.octokit.rest.copilot.listCopilotSeats, {
+        org: this.installation.account?.login
       }) as { total_seats: number, seats: object[] }[];
       const seatAssignments = {
         total_seats: _seatAssignments[0]?.total_seats || 0,
@@ -119,14 +119,13 @@ class QueryService {
   }
 
   public async queryTeamsAndMembers(team_slug?: string, member_login?: string) {
-    if (!setup.installation?.owner?.login) throw new Error('No installation found')
+    if (!this.installation.account?.login) throw new Error('No installation found')
     try {
-      const octokit = await setup.getOctokit();
-      const teams = team_slug ? [(await octokit.rest.teams.getByName({
-        org: setup.installation.owner?.login,
+      const teams = team_slug ? [(await this.octokit.rest.teams.getByName({
+        org: this.installation.account?.login,
         team_slug,
-      })).data] : await octokit.paginate(octokit.rest.teams.list, {
-        org: setup.installation.owner?.login
+      })).data] : await this.octokit.paginate(this.octokit.rest.teams.list, {
+        org: this.installation.account?.login
       });
 
       // First pass: Create all teams without parent relationships 🏗️
@@ -137,8 +136,8 @@ class QueryService {
           name: team.name,
           slug: team.slug,
           description: team.description,
-          privacy: team.privacy,
-          notification_setting: team.notification_setting,
+          privacy: team.privacy || 'unknown',
+          notification_setting: team.notification_setting || 'unknown',
           permission: team.permission,
           url: team.url,
           html_url: team.html_url,
@@ -159,8 +158,8 @@ class QueryService {
 
       // Third pass: Add team members 👥
       for (const team of teams) {
-        const members = await octokit.paginate(octokit.rest.teams.listMembersInOrg, {
-          org: setup.installation.owner?.login,
+        const members = await this.octokit.paginate(this.octokit.rest.teams.listMembersInOrg, {
+          org: this.installation.account?.login,
           team_slug: team.slug
         });
 
@@ -206,11 +205,11 @@ class QueryService {
           id: -1
         });
   
-        const members = member_login ? [(await octokit.rest.orgs.getMembershipForUser({
-          org: setup.installation?.owner?.login,
+        const members = member_login ? [(await this.octokit.rest.orgs.getMembershipForUser({
+          org: this.installation.account?.login,
           username: member_login
-        })).data.user] : await octokit.paginate(octokit.rest.orgs.listMembers, {
-          org: setup.installation?.owner?.login
+        })).data.user] : await this.octokit.paginate(this.octokit.rest.orgs.listMembers, {
+          org: this.installation.account?.login
         });
         if (members?.length) {
           await Promise.all(members.map(async member => {

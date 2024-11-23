@@ -1,20 +1,9 @@
-import { Webhooks } from '@octokit/webhooks';
 import { App } from 'octokit';
 import logger from '../services/logger.js';
 import settingsService from '../services/settings.service.js';
-import { QueryService } from '../services/query.service.js';
 import { deleteMember, deleteMemberFromTeam, deleteTeam } from '../models/teams.model.js';
 import surveyService from '../services/survey.service.js';
-
-const webhooks = new Webhooks({
-  secret: process.env.GITHUB_WEBHOOK_SECRET || 'your-secret',
-  log: {
-    debug: logger.debug,
-    info: logger.info,
-    warn: logger.warn,
-    error: logger.error
-  }
-});
+import app from '../app.js';
 
 export const setupWebhookListeners = (github: App) => {
   github.webhooks.on("pull_request.opened", async ({ octokit, payload }) => {
@@ -51,11 +40,13 @@ export const setupWebhookListeners = (github: App) => {
   });
 
   github.webhooks.on("team", async ({ payload }) => {
+    const queryService = app.github.installations.find(i => i.installation.id === payload.installation?.id)?.queryService;
+    if (!queryService) throw new Error('No query service found');
     try {
       switch (payload.action) {
         case 'created':
         case 'edited':
-          await QueryService.getInstance().queryTeamsAndMembers(payload.team.slug);
+          await queryService.queryTeamsAndMembers(payload.team.slug);
           break;
         case 'deleted':
           await deleteTeam(payload.team.id);
@@ -67,10 +58,12 @@ export const setupWebhookListeners = (github: App) => {
   });
 
   github.webhooks.on("membership", async ({ payload }) => {
+    const queryService = app.github.installations.find(i => i.installation.id === payload.installation?.id)?.queryService;
+    if (!queryService) throw new Error('No query service found');
     try {
       switch (payload.action) {
         case 'added':
-          await QueryService.getInstance().queryTeamsAndMembers(payload.team.slug);
+          await queryService.queryTeamsAndMembers(payload.team.slug);
           break;
         case 'removed':
           if (payload.member) {
@@ -84,11 +77,13 @@ export const setupWebhookListeners = (github: App) => {
   });
 
   github.webhooks.on("member", async ({ payload }) => {
+    const queryService = app.github.installations.find(i => i.installation.id === payload.installation?.id)?.queryService;
+    if (!queryService) throw new Error('No query service found');
     try {
       switch (payload.action) {
         case 'added':
         case 'edited':
-          await QueryService.getInstance().queryTeamsAndMembers(undefined, payload.member?.login);
+          await queryService.queryTeamsAndMembers(undefined, payload.member?.login);
           break;
         case 'removed':
           if (payload.member) {
@@ -101,5 +96,3 @@ export const setupWebhookListeners = (github: App) => {
     }
   });
 }
-
-export default webhooks;

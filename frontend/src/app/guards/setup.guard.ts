@@ -10,7 +10,8 @@ import { SetupService, SetupStatusResponse } from '../services/setup.service';
 export class SetupGuard implements CanActivate, CanActivateChild {
   cache: SetupStatusResponse = {
     isSetup: false,
-    dbInitialized: false
+    dbConnected: false,
+    installations: []
   };
 
   constructor(
@@ -19,7 +20,7 @@ export class SetupGuard implements CanActivate, CanActivateChild {
   ) { }
 
   canActivate(): MaybeAsync<GuardResult> {
-    if (this.cache.isSetup && this.cache.dbInitialized) {
+    if (this.cache.isSetup && this.cache.dbConnected) {
       return of(true);
     }
     return this.setupService.getSetupStatus().pipe(
@@ -30,15 +31,17 @@ export class SetupGuard implements CanActivate, CanActivateChild {
           this.router.navigate(['/setup/db'])
           return false;
         }
-        if (!response.dbInitialized && !isDevMode()) {
+        if (!response.installations?.some(i => Object.values(i).some(j => !j)) && !isDevMode()) {
           this.router.navigate(['/setup/loading']);
           return false;
         }
+        console.log(response);
         if (!response.isSetup) throw new Error('Not setup');
         return true;
       }),
       catchError(() => {
-        this.router.navigate(['/setup']);
+        console.log('moving')
+        this.router.navigate(['/setup/db']);
         return of(false);
       })
     );

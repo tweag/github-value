@@ -1,8 +1,6 @@
 import { Settings } from '../models/settings.model.js';
-import { QueryService } from './query.service.js';
-import setup from './setup.js';
-import SmeeService from './smee.js';
 import SeatsService from '../services/copilot.seats.service.js';
+import app from '../app.js';
 
 class SettingsService {
   public baseUrl = process.env.BASE_URL || 'http://localhost';
@@ -21,7 +19,7 @@ class SettingsService {
     try {
       await this.getSettingsByName('webhookProxyUrl')
     } catch {
-      this.updateSetting('webhookProxyUrl', SmeeService.getWebhookProxyUrl());
+      this.updateSetting('webhookProxyUrl', app.github.smee.webhookProxyUrl);
     }
     try {
       const webhookSecret = await this.getSettingsByName('webhookSecret')
@@ -66,32 +64,20 @@ class SettingsService {
   }
 
   async getSettingsByName(name: string): Promise<string | undefined> {
-    const rsp = await Settings.findOne({ where: { name } });
-    if (!rsp) {
+    try {
+      const rsp = await Settings.findOne({ where: { name } });
+      if (!rsp) {
+        return undefined;
+      }
+      return rsp.dataValues.value;
+    } catch {
       return undefined;
     }
-    return rsp.dataValues.value;
   }
 
   async updateSetting(name: string, value: string) {
     if (value === await this.getSettingsByName(name)) return await Settings.findOne({ where: { name } });
     await Settings.upsert({ name, value });
-    if (name === 'webhookProxyUrl') {
-      setup.addToEnv({ WEBHOOK_PROXY_URL: value });
-      await SmeeService.createSmeeWebhookProxy();
-    }
-    if (name === 'webhookSecret') {
-      setup.addToEnv({ GITHUB_WEBHOOK_SECRET: value });
-      try {
-        await setup.createAppFromEnv();
-      } catch {
-        console.warn('failed to create app from env')
-      }
-    }
-    if (name === 'baseUrl') {
-      this.baseUrl = value;
-    }
-    if (name === 'metricsCronExpression') QueryService.getInstance()?.updateCronJob(value);
     return await Settings.findOne({ where: { name } });
   }
 
