@@ -28,6 +28,7 @@ class WebhookService {
       }
     }
 
+    console.log(this.options);
     if (!this.options.url) {
       this.options.url = await this.createSmeeWebhookUrl();
     }

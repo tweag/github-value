@@ -1,18 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { AppModule } from '../../../app.module';
 import { AdoptionChartComponent } from "./adoption-chart/adoption-chart.component";
-import { ActivityResponse, SeatService } from '../../../services/seat.service';
+import { ActivityResponse, SeatService } from '../../../services/api/seat.service';
 import { DailyActivityChartComponent } from './daily-activity-chart/daily-activity-chart.component';
 import { TimeSavedChartComponent } from './time-saved-chart/time-saved-chart.component';
-import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
-import { MetricsService } from '../../../services/metrics.service';
+import { CopilotMetrics } from '../../../services/api/metrics.service.interfaces';
+import { MetricsService } from '../../../services/api/metrics.service';
 import { FormControl } from '@angular/forms';
-import { combineLatest, startWith } from 'rxjs';
-import { CopilotSurveyService, Survey } from '../../../services/copilot-survey.service';
+import { combineLatest, startWith, Subject, takeUntil } from 'rxjs';
+import { CopilotSurveyService, Survey } from '../../../services/api/copilot-survey.service';
 import * as Highcharts from 'highcharts';
 import HC_exporting from 'highcharts/modules/exporting';
 HC_exporting(Highcharts);
 import HC_full_screen from 'highcharts/modules/full-screen';
+import { InstallationsService } from '../../../services/api/installations.service';
 HC_full_screen(Highcharts);
 
 @Component({
@@ -70,28 +71,43 @@ export class CopilotValueComponent implements OnInit {
       }
     }
   };
+  onDestroy$ = new Subject<boolean>();
 
   constructor(
     private seatService: SeatService,
     private metricsService: MetricsService,
-    private copilotSurveyService: CopilotSurveyService
+    private copilotSurveyService: CopilotSurveyService,
+    private installationsService: InstallationsService
   ) { }
 
   ngOnInit() {
-    combineLatest([
-      this.daysInactive.valueChanges.pipe(startWith(this.daysInactive.value || 30)),
-      this.adoptionFidelity.valueChanges.pipe(startWith(this.adoptionFidelity.value || 'day'))
-    ]).subscribe(([days, fidelity]) => {
-      this.seatService.getActivity(days || 30, fidelity || 'day').subscribe(data => {
-        this.activityData = data;
+    this.installationsService.currentInstallation.pipe(
+      takeUntil(this.onDestroy$)
+    ).subscribe(installation => {
+      combineLatest([
+        this.daysInactive.valueChanges.pipe(startWith(this.daysInactive.value || 30)),
+        this.adoptionFidelity.valueChanges.pipe(startWith(this.adoptionFidelity.value || 'day'))
+      ]).subscribe(([days, fidelity]) => {
+        this.seatService.getActivity(installation?.account?.login, days || 30, fidelity || 'day').subscribe(data => {
+          this.activityData = data;
+        });
+      });
+      this.metricsService.getMetrics({
+        org: installation?.account?.login,
+      }).subscribe(data => {
+        this.metricsData = data;
+      });
+      this.copilotSurveyService.getAllSurveys({
+        org: installation?.account?.login,
+      }).subscribe(data => {
+        this.surveysData = data;
       });
     });
-    this.metricsService.getMetrics().subscribe(data => {
-      this.metricsData = data;
-    });
-    this.copilotSurveyService.getAllSurveys().subscribe(data => {
-      this.surveysData = data;
-    });
+  }
+
+  ngOnDestroy() {
+    this.onDestroy$.next(true);
+    this.onDestroy$.unsubscribe();
   }
 
   chartChanged(chart: Highcharts.Chart, include = true) {
@@ -106,8 +122,8 @@ export class CopilotValueComponent implements OnInit {
                 .filter(otherChart => otherChart !== _chart)
                 .forEach(otherChart => {
                   if (otherChart.xAxis?.[0] &&
-                      (otherChart.xAxis[0].min !== event.min || 
-                       otherChart.xAxis[0].max !== event.max)) {
+                    (otherChart.xAxis[0].min !== event.min ||
+                      otherChart.xAxis[0].max !== event.max)) {
                     otherChart.xAxis[0].setExtremes(event.min, event.max);
                   }
                 });

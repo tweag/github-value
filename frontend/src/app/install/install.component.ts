@@ -1,7 +1,7 @@
 import { Component, ElementRef, EventEmitter, Inject, Output, ViewChild } from '@angular/core';
 import { MaterialModule } from '../material.module';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { SetupService } from '../services/setup.service';
+import { SetupService } from '../services/api/setup.service';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { CommonModule } from '@angular/common';
 import { ClipboardModule } from '@angular/cdk/clipboard';

@@ -1,8 +1,9 @@
 import { App } from 'octokit';
 import logger from '../services/logger.js';
-import { deleteMember, deleteMemberFromTeam, deleteTeam } from '../models/teams.model.js';
 import surveyService from '../services/survey.service.js';
 import app from '../app.js';
+import teamsService from '../services/teams.service.js';
+import { Endpoints } from '@octokit/types';
 
 export const setupWebhookListeners = (github: App) => {
   github.webhooks.on("pull_request.opened", async ({ octokit, payload }) => {
@@ -10,7 +11,7 @@ export const setupWebhookListeners = (github: App) => {
       status: 'pending',
       hits: 0,
       userId: payload.pull_request.user.login,
-      owner: payload.repository.owner.login,
+      org: payload.repository.owner.login,
       repo: payload.repository.name,
       prNumber: payload.pull_request.number,
       usedCopilot: false,
@@ -18,7 +19,7 @@ export const setupWebhookListeners = (github: App) => {
       reason: '',
       timeUsedFor: '',
     })
-    
+
     const installation = app.github.installations.find(i => i.installation.id === payload.installation?.id);
     const surveyUrl = new URL(`copilot/surveys/new/${survey.id}`, installation?.installation.html_url);
 
@@ -40,16 +41,14 @@ export const setupWebhookListeners = (github: App) => {
   });
 
   github.webhooks.on("team", async ({ payload }) => {
-    const queryService = app.github.installations.find(i => i.installation.id === payload.installation?.id)?.queryService;
-    if (!queryService) throw new Error('No query service found');
     try {
       switch (payload.action) {
         case 'created':
         case 'edited':
-          await queryService.queryTeamsAndMembers(payload.team.slug);
+          await teamsService.updateTeams(payload.organization.login, [payload.team] as Endpoints["GET /orgs/{org}/teams"]["response"]["data"]);
           break;
         case 'deleted':
-          await deleteTeam(payload.team.id);
+          await teamsService.deleteTeam(payload.team.id);
           break;
       }
     } catch (error) {
@@ -61,15 +60,15 @@ export const setupWebhookListeners = (github: App) => {
     const queryService = app.github.installations.find(i => i.installation.id === payload.installation?.id)?.queryService;
     if (!queryService) throw new Error('No query service found');
     try {
-      switch (payload.action) {
-        case 'added':
-          await queryService.queryTeamsAndMembers(payload.team.slug);
-          break;
-        case 'removed':
-          if (payload.member) {
-            await deleteMemberFromTeam(payload.team.id, payload.member.id)
-          }
-          break;
+      if (payload.member) {
+        switch (payload.action) {
+          case 'added':
+            await teamsService.addMemberToTeam(payload.team.id, payload.member.id);
+            break;
+          case 'removed':
+            await teamsService.deleteMemberFromTeam(payload.team.id, payload.member.id)
+            break;
+        }
       }
     } catch (error) {
       logger.error('Error processing membership event', error);
@@ -77,19 +76,19 @@ export const setupWebhookListeners = (github: App) => {
   });
 
   github.webhooks.on("member", async ({ payload }) => {
-    const queryService = app.github.installations.find(i => i.installation.id === payload.installation?.id)?.queryService;
-    if (!queryService) throw new Error('No query service found');
     try {
-      switch (payload.action) {
-        case 'added':
-        case 'edited':
-          await queryService.queryTeamsAndMembers(undefined, payload.member?.login);
-          break;
-        case 'removed':
-          if (payload.member) {
-            await deleteMember(payload.member.id)
-          }
-          break;
+      if (payload.member) {
+        switch (payload.action) {
+          case 'added':
+          case 'edited':
+            if (payload.organization?.login) {
+              await teamsService.updateMembers(payload.organization?.login, [payload.member] as Endpoints["GET /orgs/{org}/teams/{team_slug}/members"]["response"]["data"]);
+            }
+            break;
+          case 'removed':
+            await teamsService.deleteMember(payload.member.id)
+            break;
+        }
       }
     } catch (error) {
       logger.error('Error processing member event', error);

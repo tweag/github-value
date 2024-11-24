@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { DateRangeSelectComponent } from "../../../shared/date-range-select/date-range-select.component";
-import { MetricsService } from '../../../services/metrics.service';
-import { CopilotMetrics } from '../../../services/metrics.service.interfaces';
+import { MetricsService } from '../../../services/api/metrics.service';
+import { CopilotMetrics } from '../../../services/api/metrics.service.interfaces';
 import { CopilotMetricsPieChartComponent } from './copilot-metrics-pie-chart/copilot-metrics-pie-chart.component';
 import { MatCardModule } from '@angular/material/card';
+import { InstallationsService } from '../../../services/api/installations.service';
 
 @Component({
   selector: 'app-metrics',
@@ -24,7 +25,8 @@ export class CopilotMetricsComponent {
   metricsTotals?: CopilotMetrics;
 
   constructor(
-    private metricsService: MetricsService
+    private metricsService: MetricsService,
+    private installationsService: InstallationsService
   ) { }
 
   dateRangeChange(event: {start: Date, end: Date}) {
@@ -33,12 +35,14 @@ export class CopilotMetricsComponent {
     const startModified = new Date(utcStart - 1);
     const endModified = new Date(utcEnd + 1);
     this.metricsService.getMetrics({
+      org: this.installationsService.currentInstallation.value?.account?.login,
       since: startModified.toISOString(),
       until: endModified.toISOString()
     }).subscribe((metrics) => {
       this.metrics = metrics;
     });
     this.metricsService.getMetricsTotals({
+      org: this.installationsService.currentInstallation.value?.account?.login,
       since: startModified.toISOString(),
       until: endModified.toISOString()
     }).subscribe((metricsTotals) => {

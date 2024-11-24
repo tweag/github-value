@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ColumnOptions, TableComponent } from '../../../shared/table/table.component';
-import { Seat, SeatService } from '../../../services/seat.service';
+import { Seat, SeatService } from '../../../services/api/seat.service';
 import { SortDirection } from '@angular/material/sort';
 import { Router } from '@angular/router';
 

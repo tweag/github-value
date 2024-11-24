@@ -2,7 +2,7 @@ import { Model, DataTypes, Sequelize, CreationOptional } from 'sequelize';
 
 type SurveyType = {
   id?: number;
-  owner: string;
+  org: string;
   repo: string;
   prNumber: number;
   status: 'pending' | 'completed';
@@ -18,7 +18,7 @@ type SurveyType = {
 
 class Survey extends Model<SurveyType> {
   declare id?: number;
-  declare owner: string;
+  declare org: string;
   declare repo: string;
   declare prNumber: number;
   declare status: 'pending' | 'completed';
@@ -69,7 +69,7 @@ class Survey extends Model<SurveyType> {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      owner: {
+      org: {
         type: DataTypes.STRING,
         allowNull: false,
       },

@@ -12,9 +12,13 @@ import { AppModule } from '../app.module';
 import { ThemeService } from '../services/theme.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Endpoints } from '@octokit/types';
-import { SetupService } from '../services/setup.service';
+import { SetupService } from '../services/api/setup.service';
 import { MatCardModule } from '@angular/material/card';
 import { ConfettiService } from '../database/confetti.service';
+import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { InstallationsService } from '../services/api/installations.service';
 
 @Component({
   selector: 'app-main',
@@ -29,7 +33,10 @@ import { ConfettiService } from '../database/confetti.service';
     MatIconModule,
     AsyncPipe,
     AppModule,
-    MatCardModule
+    MatCardModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatInputModule
   ]
 })
 export class MainComponent {
@@ -51,8 +58,9 @@ export class MainComponent {
     public themeService: ThemeService,
     private route: ActivatedRoute,
     private router: Router,
-    private setupService: SetupService,
-    private confettiService: ConfettiService
+    private confettiService: ConfettiService,
+    public setupService: SetupService,
+    public installationsService: InstallationsService
   ) {
     this.hideNavText = localStorage.getItem('hideNavText') === 'true';
     this.route.queryParams.subscribe(params => {
@@ -68,7 +76,9 @@ export class MainComponent {
 
     this.setupService.installations.subscribe(installations => {
       this.installations = installations;
-      this.currentInstallation = this.installations[0];
+    });
+    this.installationsService.currentInstallation.asObservable().subscribe(installation => {
+      this.currentInstallation = installation;
     });
   }
 
@@ -80,6 +90,12 @@ export class MainComponent {
   closeSidenav(): void {
     if (this.isHandset && this.drawer) {
       this.drawer.close();
+    }
+  }
+
+  installationChanged(installation: number): void {
+    if (installation) {
+      this.installationsService.setInstallation(installation);
     }
   }
 }

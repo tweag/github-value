@@ -1,24 +1,19 @@
 import { Model, DataTypes, Sequelize, CreationOptional } from 'sequelize';
+import { Seat } from './copilot.seats.model.js';
+import { components } from "@octokit/openapi-types";
 
-type TeamType = {
-  name: string;
-  slug: string;
-  description: string | null;
-  id: number;
-  node_id?: string;
-  privacy?: string;
-  notification_setting?: string;
-  permission?: string;
-  url?: string;
-  html_url?: string;
-  members_url?: string;
-  repositories_url?: string;
+export type TeamType = Omit<components["schemas"]["team"], 'parent'> & {
+  org: string;
+  team?: string;
   parent_id?: number | null;
   createdAt?: Date;
   updatedAt?: Date;
+  parent?: TeamType | null;
 };
 
-class Team extends Model<TeamType> {
+class Team extends Model<NonNullable<TeamType>> {
+  declare org: string;
+  declare team: string;
   declare id: number;
   declare node_id: string;
   declare name: string;
@@ -37,6 +32,8 @@ class Team extends Model<TeamType> {
 
   static initModel(sequelize: Sequelize) {
     Team.init({
+      org: DataTypes.STRING,
+      team: DataTypes.STRING,
       id: {
         type: DataTypes.INTEGER,
         primaryKey: true
@@ -87,6 +84,7 @@ class Team extends Model<TeamType> {
 }
 
 type MemberType = {
+  org: string;
   login: string;
   id: number;
   node_id: string;
@@ -111,9 +109,11 @@ type MemberType = {
   user_view_type?: string;
   createdAt?: Date;
   updatedAt?: Date;
+  activity?: Seat[];
 };
 
 class Member extends Model<MemberType> {
+  declare org: string;
   declare login: string;
   declare id: number;
   declare node_id: string;
@@ -139,8 +139,11 @@ class Member extends Model<MemberType> {
   declare createdAt: Date;
   declare updatedAt: Date;
 
+  declare activity: Seat[];
+
   static initModel(sequelize: Sequelize) {
     Member.init({
+      org: DataTypes.STRING,
       login: DataTypes.STRING,
       id: {
         type: DataTypes.INTEGER,
@@ -208,99 +211,7 @@ class TeamMemberAssociation extends Model<TeamMemberAssociationType> {
   }
 }
 
-const deleteTeam = async (teamId: number) => {
-  const team = await Team.findByPk(teamId);
-  if (!team) {
-    throw new Error(`Team with ID ${teamId} not found`);
-  }
-
-  await TeamMemberAssociation.destroy({
-    where: {
-      TeamId: teamId
-    }
-  });
-
-  await Team.update(
-    { parent_id: null },
-    { 
-      where: { 
-        parent_id: teamId 
-      }
-    }
-  );
-
-  await Team.destroy({
-    where: {
-      id: teamId
-    }
-  });
-
-  return true;
-}
-
-const deleteMemberFromTeam = async (teamId: number, memberId: number) => {
-  const team = await Team.findByPk(teamId);
-  const member = await Member.findByPk(memberId);
-
-  if (!team) {
-    throw new Error(`Team with ID ${teamId} not found`);
-  }
-  if (!member) {
-    throw new Error(`Member with ID ${memberId} not found`);
-  }
-
-  const deleted = await TeamMemberAssociation.destroy({
-    where: {
-      TeamId: teamId,
-      MemberId: memberId
-    }
-  });
-
-  if (deleted === 0) {
-    throw new Error(`Member ${memberId} is not part of team ${teamId}`);
-  }
-
-  return true;
-};
-
-const deleteMember = async (memberId: number) => {
-  const member = await Member.findByPk(memberId);
-  if (!member) {
-    throw new Error(`Member with ID ${memberId} not found`);
-  }
-
-  await TeamMemberAssociation.destroy({
-    where: {
-      MemberId: memberId
-    }
-  });
-
-  await Member.destroy({
-    where: {
-      id: memberId
-    }
-  });
-
-  return true;
-};
-
-const getLastUpdatedAt = async () => {
-  const team = await Team.findOne({
-    order: [
-      ['updatedAt', 'DESC']
-    ]
-  });
-  if (!team?.updatedAt) {
-    return new Date(0);
-  }
-  return team.updatedAt;
-}
-
 export {
-  deleteTeam,
-  deleteMemberFromTeam,
-  deleteMember,
-  getLastUpdatedAt,
   Team,
   Member,
   TeamMemberAssociation

@@ -14,15 +14,15 @@ class SurveyController {
       if (!survey) throw new Error('Survey not found');
       res.status(201).json(survey);
       try {
-        const { installation, octokit } = await app.github.getInstallation(survey.owner);
+        const { installation, octokit } = await app.github.getInstallation(survey.org);
         const surveyUrl = new URL(`copilot/surveys/${survey.id}`, installation.html_url);
 
-        if (!survey.repo || !survey.owner || !survey.prNumber) {
+        if (!survey.repo || !survey.org || !survey.prNumber) {
           logger.warn('Cannot process survey comment: missing survey data');
           return;
         }
         const comments = await octokit.rest.issues.listComments({
-          owner: survey.owner,
+          owner: survey.org,
           repo: survey.repo,
           issue_number: survey.prNumber
         });
@@ -33,7 +33,7 @@ class SurveyController {
         const comment = comments.data.find(comment => comment.user?.login.startsWith(survey.userId));
         if (comment) {
           octokit.rest.issues.updateComment({
-            owner: survey.owner,
+            owner: survey.org,
             repo: survey.repo,
             comment_id: comment.id,
             body: `Thanks for filling out the [copilot survey](${surveyUrl.toString()}) @${survey.userId}!`
@@ -53,7 +53,10 @@ class SurveyController {
   async getAllSurveys(req: Request, res: Response): Promise<void> {
     try {
       const surveys = await Survey.findAll({
-        order: [['updatedAt', 'DESC']]
+        order: [['updatedAt', 'DESC']],
+        where: {
+          ...req.query.org ? { userId: req.query.org as string } : {}
+        }
       });
       res.status(200).json(surveys);
     } catch (error) {

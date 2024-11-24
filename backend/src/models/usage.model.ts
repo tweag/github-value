@@ -3,6 +3,8 @@ import logger from '../services/logger.js';
 import { Endpoints } from '@octokit/types';
 
 type UsageType = {
+  org: string;
+  team?: string;
   day: string;
   totalSuggestionsCount: number;
   totalAcceptancesCount: number;
@@ -27,6 +29,8 @@ type UsageBreakdownType = {
 }
 
 class Usage extends Model<UsageType> {
+  declare org: string;
+  declare team: string;
   declare day: string;
   declare totalSuggestionsCount: number;
   declare totalAcceptancesCount: number;
@@ -39,6 +43,8 @@ class Usage extends Model<UsageType> {
 
   static initModel(sequelize: Sequelize) {
     Usage.init({
+      org: DataTypes.STRING,
+      team: DataTypes.STRING,
       day: {
         type: DataTypes.DATEONLY,
         primaryKey: true,
@@ -151,11 +157,13 @@ class UsageBreakdown extends Model<UsageBreakdownType> {
   }
 }
 
-async function insertUsage(data: Endpoints["GET /orgs/{org}/copilot/usage"]["response"]["data"]) {
+async function insertUsage(org: string, data: Endpoints["GET /orgs/{org}/copilot/usage"]["response"]["data"], team?: string) {
   for (const metrics of data) {
     const [createdMetrics, created] = await Usage.findOrCreate({
       where: { day: metrics.day },
       defaults: {
+        org,
+        ...team ? { team } : undefined,
         totalSuggestionsCount: metrics.total_suggestions_count || 0,
         totalAcceptancesCount: metrics.total_acceptances_count || 0,
         totalLinesSuggested: metrics.total_lines_suggested || 0,

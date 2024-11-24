@@ -1,14 +1,14 @@
 import { Options, Sequelize } from 'sequelize';
 import mysql2 from 'mysql2/promise';
+import updateDotenv from 'update-dotenv';
 import logger from './services/logger.js';
 import { TargetValues } from './models/target-values.model.js';
 import { Settings } from './models/settings.model.js';
 import { Usage } from './models/usage.model.js';
+import { Seat } from './models/copilot.seats.model.js';
 import { Team } from './models/teams.model.js';
 import { MetricDaily } from './models/metrics.model.js';
-import { Seat } from './models/copilot.seats.model.js';
 import { Survey } from './models/survey.model.js';
-import updateDotenv from 'update-dotenv';
 
 class Database {
   sequelize?: Sequelize;
@@ -104,13 +104,13 @@ class Database {
   }
 
   initializeModels(sequelize: Sequelize) {
-    TargetValues.initModel(sequelize);
     Settings.initModel(sequelize);
-    Usage.initModel(sequelize);
     Team.initModel(sequelize);
-    MetricDaily.initModel(sequelize);
     Seat.initModel(sequelize);
     Survey.initModel(sequelize);
+    Usage.initModel(sequelize);
+    MetricDaily.initModel(sequelize);
+    TargetValues.initModel(sequelize);
   }
 
 }

@@ -1,3 +1,5 @@
+import { CronTime } from 'cron';
+import app from '../app.js';
 import { Settings } from '../models/settings.model.js';
 
 export interface SettingsType {
@@ -54,9 +56,25 @@ class SettingsService {
   }
 
   async updateSetting(name: string, value: string) {
-    if (value === await this.getSettingsByName(name)) return await Settings.findOne({ where: { name } });
+    if (value === await this.getSettingsByName(name)) {
+      return await Settings.findOne({ where: { name } });
+    }
+    if (name === 'webhookProxyUrl') {
+      app.github.smee.options.url = value;
+      await app.github.smee.connect()
+    } else if (name === 'webhookSecret') {
+      app.github.connect({
+        webhooks: {
+          secret: value
+        }
+      })
+    } else if (name === 'metricsCronExpression') {
+      app.github.installations.forEach(install => {
+        install.queryService.cronJob.setTime(new CronTime(value));
+      });
+    }
     await Settings.upsert({ name, value });
-    return await Settings.findOne({ where: { name } });
+    return this.getSettingsByName(name);
   }
 
   async updateSettings(obj: { [key: string]: string }) {

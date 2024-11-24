@@ -3,7 +3,7 @@ import { NewCopilotSurveyComponent } from './main/copilot/copilot-surveys/new-co
 import { CopilotSurveysComponent } from './main/copilot/copilot-surveys/copilot-surveys.component';
 import { SettingsComponent } from './main/settings/settings.component';
 import { InstallComponent } from './install/install.component';
-import { DbConnectionGuard, InstallationGuard, SetupStatusGuard } from './guards/setup.guard';
+import { SetupStatusGuard } from './guards/setup.guard';
 import { MainComponent } from './main/main.component';
 import { CopilotDashboardComponent } from './main/copilot/copilot-dashboard/dashboard.component';
 import { CopilotValueComponent } from './main/copilot/copilot-value/value.component';
@@ -22,8 +22,8 @@ export const routes: Routes = [
   {
     path: '',
     component: MainComponent,
-    canActivate: [DbConnectionGuard, InstallationGuard, SetupStatusGuard],
-    canActivateChild: [DbConnectionGuard, InstallationGuard, SetupStatusGuard],
+    canActivate: [SetupStatusGuard],
+    canActivateChild: [SetupStatusGuard],
     children: [
       { path: 'copilot', component: CopilotDashboardComponent, title: 'Dashboard' },
       { path: 'copilot/value', component: CopilotValueComponent, title: 'Value' },

@@ -35,7 +35,6 @@ class App {
 
       await this.settingsService.initialize()
         .then(async (settings) => {
-          console.log(settings)
           if (settings.webhookProxyUrl) {
             this.github.smee.options.url = settings.webhookProxyUrl
           }
@@ -49,6 +48,7 @@ class App {
         })
         .finally(async () => {
           await this.github.smee.connect()
+          this.settingsService.updateSetting('webhookProxyUrl', this.github.smee.options.url!);
         });
       logger.info('Settings loaded ✅');
 
@@ -135,7 +135,7 @@ const app = new App(
     })
   ), new SettingsService({
     baseUrl: process.env.BASE_URL,
-    webhookProxyUrl: process.env.GITHUB_WEBHOOK_SECRET,
+    webhookProxyUrl: process.env.GITHUB_WEBHOOK_PROXY_URL,
     webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
     metricsCronExpression: '0 0 * * *',
     devCostPerYear: '100000',

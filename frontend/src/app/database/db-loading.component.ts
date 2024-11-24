@@ -1,8 +1,9 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { InstallationStatus, SetupService } from '../services/setup.service';
+import { InstallationStatus, SetupService } from '../services/api/setup.service';
 import { Router } from '@angular/router';
 import { finalize, Subscription, takeUntil, takeWhile, timer } from 'rxjs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { InstallationsService } from '../services/api/installations.service';
 
 @Component({
   selector: 'app-db-loading',
@@ -99,7 +100,7 @@ export class DbLoadingComponent implements OnInit, OnDestroy {
   };
 
   constructor(
-    private setupService: SetupService,
+    private installationsService: InstallationsService,
     private router: Router
   ) { }
 
@@ -108,7 +109,7 @@ export class DbLoadingComponent implements OnInit, OnDestroy {
       takeWhile(() => Object.values(this.dbStatus).every(value => value)),
       finalize(() => this.router.navigate(['/']))
     ).subscribe(() => {
-      this.setupService.getSetupStatus().subscribe((response) => {
+      this.installationsService.getSetupStatus().subscribe((response) => {
         if (!response.isSetup) {
           this.statusSubscription?.unsubscribe();
           this.router.navigate(['/setup/db']);

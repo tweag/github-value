@@ -9,9 +9,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { InstallComponent } from '../install/install.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { CommonModule } from '@angular/common';
-import { SetupService, SetupStatusResponse } from '../services/setup.service';
 import { Router } from '@angular/router';
 import { finalize, takeWhile, timer } from 'rxjs';
+import { InstallationsService, statusResponse } from '../services/api/installations.service';
+import { SetupService } from '../services/api/setup.service';
 
 @Component({
   selector: 'app-database',
@@ -40,7 +41,7 @@ import { finalize, takeWhile, timer } from 'rxjs';
 })
 export class DatabaseComponent {
   @ViewChild('stepper') private stepper!: MatStepper;
-  status?: SetupStatusResponse;
+  status?: statusResponse;
   isDbConnecting = false;
   dbFormGroup = new FormGroup({
     hostname: new FormControl('', Validators.required),
@@ -51,8 +52,9 @@ export class DatabaseComponent {
 
   constructor(
     private cdr: ChangeDetectorRef,
-    private setupService: SetupService,
-    private router: Router
+    private installationService: InstallationsService,
+    private router: Router,
+    private setupService: SetupService
   ) { }
 
   ngAfterViewInit() {
@@ -84,7 +86,7 @@ export class DatabaseComponent {
   }
 
   checkStatus() {
-    this.setupService.getSetupStatus().subscribe(status => {
+    this.installationService.getSetupStatus().subscribe(status => {
       this.status = status;
       if (this.status.dbConnected && this.stepper.selectedIndex === 0) {
         const step = this.stepper.steps.get(0);
