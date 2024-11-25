@@ -45,7 +45,7 @@ class QueryService {
       const lastUpdated = await teamsService.getLastUpdatedAt();
       const elapsedHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
       logger.info(`It's been ${Math.floor(elapsedHours)} hours since last update 🕒`);
-      if (true || elapsedHours > 24) {
+      if (elapsedHours > 24) {
         queries.push(
           this.queryTeamsAndMembers(org).then(() =>
             this.status.teamsAndMembers = true

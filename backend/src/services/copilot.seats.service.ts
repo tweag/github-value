@@ -1,8 +1,9 @@
 import { Endpoints } from '@octokit/types';
 import { Seat } from "../models/copilot.seats.model.js";
-import { Sequelize } from 'sequelize';
+import { QueryTypes, Sequelize } from 'sequelize';
 import { components } from "@octokit/openapi-types";
 import { Member, Team } from '../models/teams.model.js';
+import app from 'app.js';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
@@ -143,13 +144,36 @@ class SeatsService {
   }
 
   async getAssigneesActivity(org?: string, daysInactive = 30, precision = 'day' as 'hour' | 'day' | 'minute'): Promise<AssigneeDailyActivity> {
+    if (!app.database.sequelize) throw new Error('No database connection available');
+    // const assignees = await app.database.sequelize.query<Member>(
+    //   `SELECT 
+    //       Member.login,
+    //       Member.id,
+    //       activity.id AS 'activity.id',
+    //       activity.createdAt AS 'activity.createdAt',
+    //       activity.last_activity_at AS 'activity.last_activity_at',
+    //       activity.last_activity_editor AS 'activity.last_activity_editor'
+    //   FROM Members AS Member 
+    //   INNER JOIN Seats AS activity ON Member.id = activity.assignee_id
+    //   ${org ? 'WHERE activity.org = :org' : ''}
+    //   ORDER BY activity.last_activity_at ASC`,
+    //   {
+    //     replacements: {
+    //       org
+    //     },
+    //     type: QueryTypes.SELECT,
+    //     nest: true,
+    //     mapToModel: true // 🎯 Maps results to the Model
+    //   }
+    // );
+    // console.log(assignees);
+    console.log('Getting assignees activity');
     const assignees = await Member.findAll({
       attributes: ['login', 'id'],
       include: [
         {
           model: Seat,
           as: 'activity',
-          required: true,
           attributes: ['createdAt', 'last_activity_at', 'last_activity_editor'],
           order: [['last_activity_at', 'ASC']],
           where: {
@@ -161,8 +185,10 @@ class SeatsService {
         [{ model: Seat, as: 'activity' }, 'last_activity_at', 'ASC']
       ]
     });
+    console.log('Got assignees activity', assignees.length);
     const activityDays: AssigneeDailyActivity = {};
     assignees.forEach((assignee) => {
+      console.log({assignee})
       assignee.activity.forEach((activity) => {
         const fromTime = activity.last_activity_at?.getTime() || 0;
         const toTime = activity.createdAt.getTime();

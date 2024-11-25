@@ -27,94 +27,133 @@ class MetricsService {
 
     const include = [];
     const types = type ? (type as string).split(/[ ,]+/) : [];
+    const findAlls = {} as {
+      copilot_ide_code_completions: Promise<MetricDaily[]>,
+      copilot_ide_chat: Promise<MetricDaily[]>,
+      copilot_dotcom_chat: Promise<MetricDaily[]>,
+      copilot_dotcom_pull_requests: Promise<MetricDaily[]>,
+    }
     if (types.length === 0 || types.includes('copilot_ide_code_completions')) {
-      include.push({
-        attributes: { exclude: ['id', 'daily_metric_id'] },
-        model: MetricIdeCompletions,
-        as: 'copilot_ide_code_completions',
-        include: [{
-          attributes: { exclude: ['id', 'ide_completion_id'] },
-          model: MetricEditor,
-          as: 'editors',
-          where: editor ? { name: editor } : {},
-          required: true,
+      findAlls.copilot_ide_code_completions = MetricDaily.findAll({
+        where,
+        include: {
+          attributes: { exclude: ['id', 'daily_metric_id'] },
+          model: MetricIdeCompletions,
+          as: 'copilot_ide_code_completions',
           include: [{
-            attributes: { exclude: ['id', 'editor_id'] },
-            model: MetricModelStats,
-            as: 'models',
-            where: model ? { name: model } : {},
+            attributes: { exclude: ['id', 'ide_completion_id'] },
+            model: MetricEditor,
+            as: 'editors',
+            where: editor ? { name: editor } : {},
             required: true,
             include: [{
-              attributes: { exclude: ['id', 'model_stat_id'] },
-              model: MetricLanguageStats,
-              as: 'languages',
-              where: language ? { name: language } : {},
+              attributes: { exclude: ['id', 'editor_id'] },
+              model: MetricModelStats,
+              as: 'models',
+              where: model ? { name: model } : {},
               required: true,
+              include: [{
+                attributes: { exclude: ['id', 'model_stat_id'] },
+                model: MetricLanguageStats,
+                as: 'languages',
+                where: language ? { name: language } : {},
+                required: true,
+              }]
             }]
           }]
-        }]
-      });
+        }
+      })
     }
     if (types.length === 0 || types.includes('copilot_ide_chat')) {
-      include.push({
-        attributes: { exclude: ['id', 'daily_metric_id'] },
-        model: MetricIdeChatMetrics,
-        as: 'copilot_ide_chat',
-        required: true,
-        include: [{
-          attributes: { exclude: ['id', 'chat_metrics_id'] },
-          model: MetricIdeChatEditor,
-          as: 'editors',
-          where: editor ? { name: editor } : {},
-          required: true,
-          include: [{
-            attributes: { exclude: ['id', 'editor_id'] },
-            model: MetricIdeChatModelStats,
-            as: 'models',
-            where: model ? { name: model } : {},
+      findAlls.copilot_ide_chat =
+        MetricDaily.findAll({
+          where,
+          include: {
+            attributes: { exclude: ['id', 'daily_metric_id'] },
+            model: MetricIdeChatMetrics,
+            as: 'copilot_ide_chat',
             required: true,
-          }]
-        }]
-      });
+            include: [{
+              attributes: { exclude: ['id', 'chat_metrics_id'] },
+              model: MetricIdeChatEditor,
+              as: 'editors',
+              where: editor ? { name: editor } : {},
+              required: true,
+              include: [{
+                attributes: { exclude: ['id', 'editor_id'] },
+                model: MetricIdeChatModelStats,
+                as: 'models',
+                where: model ? { name: model } : {},
+                required: true,
+              }]
+            }]
+          }
+        })
     }
     if (types.length === 0 || types.includes('copilot_dotcom_chat')) {
-      include.push({
-        attributes: { exclude: ['id', 'daily_metric_id'] },
-        model: MetricDotcomChatMetrics,
-        as: 'copilot_dotcom_chat',
-        include: [{
-          attributes: { exclude: ['id', 'chat_metrics_id'] },
-          model: MetricDotcomChatModelStats,
-          as: 'models',
-          where: model ? { name: model } : {},
-          required: false,
-        }]
-      });
+      findAlls.copilot_dotcom_chat =
+        MetricDaily.findAll({
+          where,
+          include: {
+            attributes: { exclude: ['id', 'daily_metric_id'] },
+            model: MetricDotcomChatMetrics,
+            as: 'copilot_dotcom_chat',
+            include: [{
+              attributes: { exclude: ['id', 'chat_metrics_id'] },
+              model: MetricDotcomChatModelStats,
+              as: 'models',
+              where: model ? { name: model } : {},
+              required: false,
+            }]
+          }
+        })
     }
     if (types.length === 0 || types.includes('copilot_dotcom_pull_requests')) {
-      include.push({
-        attributes: { exclude: ['id', 'daily_metric_id'] },
-        model: MetricPrMetrics,
-        as: 'copilot_dotcom_pull_requests',
-        include: [{
-          attributes: { exclude: ['id', 'pr_metrics_id'] },
-          model: MetricPrRepository,
-          as: 'repositories',
-          include: [{
-            attributes: { exclude: ['id', 'repository_id'] },
-            model: MetricPrModelStats,
-            as: 'models',
-            where: model ? { name: model } : {},
-            required: false,
-          }]
-        }]
-      });
+      findAlls.copilot_dotcom_pull_requests =
+        MetricDaily.findAll({
+          where,
+          include: {
+            attributes: { exclude: ['id', 'daily_metric_id'] },
+            model: MetricPrMetrics,
+            as: 'copilot_dotcom_pull_requests',
+            include: [{
+              attributes: { exclude: ['id', 'pr_metrics_id'] },
+              model: MetricPrRepository,
+              as: 'repositories',
+              include: [{
+                attributes: { exclude: ['id', 'repository_id'] },
+                model: MetricPrModelStats,
+                as: 'models',
+                where: model ? { name: model } : {},
+                required: false,
+              }]
+            }]
+          }
+        })
     }
+
+    const rsps = await Promise.all([
+      findAlls.copilot_ide_code_completions,
+      findAlls.copilot_ide_chat,
+      findAlls.copilot_dotcom_chat,
+      findAlls.copilot_dotcom_pull_requests
+    ]);
     
-    return await MetricDaily.findAll({
-      where,
-      include
-    });
+    const result = rsps[0] as MetricDaily[]
+    rsps[1].reduce((acc, val, i) => {
+      if (val.copilot_ide_chat) acc[i].setDataValue('copilot_ide_chat', val.copilot_ide_chat);
+      return acc;
+    }, result);
+    rsps[2].reduce((acc, val, i) => {
+      if (val.copilot_dotcom_chat) acc[i].setDataValue('copilot_dotcom_chat', val.copilot_dotcom_chat);
+      return acc;
+    }, result);
+    rsps[3].reduce((acc, val, i) => {
+      if (val.copilot_dotcom_pull_requests) acc[i].setDataValue('copilot_dotcom_pull_requests', val.copilot_dotcom_pull_requests);
+      return acc;
+    }, result);
+
+    return result;
   }
 
   async getMetricsTotals(params: MetricsQueryParams) {
