@@ -37,19 +37,19 @@ class MetricsService {
           model: MetricEditor,
           as: 'editors',
           where: editor ? { name: editor } : {},
-          required: false,
+          required: true,
           include: [{
             attributes: { exclude: ['id', 'editor_id'] },
             model: MetricModelStats,
             as: 'models',
             where: model ? { name: model } : {},
-            required: false,
+            required: true,
             include: [{
               attributes: { exclude: ['id', 'model_stat_id'] },
               model: MetricLanguageStats,
               as: 'languages',
               where: language ? { name: language } : {},
-              required: false,
+              required: true,
             }]
           }]
         }]
@@ -60,18 +60,19 @@ class MetricsService {
         attributes: { exclude: ['id', 'daily_metric_id'] },
         model: MetricIdeChatMetrics,
         as: 'copilot_ide_chat',
+        required: true,
         include: [{
           attributes: { exclude: ['id', 'chat_metrics_id'] },
           model: MetricIdeChatEditor,
           as: 'editors',
           where: editor ? { name: editor } : {},
-          required: false,
+          required: true,
           include: [{
             attributes: { exclude: ['id', 'editor_id'] },
             model: MetricIdeChatModelStats,
             as: 'models',
             where: model ? { name: model } : {},
-            required: false,
+            required: true,
           }]
         }]
       });

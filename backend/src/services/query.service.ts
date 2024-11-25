@@ -25,6 +25,7 @@ class QueryService {
   ) {
     // Consider Timezone
     this.cronJob = new CronJob(DEFAULT_CRON_EXPRESSION, this.task, null, true);
+    this.task();
   }
 
   delete() {
@@ -33,7 +34,7 @@ class QueryService {
 
   private async task() {
     try {
-      if (!this.installation.account?.login) throw new Error('No installation found');
+      if (!this.installation?.account?.login) throw new Error('No installation found');
       const org = this.installation.account?.login;
       const queries = [
         this.queryCopilotUsageMetrics(org).then(() => this.status.usage = true),
@@ -54,7 +55,7 @@ class QueryService {
         this.status.teamsAndMembers = true
       }
 
-      Promise.all(queries).then(() => {
+      await Promise.all(queries).then(() => {
         this.status.dbInitialized = true;
       });
     } catch (error) {

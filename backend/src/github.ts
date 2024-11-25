@@ -83,8 +83,8 @@ class GitHub {
       logger.error('Failed to create webhook middleware')
     }
 
-    this.app?.eachInstallation(async ({ installation, octokit }) => {
-      logger.info(`Starting query service for ${installation.account?.login}`);
+    this.app?.eachInstallation(({ installation, octokit }) => {
+      logger.info(`${installation.account?.login}: Starting query service`);
       const queryService = new QueryService(installation, octokit);
       this.installations.push({
         installation,

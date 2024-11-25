@@ -182,7 +182,7 @@ class MetricDaily extends Model<MetricDailyType> {
     MetricIdeChatMetrics.initModel(sequelize);
     MetricIdeChatEditor.initModel(sequelize);
     MetricIdeChatModelStats.initModel(sequelize);
-
+    
     MetricDaily.hasOne(MetricIdeCompletions, {
       as: 'copilot_ide_code_completions', foreignKey: 'daily_metric_id',
       sourceKey: 'date'
@@ -199,6 +199,7 @@ class MetricDaily extends Model<MetricDailyType> {
       as: 'copilot_ide_chat',
       foreignKey: 'daily_metric_id'
     });
+    
     MetricIdeChatMetrics.belongsTo(MetricDaily, {
       foreignKey: 'daily_metric_id'
     });
