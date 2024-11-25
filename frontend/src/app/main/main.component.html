@@ -59,7 +59,7 @@
         <h1>
           <mat-select [ngModel]="(installationsService.currentInstallation.asObservable() | async)?.id || 1" (ngModelChange)="installationsService.setInstallation($event)">
             <mat-option [value]="1">Enterprise</mat-option>
-            @for (installation of installationsService.getInstallations() | async; track installation) {
+            @for (installation of installationsService.getInstallations() | async; track installation.id) {
             <mat-option [value]="installation.id">{{ installation.account?.login }}</mat-option>
             }
           </mat-select>

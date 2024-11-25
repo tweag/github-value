@@ -96,7 +96,7 @@ class GitHub {
     return this.app;
   }
 
-  disconnect = async () => {
+  disconnect = () => {
     delete this.app;
     this.installations.forEach((i) => i.queryService.cronJob.stop())
     this.installations = [];

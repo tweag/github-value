@@ -55,7 +55,7 @@ class Database {
         logger.error('Unable to connect to the database');
         throw error;
       }
-      logger.info('Connection to the database has been established successfully. ✅');
+      logger.info('Connection to the database has been established successfully.');
 
       if (typeof this.input !== 'string') {
         try {
@@ -68,11 +68,12 @@ class Database {
 
           await connection.query(`CREATE DATABASE IF NOT EXISTS \`${this.input.database}\`;`,);
           await connection.end();
+          await connection.destroy();
         } catch (error) {
           logger.error('Unable to create the database');
           throw error;
         }
-        logger.info('Database created successfully. ✅');
+        logger.info('Database created successfully.');
       }
 
       try {
@@ -80,13 +81,13 @@ class Database {
         await this.initializeModels(sequelize);
         this.sequelize = sequelize;
         await sequelize.sync({ alter: true }).then(() => {
-          logger.info('All models were synchronized successfully. 🚀');
+          logger.info('All models were synchronized successfully.');
         })
       } catch (error) {
         logger.info('Unable to initialize the database');
         throw error;
       }
-      logger.info('Database initialized successfully. ✅');
+      logger.info('Database initialized successfully.');
       return this.sequelize;
     } catch (error) {
       logger.debug(error);
@@ -97,10 +98,9 @@ class Database {
     }
   }
 
-  async disconnect() {
-    if (this.sequelize) {
-      await this.sequelize.close();
-    }
+  disconnect() {
+    this.sequelize?.connectionManager.close();
+    this.sequelize?.close();
   }
 
   initializeModels(sequelize: Sequelize) {

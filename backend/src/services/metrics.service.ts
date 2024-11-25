@@ -1,6 +1,6 @@
 import { BaseError, Op } from "sequelize";
 import logger from "./logger.js";
-import { MetricDaily, MetricDailyResponseType, MetricDailyType, MetricDotcomChatMetrics, MetricDotcomChatModelStats, MetricEditor, MetricIdeChatEditor, MetricIdeChatMetrics, MetricIdeChatModelStats, MetricIdeCompletions, MetricLanguageStats, MetricModelStats, MetricPrMetrics, MetricPrModelStats, MetricPrRepository } from "../models/metrics.model.js";
+import { MetricDaily, MetricDailyResponseType, MetricDotcomChatMetrics, MetricDotcomChatModelStats, MetricEditor, MetricIdeChatEditor, MetricIdeChatMetrics, MetricIdeChatModelStats, MetricIdeCompletions, MetricLanguageStats, MetricModelStats, MetricPrMetrics, MetricPrModelStats, MetricPrRepository } from "../models/metrics.model.js";
 
 export interface MetricsQueryParams {
   type?: string,
@@ -20,6 +20,10 @@ class MetricsService {
       ...(since && { [Op.gte]: new Date(since as string) }),
       ...(until && { [Op.lte]: new Date(until as string) })
     };
+    const where = {
+      ...(org ? { org } : {}),
+      ...Object.getOwnPropertySymbols(dateFilter).length ? { date: dateFilter } : {}
+    }
 
     const include = [];
     const types = type ? (type as string).split(/[ ,]+/) : [];
@@ -105,16 +109,8 @@ class MetricsService {
         }]
       });
     }
-    console.log(params)
-    console.log('query', {
-      ...(org ? { org } : {}),
-      ...Object.getOwnPropertySymbols(dateFilter).length ? { date: dateFilter } : {}
-    })
     return await MetricDaily.findAll({
-      where: {
-        ...(org ? { org } : {}),
-        ...Object.getOwnPropertySymbols(dateFilter).length ? { date: dateFilter } : {}
-      },
+      where,
       include
     });
   }
@@ -342,22 +338,30 @@ class MetricsService {
   }
 
   async insertMetrics(org: string, data: MetricDailyResponseType[], team?: string) {
+    const where = {
+      org: org,
+      ...team ? { team } : undefined,
+    }
     for (const day of data) {
       const parts = day.date.split('-').map(Number);
       const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2] + 1));
       let metric: MetricDaily;
       try {
         await MetricDaily.upsert({
-          org: org,
-          ...team ? { team } : undefined,
+          ...where,
           date: date,
           total_active_users: day.total_active_users,
           total_engaged_users: day.total_engaged_users,
         });
-        const _metric = await MetricDaily.findOne({ where: { date: date, org: org, team: team } })
+        const _metric = await MetricDaily.findOne({
+          where: {
+            ...where,
+            date: date,
+          }
+        })
         if (!_metric) throw new Error('Metric not found');
         metric = _metric;
-        logger.info(`Metrics for ${day.date} inserted successfully! ✅`);
+        logger.info(`Metrics for ${day.date} inserted successfully!`);
       } catch (error) {
         if (error instanceof BaseError && error.name === 'SequelizeUniqueConstraintError') {
           logger.info(`Metrics for ${day.date} already exist. Skipping... ⏭️`);

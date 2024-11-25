@@ -23,23 +23,22 @@ class QueryService {
     public installation: Endpoints["GET /app/installations"]["response"]["data"][0],
     public octokit: Octokit
   ) {
+    // Consider Timezone
     this.cronJob = new CronJob(DEFAULT_CRON_EXPRESSION, this.task, null, true);
-    this.task();
+  }
+
+  delete() {
+    this.cronJob.stop();
   }
 
   private async task() {
     try {
       if (!this.installation.account?.login) throw new Error('No installation found');
+      const org = this.installation.account?.login;
       const queries = [
-        this.queryCopilotUsageMetrics().then(() =>
-          this.status.usage = true
-        ),
-        this.queryCopilotUsageMetricsNew(this.installation.account?.login).then(() =>
-          this.status.metrics = true
-        ),
-        this.queryCopilotSeatAssignments().then(() =>
-          this.status.copilotSeats = true
-        ),
+        this.queryCopilotUsageMetrics(org).then(() => this.status.usage = true),
+        this.queryCopilotUsageMetricsNew(org).then(() => this.status.metrics = true),
+        this.queryCopilotSeatAssignments(org).then(() => this.status.copilotSeats = true),
       ]
 
       const lastUpdated = await teamsService.getLastUpdatedAt();
@@ -47,7 +46,7 @@ class QueryService {
       logger.info(`It's been ${Math.floor(elapsedHours)} hours since last update 🕒`);
       if (true || elapsedHours > 24) {
         queries.push(
-          this.queryTeamsAndMembers().then(() =>
+          this.queryTeamsAndMembers(org).then(() =>
             this.status.teamsAndMembers = true
           )
         );
@@ -55,8 +54,9 @@ class QueryService {
         this.status.teamsAndMembers = true
       }
 
-      await Promise.all(queries);
-      this.status.dbInitialized = true;
+      Promise.all(queries).then(() => {
+        this.status.dbInitialized = true;
+      });
     } catch (error) {
       logger.error(error);
     }
@@ -77,29 +77,28 @@ class QueryService {
     }
   }
 
-  public async queryCopilotUsageMetrics() {
-    if (!this.installation.account?.login) throw new Error('No installation found')
+  public async queryCopilotUsageMetrics(org: string) {
     try {
-      const response = await this.octokit.rest.copilot.usageMetricsForOrg({
-        org: this.installation.account?.login
+      const rsp = await this.octokit.rest.copilot.usageMetricsForOrg({
+        org
       });
 
-      insertUsage(this.installation.account?.login, response.data);
+      insertUsage(org, rsp.data);
       logger.info("Usage successfully updated! 📈");
     } catch (error) {
       logger.error('Error querying copilot metrics', error);
     }
   }
 
-  public async queryCopilotSeatAssignments() {
-    if (!this.installation.account?.login) throw new Error('No installation found')
+  public async queryCopilotSeatAssignments(org: string) {
     try {
-      const _seatAssignments = await this.octokit.paginate(this.octokit.rest.copilot.listCopilotSeats, {
-        org: this.installation.account?.login
+      const rsp = await this.octokit.paginate(this.octokit.rest.copilot.listCopilotSeats, {
+        org
       }) as { total_seats: number, seats: SeatEntry[] }[];
+
       const seatAssignments = {
-        total_seats: _seatAssignments[0]?.total_seats || 0,
-        seats: (_seatAssignments).reduce((acc, rsp) => acc.concat(rsp.seats), [] as SeatEntry[])
+        total_seats: rsp[0]?.total_seats || 0,
+        seats: (rsp).reduce((acc, rsp) => acc.concat(rsp.seats), [] as SeatEntry[])
       };
 
       if (!seatAssignments.seats) {
@@ -107,7 +106,7 @@ class QueryService {
         return;
       }
 
-      SeatService.insertSeats(this.installation.account.login, seatAssignments.seats);
+      await SeatService.insertSeats(org, seatAssignments.seats);
 
       logger.info("Seat assignments successfully updated! 🪑");
     } catch (error) {
@@ -115,27 +114,25 @@ class QueryService {
     }
   }
 
-  public async queryTeamsAndMembers() {
-    if (!this.installation.account?.login) throw new Error('No installation found')
+  public async queryTeamsAndMembers(org: string) {
     const members = await this.octokit.paginate("GET /orgs/{org}/members", {
-      org: this.installation.account.login
+      org
     });
-    await teamsService.updateMembers(this.installation.account.login, members);
+    await teamsService.updateMembers(org, members);
     try {
       const teams = await this.octokit.paginate(this.octokit.rest.teams.list, {
-        org: this.installation.account.login
+        org
       });
-      await teamsService.updateTeams(this.installation.account.login, teams);
+      await teamsService.updateTeams(org, teams);
 
       await Promise.all(
         teams.map(async (team) => this.octokit.paginate(this.octokit.rest.teams.listMembersInOrg, {
-          org: this.installation.account!.login,
+          org,
           team_slug: team.slug
-        })
-          .then((members) => Promise.all(
+        }).then((members) =>
+          Promise.all(
             members.map(async (member) => teamsService.addMemberToTeam(team.id, member.id))
-          ))
-          .catch((error) => {
+          )).catch((error) => {
             logger.debug(error);
             logger.error('Error updating team members for team', { team: team, error: error });
           })
