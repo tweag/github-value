@@ -149,7 +149,7 @@ class SeatsService {
         {
           model: Seat,
           as: 'activity',
-          required: false,
+          required: true,
           attributes: ['createdAt', 'last_activity_at', 'last_activity_editor'],
           order: [['last_activity_at', 'ASC']],
           where: {

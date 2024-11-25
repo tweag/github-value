@@ -130,16 +130,15 @@ class QueryService {
         teams.map(async (team) => this.octokit.paginate(this.octokit.rest.teams.listMembersInOrg, {
           org,
           team_slug: team.slug
-        }).then((members) =>
-          Promise.all(
+        }).then(async (members) =>
+          await Promise.all(
             members.map(async (member) => teamsService.addMemberToTeam(team.id, member.id))
           )).catch((error) => {
             logger.debug(error);
             logger.error('Error updating team members for team', { team: team, error: error });
           })
         )
-      );
-
+      )
       logger.info("Teams & Members successfully updated! 🧑‍🤝‍🧑");
     } catch (error) {
       logger.error('Error querying teams', error);

@@ -110,6 +110,7 @@ class MetricsService {
         }]
       });
     }
+    
     return await MetricDaily.findAll({
       where,
       include
