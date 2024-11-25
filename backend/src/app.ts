@@ -13,7 +13,6 @@ import logger, { expressLoggerMiddleware } from './services/logger.js';
 import GitHub from './github.js';
 import WebhookService from './services/smee.js';
 import SettingsService from './services/settings.service.js';
-import whyIsNodeRunning from 'why-is-node-running';
 
 class App {
   eListener?: http.Server;
@@ -48,7 +47,7 @@ class App {
           }
         })
         .finally(async () => {
-          // await this.github.smee.connect()
+          await this.github.smee.connect()
           this.settingsService.updateSetting('webhookProxyUrl', this.github.smee.options.url!);
         });
       logger.info('Settings loaded');
@@ -154,24 +153,10 @@ logger.info('App started');
 
 export default app;
 
-const handleExit = (signal: string) => {
-  logger.info(`Received ${signal}. Stopping the app...`);
-  app.stop();
-  process.exit(signal === 'uncaughtException' ? 1 : 0);
-};
-
 ['SIGTERM', 'SIGINT', 'SIGQUIT'].forEach(signal => {
   process.on(signal, () => {
-    handleExit(signal)
-    logger.info(`Received ${signal} signal`);
+    logger.info(`Received ${signal}. Stopping the app...`);
+    app.stop();
+    process.exit(signal === 'uncaughtException' ? 1 : 0);
   });
-});
-
-process.on('unhandledRejection', (reason, promise) => {
-  logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
-});
-
-process.on('uncaughtException', (error) => {
-  logger.error('Uncaught Exception thrown', error);
-  handleExit('uncaughtException');
 });

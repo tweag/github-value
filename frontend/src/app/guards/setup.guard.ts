@@ -14,7 +14,6 @@ export class SetupStatusGuard implements CanActivate {
   ) {}
 
   canActivate(): MaybeAsync<GuardResult> {
-    console.log('SetupStatusGuard');
     return this.installationsService.getSetupStatus().pipe(
       map((response) => {
         if (!response.dbConnected) throw new Error('DB not connected');
@@ -28,7 +27,6 @@ export class SetupStatusGuard implements CanActivate {
         return true;
       }),
       catchError(() => {
-        console.log('errorrrr');
         this.router.navigate(['/setup/db']);
         return of(false);
       })

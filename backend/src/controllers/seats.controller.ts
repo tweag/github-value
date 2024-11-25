@@ -8,7 +8,6 @@ class SeatsController {
       const seats = await SeatsService.getAllSeats(org);
       res.status(200).json(seats);
     } catch (error) {
-      console.log(error);
       res.status(500).json(error);
     }
   }

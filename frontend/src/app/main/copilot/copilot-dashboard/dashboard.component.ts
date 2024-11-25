@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { AppModule } from '../../../app.module';
 import { DashboardCardBarsComponent } from "./dashboard-card/dashboard-card-bars/dashboard-card-bars.component";
 import { DashboardCardValueComponent } from './dashboard-card/dashboard-card-value/dashboard-card-value.component';
@@ -93,7 +93,8 @@ export class CopilotDashboardComponent implements OnInit {
     private membersService: MembersService,
     private seatService: SeatService,
     private surveyService: CopilotSurveyService,
-    private installationsService: InstallationsService
+    private installationsService: InstallationsService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   ngOnInit() {
@@ -128,6 +129,7 @@ export class CopilotDashboardComponent implements OnInit {
           oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
           return surveyDate > oneWeekAgo ? acc + 1 : acc;
         }, 0);
+        this.cdr.detectChanges();
       });
 
       forkJoin({
@@ -142,11 +144,13 @@ export class CopilotDashboardComponent implements OnInit {
 
       this.seatService.getActivity(installation?.account?.login, 30).subscribe((activity) => {
         this.activityData = activity;
+        this.cdr.detectChanges();
       })
 
       this.seatService.getActivityTotals(installation?.account?.login).subscribe(totals => {
         Object.keys(totals).forEach((key, index) => index > 10 ? delete totals[key] : null);
         this.activityTotals = totals;
+        this.cdr.detectChanges();
       });
 
       this.metricsService.getMetrics({
@@ -168,6 +172,7 @@ export class CopilotDashboardComponent implements OnInit {
           : ((this.activeCurrentWeekAverage - this.activeLastWeekAverage) / this.activeLastWeekAverage) * 100;
 
         this.activeWeeklyChangePercent = Math.round(percentChange * 10) / 10;
+        this.cdr.detectChanges();
       });
     });
   }
