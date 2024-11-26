@@ -65,10 +65,10 @@ class GitHub {
       appId: this.input.appId,
       privateKey: this.input.privateKey,
       ...this.input.webhooks?.secret ? { webhooks: { secret: this.input.webhooks.secret } } : {},
-      oauth: {
-        clientId: null!,
-        clientSecret: null!
-      }
+      // oauth: {
+      //   clientId: null!,
+      //   clientSecret: null!
+      // }
     });
 
     await updateDotenv({ GITHUB_APP_ID: this.input.appId })

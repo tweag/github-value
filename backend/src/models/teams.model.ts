@@ -83,6 +83,7 @@ class Team extends Model<NonNullable<TeamType>> {
   }
 }
 
+// IMember
 type MemberType = {
   org: string;
   login: string;
