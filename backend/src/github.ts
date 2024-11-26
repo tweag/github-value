@@ -158,7 +158,6 @@ class GitHub {
           (typeof id === 'string' && id === installation.account?.login) ||
           id === installation.id
         ) {
-          console.log('FOUND IT!!!')
           resolve({ installation, octokit });
         }
       }).finally(() => reject('Installation not found'));

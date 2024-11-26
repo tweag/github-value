@@ -24,7 +24,6 @@ class QueryService {
     public octokit: Octokit,
     options?: Partial<CronJobParams>
   ) {
-    console.log('QueryService', org);
     // Consider Timezone
     const _options: CronJobParams = {
       cronTime: DEFAULT_CRON_EXPRESSION,

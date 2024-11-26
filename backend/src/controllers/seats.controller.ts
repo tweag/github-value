@@ -35,7 +35,6 @@ class SeatsController {
       const activityDays = await SeatsService.getMembersActivity(org, _daysInactive, precision as 'hour' | 'day' | 'minute');
       res.status(200).json(activityDays);
     } catch (error) {
-      console.log(error);
       res.status(500).json(error);
     }
   }

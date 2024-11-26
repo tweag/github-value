@@ -183,7 +183,6 @@ class SeatsService {
         [{ model: Seat, as: 'activity' }, 'last_activity_at', 'ASC']
       ]
     });
-    console.log('Got assignees activity', assignees.length);
     const activityDays: MemberDailyActivity = {};
     assignees.forEach((assignee) => {
       assignee.activity.forEach((activity) => {

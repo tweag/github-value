@@ -84,7 +84,6 @@ class App {
 
     const listener = this.e.listen(this.port, () => {
       const address = listener.address() as AddressInfo;
-      console.log(address);
       logger.info(`Server is running at http://${address.address === '::' ? 'localhost' : address.address}:${address.port} 🚀`);
     });
     this.eListener = listener;
