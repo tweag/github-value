@@ -4,7 +4,7 @@ import { serverUrl } from '../server.service';
 
 export interface Survey {
   id?: number;
-  owner: string;
+  org: string;
   repo: string;
   prNumber: number;
   status?: 'pending' | 'completed';

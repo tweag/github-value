@@ -120,7 +120,8 @@ class QueryService {
 
       logger.info(`${org} seat assignments updated`);
     } catch (error) {
-      logger.error('Error querying copilot seat assignments', error);
+      logger.debug(error)
+      logger.error('Error querying copilot seat assignments');
     }
   }
 

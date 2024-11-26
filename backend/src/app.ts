@@ -17,6 +17,7 @@ import whyIsNodeRunning from 'why-is-node-running';
 
 class App {
   eListener?: http.Server;
+  baseUrl?: string;
 
   constructor(
     public e: Express,
@@ -45,6 +46,9 @@ class App {
       await this.github.smee.connect();
       logger.debug(error);
       logger.error('Failed to start application ❌');
+      if (error instanceof Error) {
+        logger.error(error.message);
+      }
     }
   }
 
@@ -101,6 +105,9 @@ class App {
         }
         if (settings.metricsCronExpression) {
           this.github.cronExpression = settings.metricsCronExpression;
+        }
+        if (settings.baseUrl) {
+          this.baseUrl = settings.baseUrl;
         }
       })
       .finally(async () => {

@@ -82,7 +82,7 @@ class SeatsService {
   async insertSeats(org: string, data: SeatEntry[], team?: string) {
     const queryAt = new Date();
     for (const seat of data) {
-      const assignee = await Member.findOrCreate({
+      const [assignee] = await Member.findOrCreate({
         where: { id: seat.assignee.id },
         defaults: {
           org,
@@ -108,7 +108,7 @@ class SeatsService {
         }
       });
 
-      const assigningTeam = seat.assigning_team ? await Team.findOrCreate({
+      const [assigningTeam] = seat.assigning_team ? await Team.findOrCreate({
         where: { id: seat.assigning_team.id },
         defaults: {
           org,
@@ -125,7 +125,7 @@ class SeatsService {
           members_url: seat.assigning_team.members_url,
           repositories_url: seat.assigning_team.repositories_url
         }
-      }) : null;
+      }) : [null];
 
       await Seat.create({
         queryAt,
@@ -137,8 +137,8 @@ class SeatsService {
         last_activity_at: seat.last_activity_at,
         last_activity_editor: seat.last_activity_editor,
         plan_type: seat.plan_type,
-        assignee_id: assignee[0].id,
-        assigning_team_id: assigningTeam?.[0].id
+        assignee_id: assignee.id,
+        assigning_team_id: assigningTeam?.id
       });
     }
   }

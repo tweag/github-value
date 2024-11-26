@@ -7,7 +7,7 @@ import { TimeSavedChartComponent } from './time-saved-chart/time-saved-chart.com
 import { CopilotMetrics } from '../../../services/api/metrics.service.interfaces';
 import { MetricsService } from '../../../services/api/metrics.service';
 import { FormControl } from '@angular/forms';
-import { combineLatest, startWith, Subject, takeUntil } from 'rxjs';
+import { combineLatest, startWith, takeUntil } from 'rxjs';
 import { CopilotSurveyService, Survey } from '../../../services/api/copilot-survey.service';
 import * as Highcharts from 'highcharts';
 import HC_exporting from 'highcharts/modules/exporting';
@@ -71,7 +71,6 @@ export class CopilotValueComponent implements OnInit {
       }
     }
   };
-  onDestroy$ = new Subject<boolean>();
 
   constructor(
     private seatService: SeatService,
@@ -82,7 +81,7 @@ export class CopilotValueComponent implements OnInit {
 
   ngOnInit() {
     this.installationsService.currentInstallation.pipe(
-      takeUntil(this.onDestroy$)
+      takeUntil(this.installationsService.destroy$)
     ).subscribe(installation => {
       combineLatest([
         this.daysInactive.valueChanges.pipe(startWith(this.daysInactive.value || 30)),
@@ -101,11 +100,6 @@ export class CopilotValueComponent implements OnInit {
         this.surveysData = data;
       });
     });
-  }
-
-  ngOnDestroy() {
-    this.onDestroy$.next(true);
-    this.onDestroy$.unsubscribe();
   }
 
   chartChanged(chart: Highcharts.Chart, include = true) {

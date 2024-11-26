@@ -155,14 +155,13 @@ class GitHub {
     }>((resolve, reject) => {
       this.app?.eachInstallation(async ({ installation, octokit }) => {
         if (
-          (typeof id === 'string' && id !== installation.account?.login) ||
-          id !== installation.id
+          (typeof id === 'string' && id === installation.account?.login) ||
+          id === installation.id
         ) {
-          return;
+          console.log('FOUND IT!!!')
+          resolve({ installation, octokit });
         }
-        resolve({ installation, octokit });
-      });
-      reject('Installation not found');
+      }).finally(() => reject('Installation not found'));
     });
   }
 

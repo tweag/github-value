@@ -8,7 +8,7 @@ import { CopilotMetrics } from '../../../services/api/metrics.service.interfaces
 import { ActivityResponse, Seat, SeatService } from '../../../services/api/seat.service';
 import { MembersService } from '../../../services/api/members.service';
 import { CopilotSurveyService, Survey } from '../../../services/api/copilot-survey.service';
-import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { forkJoin, takeUntil } from 'rxjs';
 import { AdoptionChartComponent } from '../copilot-value/adoption-chart/adoption-chart.component';
 import { DailyActivityChartComponent } from '../copilot-value/daily-activity-chart/daily-activity-chart.component';
 import { TimeSavedChartComponent } from '../copilot-value/time-saved-chart/time-saved-chart.component';
@@ -86,7 +86,6 @@ export class CopilotDashboardComponent implements OnInit {
   }
 
   activityTotals?: Record<string, number>;
-  onDestroy$ = new Subject<boolean>();
 
   constructor(
     private metricsService: MetricsService,
@@ -103,7 +102,7 @@ export class CopilotDashboardComponent implements OnInit {
     const formattedSince = since.toISOString().split('T')[0];
 
     this.installationsService.currentInstallation.pipe(
-      takeUntil(this.onDestroy$)
+      takeUntil(this.installationsService.destroy$)
     ).subscribe(installation => {
       this.activityTotals = undefined;
       this.allSeats = undefined;
@@ -175,10 +174,5 @@ export class CopilotDashboardComponent implements OnInit {
         this.cdr.detectChanges();
       });
     });
-  }
-
-  ngOnDestroy() {
-    this.onDestroy$.next(true);
-    this.onDestroy$.unsubscribe();
   }
 }

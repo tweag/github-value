@@ -6,47 +6,46 @@ import app from '../app.js';
 
 class SurveyController {
   async createSurvey(req: Request, res: Response): Promise<void> {
+    let survey: Survey;
     try {
-      const survey = await surveyService.updateSurvey({
+      const _survey = await surveyService.updateSurvey({
         ...req.body,
         status: 'completed'
       })
-      if (!survey) throw new Error('Survey not found');
+      if (!_survey) throw new Error('Survey not found');
+      survey = _survey;
       res.status(201).json(survey);
-      try {
-        const { installation, octokit } = await app.github.getInstallation(survey.org);
-        const surveyUrl = new URL(`copilot/surveys/${survey.id}`, installation.html_url);
-
-        if (!survey.repo || !survey.org || !survey.prNumber) {
-          logger.warn('Cannot process survey comment: missing survey data');
-          return;
-        }
-        const comments = await octokit.rest.issues.listComments({
-          owner: survey.org,
-          repo: survey.repo,
-          issue_number: survey.prNumber
-        });
-        if (installation.account?.login) {
-          logger.warn('Cannot process survey comment: GitHub App installation or slug not found');
-          return;
-        }
-        const comment = comments.data.find(comment => comment.user?.login.startsWith(survey.userId));
-        if (comment) {
-          octokit.rest.issues.updateComment({
-            owner: survey.org,
-            repo: survey.repo,
-            comment_id: comment.id,
-            body: `Thanks for filling out the [copilot survey](${surveyUrl.toString()}) @${survey.userId}!`
-          });
-        } else {
-          logger.info(`No comment found for survey from ${installation.account?.login}`);
-        }
-      } catch (error) {
-        logger.error('Error updating survey comment', error);
-        throw error;
-      }
     } catch (error) {
       res.status(500).json(error);
+      return;
+    }
+    try {
+      const { installation, octokit } = await app.github.getInstallation(survey.org);
+      const surveyUrl = new URL(`copilot/surveys/${survey.id}`, app.baseUrl);
+
+      if (!survey.repo || !survey.org || !survey.prNumber) {
+        logger.warn('Cannot process survey comment: missing survey data');
+        return;
+      }
+      const comments = await octokit.rest.issues.listComments({
+        owner: survey.org,
+        repo: survey.repo,
+        issue_number: survey.prNumber
+      });
+      const comment = comments.data.find(comment => comment.user?.login.startsWith(installation.app_slug));
+      if (comment) {
+        octokit.rest.issues.updateComment({
+          owner: survey.org,
+          repo: survey.repo,
+          comment_id: comment.id,
+          body: `Thanks for filling out the [copilot survey](${surveyUrl.toString()}) @${survey.userId}!`
+        });
+      } else {
+        logger.info(`No comment found for survey from ${survey.org}`);
+      }
+    } catch (error) {
+      logger.error('Error updating survey comment', error);
+      throw error;
     }
   }
 
