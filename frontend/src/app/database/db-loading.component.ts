@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { InstallationStatus, SetupService } from '../services/api/setup.service';
+import { InstallationStatus } from '../services/api/setup.service';
 import { Router } from '@angular/router';
-import { finalize, Subscription, takeUntil, takeWhile, timer } from 'rxjs';
+import { finalize, Subscription, takeWhile, timer } from 'rxjs';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { InstallationsService } from '../services/api/installations.service';
 

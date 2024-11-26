@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, ChangeDetectorRef, Component, ViewChild } from '@angular/core';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
@@ -39,7 +39,7 @@ import { SetupService } from '../services/api/setup.service';
   styleUrl: './database.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DatabaseComponent {
+export class DatabaseComponent implements AfterViewInit {
   @ViewChild('stepper') private stepper!: MatStepper;
   status?: statusResponse;
   isDbConnecting = false;

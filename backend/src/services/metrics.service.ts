@@ -25,7 +25,6 @@ class MetricsService {
       ...Object.getOwnPropertySymbols(dateFilter).length ? { date: dateFilter } : {}
     }
 
-    const include = [];
     const types = type ? (type as string).split(/[ ,]+/) : [];
     const findAlls = {} as {
       copilot_ide_code_completions: Promise<MetricDaily[]>,
