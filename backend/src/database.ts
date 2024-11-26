@@ -66,7 +66,7 @@ class Database {
             password: this.input.password,
           });
 
-          await connection.query(`CREATE DATABASE IF NOT EXISTS \`${this.input.database}\`;`,);
+          await connection.query('CREATE DATABASE IF NOT EXISTS ??', [this.input.database]);
           await connection.end();
           await connection.destroy();
         } catch (error) {
