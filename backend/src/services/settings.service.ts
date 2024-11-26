@@ -32,7 +32,7 @@ class SettingsService {
         }
       } catch {
         if (value) {
-          await this.updateSetting(name, value);
+          await this.updateSetting(name as keyof SettingsType, value);
         }
       }
     }
@@ -55,19 +55,20 @@ class SettingsService {
     }
   }
 
-  async updateSetting(name: string, value: string) {
-    if (value === await this.getSettingsByName(name)) {
+  async updateSetting(name: keyof SettingsType, value: string) {
+    const lastValue = await this.getSettingsByName(name);
+    if (value === lastValue) {
       return await Settings.findOne({ where: { name } });
     }
     if (name === 'webhookProxyUrl') {
       app.github.smee.options.url = value;
       await app.github.smee.connect()
     } else if (name === 'webhookSecret') {
-      app.github.connect({
-        webhooks: {
-          secret: value
-        }
-      })
+      // await app.github.connect({
+      //   webhooks: {
+      //     secret: value
+      //   }
+      // })
     } else if (name === 'metricsCronExpression') {
       app.github.installations.forEach(install => {
         install.queryService.cronJob.setTime(new CronTime(value));
@@ -79,7 +80,7 @@ class SettingsService {
 
   async updateSettings(obj: { [key: string]: string }) {
     Object.entries(obj).forEach(([name, value]) => {
-      this.updateSetting(name, value);
+      this.updateSetting(name as keyof SettingsType, value);
     });
   }
 

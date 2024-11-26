@@ -109,7 +109,7 @@ export class DbLoadingComponent implements OnInit, OnDestroy {
       takeWhile(() => Object.values(this.dbStatus).every(value => value)),
       finalize(() => this.router.navigate(['/']))
     ).subscribe(() => {
-      this.installationsService.getSetupStatus().subscribe((response) => {
+      this.installationsService.refreshStatus().subscribe((response) => {
         if (!response.isSetup) {
           this.statusSubscription?.unsubscribe();
           this.router.navigate(['/setup/db']);

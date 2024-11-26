@@ -55,7 +55,7 @@ class Database {
         logger.error('Unable to connect to the database');
         throw error;
       }
-      logger.info('Connection to the database has been established successfully.');
+      logger.info('Connection to the database has been established successfully');
 
       if (typeof this.input !== 'string') {
         try {
@@ -73,21 +73,21 @@ class Database {
           logger.error('Unable to create the database');
           throw error;
         }
-        logger.info('Database created successfully.');
+        logger.info('Database created successfully');
       }
 
       try {
         await sequelize.authenticate()
         await this.initializeModels(sequelize);
         this.sequelize = sequelize;
-        await sequelize.sync({ alter: true }).then(() => {
-          logger.info('All models were synchronized successfully.');
+        await sequelize.sync({ force: true }).then(() => {
+          logger.info('Database models were synchronized successfully');
         })
       } catch (error) {
         logger.info('Unable to initialize the database');
         throw error;
       }
-      logger.info('Database initialized successfully.');
+      logger.info('Database setup completed successfully');
       return this.sequelize;
     } catch (error) {
       logger.debug(error);

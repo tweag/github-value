@@ -177,7 +177,7 @@ async function insertUsage(org: string, data: Endpoints["GET /orgs/{org}/copilot
     });
 
     if (!created) {
-      logger.info(`Usage for ${metrics.day} already exist. Updating... ✏️`);
+      logger.debug(`Usage for ${metrics.day} already exist`);
 
       await createdMetrics.update({
         totalSuggestionsCount: metrics.total_suggestions_count,
@@ -194,7 +194,7 @@ async function insertUsage(org: string, data: Endpoints["GET /orgs/{org}/copilot
     }
 
     if (!metrics.breakdown) {
-      logger.info(`No breakdown data for ${metrics.day}. Skipping...`);
+      logger.warn(`No breakdown data for ${metrics.day}. Skipping...`);
       continue;
     }
     for (const breakdown of metrics.breakdown) {

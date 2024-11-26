@@ -32,7 +32,7 @@ class SeatsController {
       return;
     }
     try {
-      const activityDays = await SeatsService.getAssigneesActivity(org, _daysInactive, precision as 'hour' | 'day' | 'minute');
+      const activityDays = await SeatsService.getMembersActivity(org, _daysInactive, precision as 'hour' | 'day' | 'minute');
       res.status(200).json(activityDays);
     } catch (error) {
       console.log(error);
@@ -43,7 +43,7 @@ class SeatsController {
   async getActivityTotals(req: Request, res: Response): Promise<void> {
     const org = req.query.org?.toString()
     try {
-      const totals = await SeatsService.getAssigneesActivityTotals(org);
+      const totals = await SeatsService.getMembersActivityTotals(org);
       res.status(200).json(totals);
     } catch (error) {
       res.status(500).json(error);

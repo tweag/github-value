@@ -11,7 +11,6 @@ import { filter, map, shareReplay, tap } from 'rxjs/operators';
 import { AppModule } from '../app.module';
 import { ThemeService } from '../services/theme.service';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
-import { Endpoints } from '@octokit/types';
 import { SetupService } from '../services/api/setup.service';
 import { MatCardModule } from '@angular/material/card';
 import { ConfettiService } from '../database/confetti.service';
@@ -51,8 +50,6 @@ export class MainComponent {
     map(result => result.matches),
     shareReplay()
   );
-  installations = [] as Endpoints["GET /app/installations"]["response"]["data"];
-  currentInstallation?: Endpoints["GET /app/installations"]["response"]["data"][number];
 
   constructor(
     public themeService: ThemeService,
@@ -72,13 +69,6 @@ export class MainComponent {
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
       this.closeSidenav();
-    });
-
-    this.setupService.installations.subscribe(installations => {
-      this.installations = installations;
-    });
-    this.installationsService.currentInstallation.asObservable().subscribe(installation => {
-      this.currentInstallation = installation;
     });
   }
 

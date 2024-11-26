@@ -86,7 +86,7 @@ export class DatabaseComponent {
   }
 
   checkStatus() {
-    this.installationService.getSetupStatus().subscribe(status => {
+    this.installationService.refreshStatus().subscribe(status => {
       this.status = status;
       if (this.status.dbConnected && this.stepper.selectedIndex === 0) {
         const step = this.stepper.steps.get(0);

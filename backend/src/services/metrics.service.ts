@@ -402,10 +402,10 @@ class MetricsService {
         })
         if (!_metric) throw new Error('Metric not found');
         metric = _metric;
-        logger.info(`Metrics for ${day.date} inserted successfully!`);
+        logger.debug(`Metrics for ${day.date} inserted successfully`);
       } catch (error) {
         if (error instanceof BaseError && error.name === 'SequelizeUniqueConstraintError') {
-          logger.info(`Metrics for ${day.date} already exist. Skipping... ⏭️`);
+          logger.debug(`Metrics for ${day.date} already exist. Skipping... ⏭️`);
         } else {
           logger.error(error);
         }

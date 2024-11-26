@@ -43,7 +43,8 @@ class GitHub {
     octokit: Octokit
     queryService: QueryService
   }[];
-  status: string = 'starting';
+  status = 'starting';
+  cronExpression = '0 * * * * *';
 
   constructor(
     input: GitHubInput,
@@ -55,17 +56,15 @@ class GitHub {
   }
 
   connect = async (input?: GitHubInput) => {
+    this.disconnect();
     if (input) this.setInput(input);
     if (!this.input.appId) throw new Error('App ID is required');
     if (!this.input.privateKey) throw new Error('Private key is required');
-    if (!this.input.webhooks?.secret) throw new Error('Webhook secret is required');
 
     this.app = new App({
       appId: this.input.appId,
       privateKey: this.input.privateKey,
-      webhooks: {
-        secret: this.input.webhooks.secret
-      },
+      ...this.input.webhooks?.secret ? { webhooks: { secret: this.input.webhooks.secret } } : {},
       oauth: {
         clientId: null!,
         clientSecret: null!
@@ -74,7 +73,7 @@ class GitHub {
 
     await updateDotenv({ GITHUB_APP_ID: this.input.appId })
     await updateDotenv({ GITHUB_APP_PRIVATE_KEY: String(this.input.privateKey) })
-    await updateDotenv({ GITHUB_WEBHOOK_SECRET: this.input.webhooks.secret })
+    if (this.input.webhooks?.secret) await updateDotenv({ GITHUB_WEBHOOK_SECRET: this.input.webhooks.secret })
 
     try {
       this.webhooks = this.smee.webhookMiddlewareCreate(this.app, this.expressApp);
@@ -83,22 +82,24 @@ class GitHub {
       logger.error('Failed to create webhook middleware')
     }
 
-    this.app?.eachInstallation(({ installation, octokit }) => {
-      logger.info(`${installation.account?.login}: Starting query service`);
-      const queryService = new QueryService(installation, octokit);
+    for await (const { octokit, installation } of this.app.eachInstallation.iterator()) {
+      if (!installation.account?.login) return;
+      const queryService = new QueryService(installation.account.login, octokit, {
+        cronTime: this.cronExpression
+      });
       this.installations.push({
         installation,
         octokit,
         queryService
       });
-    });
-    
+      logger.info(`${installation.account?.login} cron task ${this.cronExpression} started`);
+    }
+
     return this.app;
   }
 
   disconnect = () => {
-    delete this.app;
-    this.installations.forEach((i) => i.queryService.cronJob.stop())
+    this.installations.forEach((i) => i.queryService.delete())
     this.installations = [];
   }
 

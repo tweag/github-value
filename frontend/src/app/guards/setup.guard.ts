@@ -14,7 +14,7 @@ export class SetupStatusGuard implements CanActivate {
   ) {}
 
   canActivate(): MaybeAsync<GuardResult> {
-    return this.installationsService.getSetupStatus().pipe(
+    return this.installationsService.getStatus().pipe(
       map((response) => {
         if (!response.dbConnected) throw new Error('DB not connected');
         if (!response.installations?.some(i => Object.values(i).some(j => !j)) && !isDevMode()) {

@@ -138,7 +138,6 @@ class Member extends Model<MemberType> {
   declare user_view_type?: string;
   declare createdAt: Date;
   declare updatedAt: Date;
-
   declare activity: Seat[];
 
   static initModel(sequelize: Sequelize) {
@@ -172,7 +171,7 @@ class Member extends Model<MemberType> {
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE
     }, {
-      sequelize
+      sequelize,
     });
   }
 }

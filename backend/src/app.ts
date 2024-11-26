@@ -13,6 +13,7 @@ import logger, { expressLoggerMiddleware } from './services/logger.js';
 import GitHub from './github.js';
 import WebhookService from './services/smee.js';
 import SettingsService from './services/settings.service.js';
+import whyIsNodeRunning from 'why-is-node-running';
 
 class App {
   eListener?: http.Server;
@@ -33,37 +34,22 @@ class App {
       this.setupExpress();
       await this.database.connect();
 
-      await this.settingsService.initialize()
-        .then(async (settings) => {
-          if (settings.webhookProxyUrl) {
-            this.github.smee.options.url = settings.webhookProxyUrl
-          }
-          if (settings.webhookSecret) {
-            this.github.setInput({
-              webhooks: {
-                secret: settings.webhookSecret
-              }
-            });
-          }
-        })
-        .finally(async () => {
-          await this.github.smee.connect()
-          this.settingsService.updateSetting('webhookProxyUrl', this.github.smee.options.url!);
-        });
-      logger.info('Settings loaded');
+      await this.initializeSettings();
+      logger.info('Settings initialized');
 
       await this.github.connect();
       logger.info('Created GitHub App from environment');
 
       return this.e;
     } catch (error) {
-      this.github.smee.connect();
+      await this.github.smee.connect();
       logger.debug(error);
       logger.error('Failed to start application ❌');
     }
   }
 
   public stop() {
+    whyIsNodeRunning()
     this.database.disconnect();
     this.github.disconnect();
     this.eListener?.close(() => {
@@ -94,13 +80,35 @@ class App {
 
     const listener = this.e.listen(this.port, () => {
       const address = listener.address() as AddressInfo;
-      logger.info(`Server is running at http://${address.address}:${address.port} 🚀`);
-      if (this.settingsService.settings.baseUrl) {
-        logger.debug(`Frontend is running at ${this.settingsService.settings.baseUrl} 🌐`);
-      }
+      console.log(address);
+      logger.info(`Server is running at http://${address.address === '::' ? 'localhost' : address.address}:${address.port} 🚀`);
     });
     this.eListener = listener;
+  }
 
+  private initializeSettings() {
+    this.settingsService.initialize()
+      .then(async (settings) => {
+        if (settings.webhookProxyUrl) {
+          this.github.smee.options.url = settings.webhookProxyUrl
+        }
+        if (settings.webhookSecret) {
+          this.github.setInput({
+            webhooks: {
+              secret: settings.webhookSecret
+            }
+          });
+        }
+        if (settings.metricsCronExpression) {
+          this.github.cronExpression = settings.metricsCronExpression;
+        }
+      })
+      .finally(async () => {
+        await this.github.smee.connect()
+        await this.settingsService.updateSetting('webhookSecret', this.github.input.webhooks?.secret || '');
+        await this.settingsService.updateSetting('webhookProxyUrl', this.github.smee.options.url!);
+        await this.settingsService.updateSetting('metricsCronExpression', this.github.cronExpression!);
+      });
   }
 }
 

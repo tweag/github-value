@@ -1,9 +1,9 @@
 import { Endpoints } from '@octokit/types';
 import { Seat } from "../models/copilot.seats.model.js";
-import { QueryTypes, Sequelize } from 'sequelize';
+import { Sequelize } from 'sequelize';
 import { components } from "@octokit/openapi-types";
 import { Member, Team } from '../models/teams.model.js';
-import app from 'app.js';
+import app from '../app.js';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
@@ -11,7 +11,7 @@ export interface SeatEntry extends _Seat {
   assignee: components['schemas']['simple-user'];
 }
 
-type AssigneeDailyActivity = {
+type MemberDailyActivity = {
   [date: string]: {
     totalSeats: number,
     totalActive: number,
@@ -143,7 +143,7 @@ class SeatsService {
     }
   }
 
-  async getAssigneesActivity(org?: string, daysInactive = 30, precision = 'day' as 'hour' | 'day' | 'minute'): Promise<AssigneeDailyActivity> {
+  async getMembersActivity(org?: string, daysInactive = 30, precision = 'day' as 'hour' | 'day' | 'minute'): Promise<MemberDailyActivity> {
     if (!app.database.sequelize) throw new Error('No database connection available');
     // const assignees = await app.database.sequelize.query<Member>(
     //   `SELECT 
@@ -166,8 +166,6 @@ class SeatsService {
     //     mapToModel: true // 🎯 Maps results to the Model
     //   }
     // );
-    // console.log(assignees);
-    console.log('Getting assignees activity');
     const assignees = await Member.findAll({
       attributes: ['login', 'id'],
       include: [
@@ -186,9 +184,8 @@ class SeatsService {
       ]
     });
     console.log('Got assignees activity', assignees.length);
-    const activityDays: AssigneeDailyActivity = {};
+    const activityDays: MemberDailyActivity = {};
     assignees.forEach((assignee) => {
-      console.log({assignee})
       assignee.activity.forEach((activity) => {
         const fromTime = activity.last_activity_at?.getTime() || 0;
         const toTime = activity.createdAt.getTime();
@@ -235,7 +232,7 @@ class SeatsService {
     return sortedActivityDays;
   }
 
-  async getAssigneesActivityTotals(org?: string) {
+  async getMembersActivityTotals(org?: string) {
     const assignees = await Member.findAll({
       attributes: ['login', 'id'],
       include: [{
@@ -273,5 +270,5 @@ class SeatsService {
 export default new SeatsService();
 
 export {
-  AssigneeDailyActivity
+  MemberDailyActivity
 }

@@ -1,4 +1,4 @@
-import { CronJob, CronTime } from 'cron';
+import { CronJob, CronJobParams, CronTime } from 'cron';
 import logger from './logger.js';
 import { insertUsage } from '../models/usage.model.js';
 import SeatService, { SeatEntry } from '../services/copilot.seats.service.js';
@@ -20,22 +20,31 @@ class QueryService {
   };
 
   constructor(
-    public installation: Endpoints["GET /app/installations"]["response"]["data"][0],
-    public octokit: Octokit
+    public org: string,
+    public octokit: Octokit,
+    options?: Partial<CronJobParams>
   ) {
+    console.log('QueryService', org);
     // Consider Timezone
-    this.cronJob = new CronJob(DEFAULT_CRON_EXPRESSION, this.task, null, true);
-    this.task();
+    const _options: CronJobParams = {
+      cronTime: DEFAULT_CRON_EXPRESSION,
+      onTick: () => {
+        this.task(this.org);
+      },
+      start: true,
+      ...options
+    }
+    this.cronJob = CronJob.from(_options);
+    this.task(this.org);
   }
 
   delete() {
     this.cronJob.stop();
   }
 
-  private async task() {
+  private async task(org: string) {
+    logger.info(`${org} task started`);
     try {
-      if (!this.installation?.account?.login) throw new Error('No installation found');
-      const org = this.installation.account?.login;
       const queries = [
         this.queryCopilotUsageMetrics(org).then(() => this.status.usage = true),
         this.queryCopilotUsageMetricsNew(org).then(() => this.status.metrics = true),
@@ -44,7 +53,6 @@ class QueryService {
 
       const lastUpdated = await teamsService.getLastUpdatedAt();
       const elapsedHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
-      logger.info(`It's been ${Math.floor(elapsedHours)} hours since last update 🕒`);
       if (elapsedHours > 24) {
         queries.push(
           this.queryTeamsAndMembers(org).then(() =>
@@ -61,6 +69,7 @@ class QueryService {
     } catch (error) {
       logger.error(error);
     }
+    logger.info(`${org} finished task`);
   }
 
   public async queryCopilotUsageMetricsNew(org: string, team?: string) {
@@ -72,9 +81,9 @@ class QueryService {
         }
       );
       await metricsService.insertMetrics(org, metricsArray, team);
-      logger.info("Metrics successfully updated! 📈");
+      logger.info(`${org} metrics updated`);
     } catch (error) {
-      logger.error('Error querying copilot metrics', error);
+      logger.error(org, `Error updating ${org} metrics`, error);
     }
   }
 
@@ -85,9 +94,9 @@ class QueryService {
       });
 
       insertUsage(org, rsp.data);
-      logger.info("Usage successfully updated! 📈");
+      logger.info(`${this.org} usage metrics updated`);
     } catch (error) {
-      logger.error('Error querying copilot metrics', error);
+      logger.error(`Error updating ${this.org} usage metrics`, error);
     }
   }
 
@@ -109,7 +118,7 @@ class QueryService {
 
       await SeatService.insertSeats(org, seatAssignments.seats);
 
-      logger.info("Seat assignments successfully updated! 🪑");
+      logger.info(`${org} seat assignments updated`);
     } catch (error) {
       logger.error('Error querying copilot seat assignments', error);
     }
