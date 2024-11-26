@@ -3,7 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { serverUrl } from '../server.service';
 
 export interface PredictiveModelingType {
-  number: number;
+  targetedRoomForImprovement: number;
+  targetedNumberOfDevelopers: number;
+  targetedPercentOfTimeSaved: number;
 }
 
 @Injectable({

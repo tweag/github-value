@@ -111,6 +111,7 @@ class GitHub {
     manifest.setup_url = new URL('/api/setup/install/complete', base).href;
     manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;
     manifest.hook_attributes.url = this.smee.options.url;
+    // manifest.name = 'Copilot';
     return manifest;
   };
 
