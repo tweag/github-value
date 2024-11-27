@@ -33,7 +33,7 @@ const logger = bunyan.createLogger({
   },
   streams: [
     {
-      level: 'info',
+      level: 'debug',
       stream: process.stdout
     },
     {

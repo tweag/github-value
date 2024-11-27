@@ -115,7 +115,7 @@
 			"isBackground": true,
 			"problemMatcher": [],
 			"label": "npm: dev - backend with db",
-			"detail": "tsx src/app.ts | bunyan -o short",
+			"detail": "tsx src/index.ts | bunyan -o short",
 			"icon": {
 				"id": "server"
 			},

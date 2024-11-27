@@ -101,9 +101,9 @@ class Database {
     }
   }
 
-  disconnect() {
-    this.sequelize?.connectionManager.close();
-    this.sequelize?.close();
+  async disconnect() {
+    await this.sequelize?.connectionManager.close();
+    await this.sequelize?.close();
   }
 
   initializeModels(sequelize: Sequelize) {
