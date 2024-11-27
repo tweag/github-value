@@ -123,13 +123,7 @@ const e = express();
 const app = new App(
   e,
   port,
-  new Database({
-    dialect: 'mysql',
-    logging: (sql) => logger.debug(sql),
-    timezone: '+00:00', // Force UTC timezone
-    dialectOptions: {
-      timezone: '+00:00' // Force UTC for MySQL connection
-    },
+  new Database(process.env.JAWSDB_URL ? process.env.JAWSDB_URL : {
     host: process.env.MYSQL_HOST,
     port: Number(process.env.MYSQL_PORT) || 3306,
     username: process.env.MYSQL_USER,

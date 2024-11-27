@@ -31,8 +31,7 @@ class SeatsService {
       attributes: [[Sequelize.fn('MAX', Sequelize.col('queryAt')), 'queryAt']],
       where: {
         ...(org ? { org } : {}),
-      },
-      raw: true
+      }
     });
 
     return Seat.findAll({
