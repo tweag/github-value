@@ -87,11 +87,11 @@ class App {
       return this.e;
     } catch (error) {
       await this.github.smee.connect();
-      logger.debug(error);
       logger.error('Failed to start application ❌');
       if (error instanceof Error) {
         logger.error(error.message);
       }
+      logger.debug(error);
     }
   }
 

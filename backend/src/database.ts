@@ -83,9 +83,8 @@ class Database {
         await sequelize.authenticate()
         await this.initializeModels(sequelize);
         this.sequelize = sequelize;
-        await sequelize.sync({ alter: true }).then(() => {
-          logger.info('Database models were synchronized successfully');
-        })
+        await sequelize.sync({ alter: true })
+        logger.info('Database models were synchronized successfully');
       } catch (error) {
         logger.info('Unable to initialize the database');
         throw error;
