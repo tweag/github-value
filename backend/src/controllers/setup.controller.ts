@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import app from '../app.js';
+import app from '../index.js';
 
 class SetupController {
   async registrationComplete(req: Request, res: Response) {

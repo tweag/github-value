@@ -14,20 +14,23 @@ export class SetupStatusGuard implements CanActivate {
   ) {}
 
   canActivate(): MaybeAsync<GuardResult> {
-    return this.installationsService.getStatus().pipe(
+    return this.installationsService.refreshStatus().pipe(
       map((response) => {
-        if (!response.dbConnected) throw new Error('DB not connected');
-        if (!response.installations?.some(i => Object.values(i).some(j => !j)) && !isDevMode()) {
-          this.router.navigate(['/setup/loading']);
+        if (!response.dbConnected) {
+          this.router.navigate(['/setup/db']);
           return false;
         }
         if (!response.isSetup) {
-          throw new Error('Not setup');
+          this.router.navigate(['/setup/db']);
+          return false;
         }
+        // if (!response.installations?.some(i => Object.values(i).some(j => !j)) && !isDevMode()) {
+        //   this.router.navigate(['/setup/loading']);
+        //   return false;
+        // }
         return true;
       }),
       catchError(() => {
-        this.router.navigate(['/setup/db']);
         return of(false);
       })
     );

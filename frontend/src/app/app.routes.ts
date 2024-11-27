@@ -17,7 +17,7 @@ import { DatabaseComponent } from './database/database.component';
 
 export const routes: Routes = [
   { path: 'setup', component: InstallComponent },
-  { path: 'setup/loading', component: DbLoadingComponent, canActivate: [SetupStatusGuard] },
+  { path: 'setup/loading', component: DbLoadingComponent },
   { path: 'setup/db', component: DatabaseComponent },
   {
     path: '',

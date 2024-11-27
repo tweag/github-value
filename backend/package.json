@@ -5,7 +5,7 @@
   "type": "module",
   "main": "src/index.ts",
   "scripts": {
-    "start": "node --enable-source-maps dist/app.js",
+    "start": "node --enable-source-maps dist/index.js | bunyan -o short -l info",
     "test": "jest",
     "build": "tsc",
     "dev": "tsx watch src/index.ts | bunyan -o short -l debug",

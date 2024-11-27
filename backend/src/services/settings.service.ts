@@ -1,5 +1,3 @@
-import { CronTime } from 'cron';
-import app from '../app.js';
 import { Settings } from '../models/settings.model.js';
 
 export interface SettingsType {
@@ -60,20 +58,20 @@ class SettingsService {
     if (value === lastValue) {
       return await Settings.findOne({ where: { name } });
     }
-    if (name === 'webhookProxyUrl') {
-      app.github.smee.options.url = value;
-      await app.github.smee.connect()
-    } else if (name === 'webhookSecret') {
-      // await app.github.connect({
-      //   webhooks: {
-      //     secret: value
-      //   }
-      // })
-    } else if (name === 'metricsCronExpression') {
-      app.github.installations.forEach(install => {
-        install.queryService.cronJob.setTime(new CronTime(value));
-      });
-    }
+    // if (name === 'webhookProxyUrl') {
+    //   app.github.smee.options.url = value;
+    //   await app.github.smee.connect()
+    // } else if (name === 'webhookSecret') {
+    //   // await app.github.connect({
+    //   //   webhooks: {
+    //   //     secret: value
+    //   //   }
+    //   // })
+    // } else if (name === 'metricsCronExpression') {
+    //   app.github.installations.forEach(install => {
+    //     install.queryService.cronJob.setTime(new CronTime(value));
+    //   });
+    // }
     await Settings.upsert({ name, value });
     return this.getSettingsByName(name);
   }

@@ -132,7 +132,7 @@
 			"script": "start",
 			"path": "backend",
 			"label": "npm: start - backend",
-			"detail": "node dist/app.js | bunyan -o short",
+			"detail": "node dist/index.js | bunyan -o short",
 			"icon": {
 				"id": "server"
 			},

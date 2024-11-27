@@ -1,11 +1,12 @@
 import { readFileSync } from "fs";
-import { App, Octokit } from "octokit";
+import { App, createNodeMiddleware, Octokit } from "octokit";
 import { QueryService } from "./services/query.service.js";
 import WebhookService from './services/smee.js';
 import logger from "./services/logger.js";
 import updateDotenv from 'update-dotenv';
 import { Express } from 'express';
 import { Endpoints } from '@octokit/types';
+import { setupWebhookListeners } from "./controllers/webhook.controller.js";
 
 interface SetupStatusDbsInitialized {
   usage?: boolean;
@@ -49,14 +50,14 @@ class GitHub {
   constructor(
     input: GitHubInput,
     expressApp: Express,
-    public smee: WebhookService
+    public smee: WebhookService,
+    private baseUrl: string
   ) {
     this.input = input;
     this.expressApp = expressApp;
   }
 
   connect = async (input?: GitHubInput) => {
-    this.disconnect();
     if (input) this.setInput(input);
     if (!this.input.appId) throw new Error('App ID is required');
     if (!this.input.privateKey) throw new Error('Private key is required');
@@ -65,10 +66,6 @@ class GitHub {
       appId: this.input.appId,
       privateKey: this.input.privateKey,
       ...this.input.webhooks?.secret ? { webhooks: { secret: this.input.webhooks.secret } } : {},
-      // oauth: {
-      //   clientId: null!,
-      //   clientSecret: null!
-      // }
     });
 
     await updateDotenv({ GITHUB_APP_ID: this.input.appId })
@@ -76,7 +73,16 @@ class GitHub {
     if (this.input.webhooks?.secret) await updateDotenv({ GITHUB_WEBHOOK_SECRET: this.input.webhooks.secret })
 
     try {
-      this.webhooks = this.smee.webhookMiddlewareCreate(this.app, this.expressApp);
+      if (!this.app) throw new Error('GitHub App is not initialized')
+      if (!this.expressApp) throw new Error('Express app is not initialized')
+      const webhookMiddlewareIndex = this.expressApp._router.stack.findIndex((layer: {
+        name: string;
+      }) => layer.name === 'bound middleware');
+      if (webhookMiddlewareIndex > -1) {
+        this.expressApp._router.stack.splice(webhookMiddlewareIndex, 1);
+      }
+      setupWebhookListeners(this.app);
+      this.webhooks = this.expressApp.use(createNodeMiddleware(this.app));
     } catch (error) {
       logger.debug(error);
       logger.error('Failed to create webhook middleware')
@@ -94,7 +100,6 @@ class GitHub {
       });
       logger.info(`${installation.account?.login} cron task ${this.cronExpression} started`);
     }
-
     return this.app;
   }
 

@@ -29,4 +29,4 @@ WORKDIR /app/backend
 
 EXPOSE 80
 
-CMD node dist/app.js | ./node_modules/.bin/bunyan
+CMD node dist/index.js | ./node_modules/.bin/bunyan

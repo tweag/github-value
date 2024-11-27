@@ -3,7 +3,7 @@ import { Seat } from "../models/copilot.seats.model.js";
 import { Sequelize } from 'sequelize';
 import { components } from "@octokit/openapi-types";
 import { Member, Team } from '../models/teams.model.js';
-import app from '../app.js';
+import app from '../index.js';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {

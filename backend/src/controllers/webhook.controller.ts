@@ -1,7 +1,7 @@
 import { App } from 'octokit';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
-import app from '../app.js';
+import app from '../index.js';
 import teamsService from '../services/teams.service.js';
 import { Endpoints } from '@octokit/types';
 

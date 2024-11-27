@@ -38,6 +38,7 @@ class Database {
       if (this.input.password) await updateDotenv({ MYSQL_PASSWORD: this.input.password })
       if (this.input.database) await updateDotenv({ MYSQL_DATABASE: this.input.database })
     }
+    logger.info('Connecting to the database', this.input);
     try {
       let sequelize;
       try {
@@ -58,7 +59,6 @@ class Database {
         logger.error('Unable to connect to the database');
         throw error;
       }
-      logger.info('Connection to the database has been established successfully');
 
       if (typeof this.input !== 'string') {
         try {

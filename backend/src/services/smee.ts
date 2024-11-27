@@ -1,7 +1,6 @@
 import { App, createNodeMiddleware } from "octokit";
 import { Express } from "express";
 import logger from "./logger.js";
-import { setupWebhookListeners } from "../controllers/webhook.controller.js";
 import Client from "smee-client";
 import EventSource from "eventsource";
 
@@ -64,21 +63,6 @@ class WebhookService {
     }
     return webhookProxyUrl;
   }
-
-  webhookMiddlewareCreate(app: App, e: Express) {
-    if (!app) throw new Error('GitHub App is not initialized')
-    if (!e) throw new Error('Express app is not initialized')
-    const webhookMiddlewareIndex = e._router.stack.findIndex((layer: {
-      name: string;
-    }) => layer.name === 'bound middleware');
-    if (webhookMiddlewareIndex > -1) {
-      e._router.stack.splice(webhookMiddlewareIndex, 1);
-    }
-    setupWebhookListeners(app);
-    const web = e.use(createNodeMiddleware(app));
-    return web;
-  };
-
 }
 
 export default WebhookService;
