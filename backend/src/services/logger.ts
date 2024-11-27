@@ -50,8 +50,8 @@ const logger = bunyan.createLogger({
 });
 
 export const expressLoggerMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  logger.info({ req }, 'request');
-  res.on('finish', () => logger.info({ res }, 'response'));
+  logger.debug(req);
+  res.on('finish', () => logger.debug(res));
   next();
 };
 
