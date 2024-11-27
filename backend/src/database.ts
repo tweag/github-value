@@ -10,6 +10,9 @@ import { Team } from './models/teams.model.js';
 import { MetricDaily } from './models/metrics.model.js';
 import { Survey } from './models/survey.model.js';
 
+// CACHE
+// https://github.com/sequelize-transparent-cache/sequelize-transparent-cache?tab=readme-ov-file
+
 class Database {
   sequelize?: Sequelize;
   options: Options = {
