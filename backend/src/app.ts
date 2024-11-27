@@ -6,40 +6,42 @@ import cors from 'cors';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import * as http from 'http';
-import { AddressInfo } from 'net';
 import apiRoutes from "./routes/index.js"
 import Database from './database.js';
 import logger, { expressLoggerMiddleware } from './services/logger.js';
 import GitHub from './github.js';
 import WebhookService from './services/smee.js';
 import SettingsService from './services/settings.service.js';
-import whyIsNodeRunning from 'why-is-node-running';
 
 class App {
   eListener?: http.Server;
   baseUrl?: string;
+  e: Express;
 
   constructor(
-    public e: Express,
     public port: number,
     public database: Database,
     public github: GitHub,
     public settingsService: SettingsService
   ) {
-    this.e = e;
     this.port = port;
+    this.e = express();
   }
 
   public async start() {
     try {
       this.setupExpress();
+      return;
+      logger.info('Express setup complete');
+
       await this.database.connect();
+      logger.info('Database connected');
 
       await this.initializeSettings();
       logger.info('Settings initialized');
 
       await this.github.connect();
-      logger.info('Created GitHub App from environment');
+      logger.info('GitHub App connected');
 
       return this.e;
     } catch (error) {
@@ -53,13 +55,11 @@ class App {
   }
 
   public stop() {
-    whyIsNodeRunning()
-    this.database.disconnect();
-    this.github.disconnect();
     this.eListener?.close(() => {
       logger.info('Server closed');
-      process.exit(0);
     });
+    this.database.disconnect();
+    this.github.disconnect();
   }
 
   private setupExpress() {
@@ -82,10 +82,7 @@ class App {
       windowMs: 15 * 60 * 1000, max: 5000,
     }), (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
-    const listener = this.e.listen(this.port, () => {
-      const address = listener.address() as AddressInfo;
-      logger.info(`Server is running at http://${address.address === '::' ? 'localhost' : address.address}:${address.port} 🚀`);
-    });
+    const listener = this.e.listen(this.port);
     this.eListener = listener;
   }
 
@@ -119,9 +116,7 @@ class App {
 }
 
 const port = Number(process.env.PORT) || 80;
-const e = express();
 const app = new App(
-  e,
   port,
   new Database(process.env.JAWSDB_URL ? process.env.JAWSDB_URL : {
     host: process.env.MYSQL_HOST,
@@ -156,10 +151,6 @@ const app = new App(
     percentCoding: '20'
   })
 );
-app.start();
-logger.info('App started');
-
-export default app;
 
 ['SIGTERM', 'SIGINT', 'SIGQUIT'].forEach(signal => {
   process.on(signal, () => {
@@ -168,3 +159,8 @@ export default app;
     process.exit(signal === 'uncaughtException' ? 1 : 0);
   });
 });
+
+app.start();
+logger.info('App started');
+
+export default app;
