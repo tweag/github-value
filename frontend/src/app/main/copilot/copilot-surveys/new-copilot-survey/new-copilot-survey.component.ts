@@ -23,8 +23,13 @@ import { ActivatedRoute, Params } from '@angular/router';
 export class NewCopilotSurveyComponent implements OnInit {
   surveyForm: FormGroup;
   params: Params = {};
-  defaultPercentTimeSaved = 30;
+  defaultPercentTimeSaved = 25;
   id: number;
+
+  initializationReason = 'I chose ' + this.defaultPercentTimeSaved + '% because Copilot enabled me to...';
+  didNotUsedCopilotReason = 'I did not use Copilot...';
+  usedCopilotWithPercentTimeSaved = (percent: number) => `I chose ${percent}% because Copilot enabled me to...`;
+  usedCopilotWithPercentTimeSavedZero = 'I chose 0% because Copilot did not help me...';
 
   constructor(
     private fb: FormBuilder,
@@ -43,13 +48,52 @@ export class NewCopilotSurveyComponent implements OnInit {
 
   ngOnInit() {
     this.route.queryParams.subscribe(params => this.params = params);
+
+    // Page Initialization
+    this.setReasonDefault();
+
     this.surveyForm.get('usedCopilot')?.valueChanges.subscribe((value) => {
       if (!value) {
         this.surveyForm.get('percentTimeSaved')?.setValue(0);
+        this.setReasonDefault();
       } else {
         this.surveyForm.get('percentTimeSaved')?.setValue(this.defaultPercentTimeSaved);
+        this.setReasonDefault();
       }
     });
+
+    this.surveyForm.get('percentTimeSaved')?.valueChanges.subscribe((value) => {
+      if (!this.surveyForm.get('reason')?.dirty) {
+        this.setReasonDefault();
+      } else {
+        this.promptUserForConfirmation();
+      }
+    });
+  }
+
+  setReasonDefault() {
+    const reasonControl = this.surveyForm.get('reason');
+    if (reasonControl && !reasonControl.dirty) {
+      const percentTimeSaved = this.surveyForm.get('percentTimeSaved')?.value;
+      const usedCopilot = this.surveyForm.get('usedCopilot')?.value;
+      reasonControl.setValue(
+        usedCopilot
+          ? (percentTimeSaved === 0 ? this.usedCopilotWithPercentTimeSavedZero : this.usedCopilotWithPercentTimeSaved(percentTimeSaved))
+          : this.didNotUsedCopilotReason
+      );
+    }
+  }
+
+  onReasonFocus() {
+    const reasonControl = this.surveyForm.get('reason');
+    if (reasonControl && !reasonControl.value) {
+      this.setReasonDefault();
+    }
+  }
+
+  promptUserForConfirmation() {
+    // Implement the logic to prompt the user with a warning
+    alert("Confirm that reason and percentTimeSaved are correct.");
   }
 
   parseGitHubPRUrl(url: string) {

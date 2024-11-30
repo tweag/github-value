@@ -30,7 +30,7 @@
       <a mat-list-item routerLink="/copilot/surveys">
         <mat-icon matListItemIcon>merge</mat-icon>
         <!-- <mat-icon matListItemIcon>feedback</mat-icon> -->
-        <span>Surveys</span>
+        <span>Developer Estimates</span>
       </a>
       <a mat-list-item routerLink="/copilot/predictive-modeling">
         <mat-icon matListItemIcon>calculate</mat-icon>
@@ -45,19 +45,19 @@
   </mat-sidenav>
   <mat-sidenav-content>
     <mat-toolbar color="primary">
-    @if (isHandset$ | async) {
-      <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()">
-        <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
-      </button>
-    }
-    <ng-container *ngIf="installation.owner as owner">
-      <div class="header">
-        <div class="mat-card-avatar" mat-card-avatar style="background-size: cover;" [style.background-image]="'url(' + owner.avatar_url + ')'"></div>
-        <h1>{{owner.login}}</h1>
-      </div>
-    </ng-container>
-    <span class="spacer"></span>
-  </mat-toolbar>
+      <ng-container *ngIf="isHandset$ | async">
+        <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()">
+          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+        </button>
+      </ng-container>
+      <ng-container *ngIf="installation.owner as owner">
+        <div class="header">
+          <div class="mat-card-avatar" mat-card-avatar style="background-size: cover;" [style.background-image]="'url(' + owner.avatar_url + ')'"></div>
+          <h1>{{owner.login}}</h1>
+        </div>
+      </ng-container>
+      <span class="spacer"></span>
+    </mat-toolbar>
     <div class="sidenav-content">
       <router-outlet />
     </div>
