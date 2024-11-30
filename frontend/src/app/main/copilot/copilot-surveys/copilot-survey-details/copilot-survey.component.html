@@ -17,7 +17,7 @@
       <ng-container *ngIf="survey.status !== 'pending'">
         <p><strong>Used Copilot: </strong>{{ survey.usedCopilot ? 'Yes' : 'No' }}</p>
         <p><strong>Time Saved: </strong>{{ survey.percentTimeSaved }}%</p>
-        <p><strong>Reason: </strong>{{ survey.reason }}</p>
+        <p><strong>Reason: </strong><span matLine>{{ survey.reason }}</span></p>
         <p><strong>Time Used For: </strong>{{ survey.timeUsedFor }}</p>
       </ng-container>
       <p><strong>PR: </strong><a [href]="'https://github.com/' + survey.owner + '/' + survey.repo + '/pull/' + survey.prNumber">{{ survey.repo }}#{{ survey.prNumber }}</a></p>

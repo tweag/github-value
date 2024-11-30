@@ -31,6 +31,10 @@ export class NewCopilotSurveyComponent implements OnInit {
   usedCopilotWithPercentTimeSaved = (percent: number) => `I chose ${percent}% because Copilot enabled me to...`;
   usedCopilotWithPercentTimeSavedZero = 'I chose 0% because Copilot did not help me...';
 
+  formColumnWidth = 70; // Percentage width for the form column
+  historyColumnWidth = 30; // Percentage width for the history column
+  historicalReasons: string[] = []; // Array to hold historical reasons
+
   constructor(
     private fb: FormBuilder,
     private copilotSurveyService: CopilotSurveyService,
@@ -51,6 +55,7 @@ export class NewCopilotSurveyComponent implements OnInit {
 
     // Page Initialization
     this.setReasonDefault();
+    this.loadHistoricalReasons();
 
     this.surveyForm.get('usedCopilot')?.valueChanges.subscribe((value) => {
       if (!value) {
@@ -69,6 +74,20 @@ export class NewCopilotSurveyComponent implements OnInit {
         this.promptUserForConfirmation();
       }
     });
+
+    // Debugging: Confirm the reason list is not empty
+    console.log('Historical Reasons:', this.historicalReasons);
+
+    // Duplicate the content dynamically
+    this.duplicateContent();
+  }
+
+  duplicateContent() {
+    const content = document.querySelector('.scrollable-card-content');
+    if (content) {
+      const clone = content.cloneNode(true);
+      content.appendChild(clone);
+    }
   }
 
   setReasonDefault() {
@@ -94,6 +113,30 @@ export class NewCopilotSurveyComponent implements OnInit {
   promptUserForConfirmation() {
     // Implement the logic to prompt the user with a warning
     alert("Confirm that reason and percentTimeSaved are correct.");
+  }
+
+  loadHistoricalReasons() {
+    // Load historical reasons from the service or any other source
+    this.historicalReasons = [
+      'I chose 20% because Copilot helped me write boilerplate code.',
+      'I chose 50% because Copilot enabled me to focus on complex logic.',
+      'I chose 0% because Copilot did not help me in this PR.',
+      'I chose 30% because Copilot helped me with repetitive tasks.',
+      'I chose 40% because Copilot improved my coding efficiency.',
+      'I chose 60% because Copilot reduced my development time.',
+      'I chose 70% because Copilot provided useful code suggestions.',
+      'I chose 80% because Copilot helped me with complex logic.',
+      'I chose 90% because Copilot made my coding faster.',
+      'I chose 100% because Copilot was extremely helpful.'
+      // Add more historical reasons as needed
+    ];
+
+    // Debugging: Confirm the scrolling content is not empty
+    if (this.historicalReasons.length > 0) {
+      console.log('Scrolling content is not empty');
+    } else {
+      console.log('Scrolling content is empty');
+    }
   }
 
   parseGitHubPRUrl(url: string) {

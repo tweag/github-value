@@ -29,13 +29,55 @@
     position: relative;
     margin-bottom: 15px;
     > * {
-      position:absolute;
-      transform:translateX(-50%);
+      position: absolute;
+      transform: translateX(-50%);
     }
   }
 }
 
-
 form {
   max-width: 1250px;
+}
+
+.two-column-layout {
+  display: flex;
+  justify-content: space-between;
+}
+
+.column {
+  padding: 10px;
+}
+
+.scrollable-card {
+  max-height: 600px; /* Increase the maximum height for the card */
+  overflow: hidden;  /* Hide the scrollbar */
+  white-space: normal; /* Ensure text wraps properly */
+  position: relative;
+  margin-top: 20px; /* Add margin to separate from the header */
+}
+
+.scrollable-card-content {
+  position: relative;
+  animation: scroll 30s linear infinite; /* Adjust duration as needed */
+  padding-top: 60px; /* Add padding to ensure content does not overlap with the title */
+}
+
+.scrollable-card-content div {
+  margin-bottom: 3em; /* Add extra space between reasons */
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+/* Center the mat-card-title */
+.mat-card-title {
+  text-align: center;
+  width: 100%;
+  margin-bottom: 20px; /* Add margin to separate from the content */
 }
