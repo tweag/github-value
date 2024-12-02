@@ -1,25 +1,57 @@
 import logger from "./logger.js";
-import settingsService from "./settings.service.js";
+import Client from "smee-client";
+import EventSource from "eventsource";
 
-class SmeeService {
-  private static instance: SmeeService;
-  private webhookProxyUrl?: string;
-  private port?: number;
+export interface WebhookServiceOptions {
+  url?: string,
+  port: number,
+  path: string
+}
 
-  private constructor() { }
+class WebhookService {
+  eventSource?: EventSource;
+  options: WebhookServiceOptions;
+  smee?: Client;
 
-  public static getInstance(): SmeeService {
-    if (!SmeeService.instance) {
-      SmeeService.instance = new SmeeService();
-    }
-    return SmeeService.instance;
+  constructor(options: WebhookServiceOptions) {
+    this.options = options;
   }
 
-  getWebhookProxyUrl = () => {
-    if (!this.webhookProxyUrl) {
-      throw new Error('Webhook proxy URL is not set');
+  public async connect(options?: WebhookServiceOptions) {
+    if (options) {
+      this.options = {
+        ...this.options,
+        ...options
+      }
     }
-    return this.webhookProxyUrl;
+
+    if (!this.options.url) {
+      this.options.url = await this.createSmeeWebhookUrl();
+    }
+
+    try {
+      const SmeeClient = (await import("smee-client")).default;
+      this.smee = new SmeeClient({
+        source: this.options.url,
+        target: `http://localhost:${this.options.port}${this.options.path}`,
+        logger: {
+          info: (msg: string, ...args) => logger.info('Smee', msg, ...args),
+          error: (msg: string, ...args) => logger.error('Smee', msg, ...args),
+        }
+      });
+    
+      this.eventSource = await this.smee.start()
+    } catch {
+      logger.error('Failed to create Smee client');
+    };
+
+    return this.eventSource;
+  }
+
+  public async disconnect() {
+    if (this.eventSource) {
+      this.eventSource.close();
+    }
   }
 
   private async createSmeeWebhookUrl() {
@@ -27,64 +59,8 @@ class SmeeService {
     if (!webhookProxyUrl) {
       throw new Error('Unable to create webhook channel');
     }
-    this.webhookProxyUrl = webhookProxyUrl;
     return webhookProxyUrl;
   }
-
-  public async createSmeeWebhookProxy(port?: number) {
-    if (!port) port = this.port;
-    try {
-      this.webhookProxyUrl = process.env.WEBHOOK_PROXY_URL || await settingsService.getSettingsByName('webhookProxyUrl');
-      if (!this.webhookProxyUrl) {
-        throw new Error('Webhook proxy URL is not set');
-      }
-    } catch {
-      this.webhookProxyUrl = await this.createSmeeWebhookUrl();
-    }
-    let eventSource: EventSource | undefined;
-    try {
-      eventSource = await this.createWebhookProxy({
-        url: this.webhookProxyUrl,
-        port,
-        path: '/api/github/webhooks'
-      });
-    } catch (error) {
-      logger.error(`Unable to connect to ${this.webhookProxyUrl}. recreating webhook.`, error);
-      this.webhookProxyUrl = await this.createSmeeWebhookUrl();
-      eventSource = await this.createWebhookProxy({
-        url: this.webhookProxyUrl,
-        port,
-        path: '/api/github/webhooks'
-      });
-      if (!eventSource) throw new Error('Unable to connect to smee.io');
-    }
-    this.port = port;
-    return { url: this.webhookProxyUrl, eventSource };
-  }
-
-  createWebhookProxy = async (
-    opts: {
-      url: string;
-      port?: number;
-      path?: string;
-    },
-  ): Promise<EventSource | undefined> => {
-    try {
-      const SmeeClient = (await import("smee-client")).default;
-      const smee = new SmeeClient({
-        source: opts.url,
-        target: `http://localhost:${opts.port}${opts.path}`,
-        logger: {
-          info: (msg: string, ...args) => logger.info('Smee', msg, ...args),
-          error: (msg: string, ...args) => logger.error('Smee', msg, ...args),
-        }
-      });
-      return smee.start() as EventSource;
-    } catch (error) {
-      logger.error('Unable to connect to smee.io', error);
-    }
-  };
-
 }
 
-export default SmeeService.getInstance();
+export default WebhookService;

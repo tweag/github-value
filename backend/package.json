@@ -3,12 +3,12 @@
   "version": "1.0.0",
   "description": "Demonstrate the value of GitHub",
   "type": "module",
-  "main": "src/app.ts",
+  "main": "src/index.ts",
   "scripts": {
-    "start": "node --enable-source-maps dist/app.js",
+    "start": "node --enable-source-maps dist/index.js | bunyan -o short -l info",
     "test": "jest",
     "build": "tsc",
-    "dev": "tsx watch src/app.ts | bunyan -o short -l debug",
+    "dev": "tsx watch src/index.ts | bunyan -o short -l debug",
     "lint": "eslint src/**/*.ts",
     "db:start": "docker-compose -f ../compose.yml up -d db",
     "dotenv": "cp -n .env.example .env || true"
@@ -25,7 +25,8 @@
     "octokit": "^4.0.2",
     "sequelize": "^6.37.5",
     "smee-client": "^2.0.4",
-    "update-dotenv": "^1.1.1"
+    "update-dotenv": "^1.1.1",
+    "why-is-node-running": "^3.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
