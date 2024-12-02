@@ -38,7 +38,12 @@
         <app-time-saved-chart [surveys]="surveysData" [activity]="activityData" [chartOptions]="chartOptions"></app-time-saved-chart>
       </ng-container>
     </mat-card>
-    <mat-card appearance="outlined" id="card-bars">
+
+    <mat-card>
+      <app-status></app-status>
+    </mat-card>
+
+    <!-- <mat-card appearance="outlined" id="card-bars">
       <mat-card-header>
         <mat-card-title>Engagement</mat-card-title>
       </mat-card-header>
@@ -64,7 +69,7 @@
       <ng-container *ngIf="activityTotals; else loading">
         <app-active-users-chart [data]="activityTotals" [chartOptions]="chartOptions"></app-active-users-chart>
       </ng-container>
-    </mat-card>
+    </mat-card> -->
   </div>
 </div>
 <ng-template #loading>

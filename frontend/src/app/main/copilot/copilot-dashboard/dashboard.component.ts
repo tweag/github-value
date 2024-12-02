@@ -15,6 +15,7 @@ import { TimeSavedChartComponent } from '../copilot-value/time-saved-chart/time-
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
 import { ActiveUsersChartComponent } from './dashboard-card/active-users-chart/active-users-chart.component';
 import { InstallationsService } from '../../../services/api/installations.service';
+import { StatusComponent } from './status/status.component';
 
 @Component({
   selector: 'app-dashboard',
@@ -28,7 +29,8 @@ import { InstallationsService } from '../../../services/api/installations.servic
     DailyActivityChartComponent,
     TimeSavedChartComponent,
     LoadingSpinnerComponent,
-    ActiveUsersChartComponent
+    ActiveUsersChartComponent,
+    StatusComponent
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
