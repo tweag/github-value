@@ -89,6 +89,7 @@ class Database {
         logger.info('Unable to initialize the database');
         throw error;
       }
+      
       logger.info('Database setup completed successfully');
       return this.sequelize;
     } catch (error) {
