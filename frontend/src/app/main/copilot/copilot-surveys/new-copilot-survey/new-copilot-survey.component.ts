@@ -2,7 +2,7 @@ import { Component, forwardRef, OnInit } from '@angular/core';
 import { AppModule } from '../../../../app.module';
 import { FormBuilder, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
 import { CopilotSurveyService } from '../../../../services/api/copilot-survey.service';
-import { ActivatedRoute, Params } from '@angular/router';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 
 @Component({
   selector: 'app-copilot-survey',
@@ -38,7 +38,8 @@ export class NewCopilotSurveyComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private copilotSurveyService: CopilotSurveyService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.id = isNaN(id) ? 0 : id
@@ -156,7 +157,7 @@ export class NewCopilotSurveyComponent implements OnInit {
 
   onSubmit() {
     const { org, repo, prNumber } = this.parseGitHubPRUrl(this.params['url']);
-    this.copilotSurveyService.createSurvey({
+    const survey = {
       id: this.id,
       userId: this.params['author'],
       org,
@@ -166,14 +167,21 @@ export class NewCopilotSurveyComponent implements OnInit {
       percentTimeSaved: Number(this.surveyForm.value.percentTimeSaved),
       reason: this.surveyForm.value.reason,
       timeUsedFor: this.surveyForm.value.timeUsedFor
-    }).subscribe(() => {
-      const redirectUrl = this.params['url'];
-      if (redirectUrl && redirectUrl.startsWith('https://github.com/')) {
-        window.location.href = redirectUrl;
-      } else {
-        console.error('Unauthorized URL:', redirectUrl);
-      }
-    });
+    };
+    if (!this.id) {
+      this.copilotSurveyService.createSurvey(survey).subscribe(() => {
+        this.router.navigate(['/copilot/surveys']);
+      });
+    } else {
+      this.copilotSurveyService.createSurveyGitHub(survey).subscribe(() => {
+        const redirectUrl = this.params['url'];
+        if (redirectUrl && redirectUrl.startsWith('https://github.com/')) {
+          window.location.href = redirectUrl;
+        } else {
+          console.error('Unauthorized URL:', redirectUrl);
+        }
+      });
+    }
   }
 
   formatPercent(value: number): string {
