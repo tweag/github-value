@@ -13,6 +13,7 @@ type SurveyType = {
   timeUsedFor: string;
   reason: string;
   createdAt?: Date;
+  kudos: number;
   updatedAt?: Date;
 }
 
@@ -28,6 +29,7 @@ class Survey extends Model<SurveyType> {
   declare percentTimeSaved: number;
   declare timeUsedFor: string;
   declare reason: string;
+  declare kudos: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
 
@@ -80,6 +82,10 @@ class Survey extends Model<SurveyType> {
       prNumber: {
         type: DataTypes.INTEGER,
         allowNull: true,
+      },
+      kudos: {
+        type: DataTypes.INTEGER,
+        allowNull: true
       },
       createdAt: DataTypes.DATE,
       updatedAt: DataTypes.DATE
