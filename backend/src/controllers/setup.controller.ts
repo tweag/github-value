@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import app from '../index.js';
+import StatusService from '../services/status.service.js';
 
 class SetupController {
   async registrationComplete(req: Request, res: Response) {
@@ -71,6 +72,16 @@ class SetupController {
           ...i.queryService.status
         }))
       };
+      return res.json(status);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
+  async getStatus(req: Request, res: Response) {
+    try {
+      const statusService = new StatusService();
+      const status = await statusService.getStatus();
       return res.json(status);
     } catch (error) {
       res.status(500).json(error);

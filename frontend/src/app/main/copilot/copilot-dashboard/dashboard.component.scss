@@ -27,6 +27,10 @@
     width: 100%;
     overflow: hidden;
   }
+
+  #status {
+    grid-column: span 3;
+  }
 }
 
 /* Add media query for smaller screens */

@@ -45,13 +45,18 @@ class Database {
         sequelize = typeof this.input === 'string' ?
           new Sequelize(this.input, {
             pool: {
-              max: 10,
+              max: 5,
               acquire: 30000,
               idle: 10000
             },
             ...this.options
           }) :
           new Sequelize({
+            pool: {
+              max: 10,
+              acquire: 30000,
+              idle: 10000
+            },
             ...this.input,
             ...this.options
           });

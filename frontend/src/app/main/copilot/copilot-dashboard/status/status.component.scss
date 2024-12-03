@@ -1,3 +1,27 @@
 :host {
-  display: block;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.status {
+  display: flex;
+  padding: 17.6px 20px 16px 20px;
+  border: var(--mdc-outlined-card-outline-width) solid var(--mdc-outlined-card-outline-color, var(--mat-app-outline-variant));
+  .status-icon {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.error {
+  background-color: var(--error) !important;
+}
+
+.success {
+  background-color: var(--success) !important;
+}
+
+.warning {
+  background-color: var(--warning) !important;
 }

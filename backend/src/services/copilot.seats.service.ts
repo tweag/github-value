@@ -1,6 +1,6 @@
 import { Endpoints } from '@octokit/types';
 import { Seat } from "../models/copilot.seats.model.js";
-import { Sequelize } from 'sequelize';
+import { QueryTypes, Sequelize } from 'sequelize';
 import { components } from "@octokit/openapi-types";
 import { Member, Team } from '../models/teams.model.js';
 import app from '../index.js';
@@ -231,6 +231,16 @@ class SeatsService {
   }
 
   async getMembersActivityTotals(org?: string) {
+    const assignees2 = await app.database.sequelize?.query(`
+      SELECT \`Member\`.\`login\`, \`Member\`.\`id\`, \`activity\`.\`id\` AS \`activity.id\`, \`activity\`.\`last_activity_at\` AS \`activity.last_activity_at\`
+      FROM \`Members\` AS \`Member\`
+      INNER JOIN \`Seats\` AS \`activity\` ON \`Member\`.\`id\` = \`activity\`.\`assignee_id\`
+    `, {
+      replacements: { org },
+      type: QueryTypes.SELECT
+    });
+    console.log(assignees2);
+    
     const assignees = await Member.findAll({
       attributes: ['login', 'id'],
       include: [{

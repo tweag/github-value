@@ -88,7 +88,25 @@ export class CopilotDashboardComponent implements OnInit {
   }
 
   activityTotals?: Record<string, number>;
-
+  statusChecks = [
+    // First column: Telemetry
+    { title: 'API Connectivity', statusMessage: 'Unknown' },
+    { title: 'Form Hits', statusMessage: 'Unknown' },
+    { title: 'Settings Configured', statusMessage: 'Unknown' },
+    // Second column: Developer Estimates
+    { title: 'Polling History', statusMessage: 'Unknown' },
+    { title: 'Repositories Configured', statusMessage: 'Unknown' },
+    { title: 'Targets Selected', statusMessage: 'Unknown' },
+    // Third column: Predictive Modeling
+    { title: 'Average Usage Level', statusMessage: 'Unknown' },
+    { title: 'Estimates Collected', statusMessage: 'Unknown' },
+    { title: 'Targets Last Updated', statusMessage: 'Unknown' },
+    // Additional Checks
+    { title: 'Usage Level Trend', statusMessage: 'Unknown' },
+    { title: 'Estimates/Daily-User Ratio', statusMessage: 'Unknown' },
+    { title: 'Target Levels Acquired', statusMessage: '0 Levels Acquired' }
+  ];
+  
   constructor(
     private metricsService: MetricsService,
     private membersService: MembersService,
