@@ -1,64 +1,40 @@
 import { Settings } from '../models/settings.model.js';
-import { QueryService } from './query.service.js';
-import setup from './setup.js';
-import SmeeService from './smee.js';
-import SeatsService from '../services/copilot.seats.service.js';
+
+export interface SettingsType {
+  baseUrl?: string,
+  webhookProxyUrl?: string,
+  webhookSecret?: string,
+  metricsCronExpression: string,
+  devCostPerYear: string,
+  developerCount: string,
+  hoursPerYear: string,
+  percentTimeSaved: string,
+  percentCoding: string,
+}
 
 class SettingsService {
-  public baseUrl = process.env.BASE_URL || 'http://localhost';
+  settings: SettingsType;
 
-  constructor() {
+  constructor(
+    private defaultSettings: SettingsType
+  ) {
+    this.settings = defaultSettings;
   }
 
-  async initializeSettings() {
-    try {
-      const baseUrl = await this.getSettingsByName('baseUrl');
-      if (!baseUrl) throw new Error('Base URL is not set');
-      this.baseUrl = baseUrl;
-    } catch {
-      this.updateSetting('baseUrl', this.baseUrl);
+  async initialize() {
+    for (const [name, value] of Object.entries(this.defaultSettings)) {
+      try {
+        const setting = await this.getSettingsByName(name);
+        if (setting) {
+          this.settings[name as keyof SettingsType] = setting
+        }
+      } catch {
+        if (value) {
+          await this.updateSetting(name as keyof SettingsType, value);
+        }
+      }
     }
-    try {
-      await this.getSettingsByName('webhookProxyUrl')
-    } catch {
-      this.updateSetting('webhookProxyUrl', SmeeService.getWebhookProxyUrl());
-    }
-    try {
-      const webhookSecret = await this.getSettingsByName('webhookSecret')
-      if (webhookSecret !== process.env.GITHUB_WEBHOOK_SECRET) throw new Error('Webhook secret does not match environment variable');
-    } catch {
-      this.updateSetting('webhookSecret', process.env.GITHUB_WEBHOOK_SECRET || '');
-    }
-    try {
-      if (!await this.getSettingsByName('devCostPerYear')) throw new Error('Developer cost per year is not set');
-    } catch {
-      this.updateSetting('devCostPerYear', '100000');
-    }
-    try {
-      if (!await this.getSettingsByName('developerCount')) throw new Error('Developer count is not set');
-    } catch {
-      this.updateSetting('developerCount', (await SeatsService.getAllSeats()).length.toString());
-    }
-    try {
-      if (!await this.getSettingsByName('hoursPerYear')) throw new Error('Hours per year is not set');
-    } catch {
-      this.updateSetting('hoursPerYear', '2080');
-    }
-    try {
-      if (!await this.getSettingsByName('percentTimeSaved')) throw new Error('Percent time saved is not set');
-    } catch {
-      this.updateSetting('percentTimeSaved', '20');
-    }
-    try {
-      if (!await this.getSettingsByName('percentCoding')) throw new Error('Percent coding is not set');
-    } catch {
-      this.updateSetting('percentCoding', '20');
-    }
-    try {
-      if (!await this.getSettingsByName('metricsCronExpression')) throw new Error('Metrics cron expression is not set');
-    } catch {
-      this.updateSetting('metricsCronExpression', '0 0 * * *');
-    }
+    return this.settings;
   }
 
   async getAllSettings() {
@@ -66,38 +42,43 @@ class SettingsService {
   }
 
   async getSettingsByName(name: string): Promise<string | undefined> {
-    const rsp = await Settings.findOne({ where: { name } });
-    if (!rsp) {
+    try {
+      const rsp = await Settings.findOne({ where: { name } });
+      if (!rsp) {
+        return undefined;
+      }
+      return rsp.dataValues.value;
+    } catch {
       return undefined;
     }
-    return rsp.dataValues.value;
   }
 
-  async updateSetting(name: string, value: string) {
-    if (value === await this.getSettingsByName(name)) return await Settings.findOne({ where: { name } });
+  async updateSetting(name: keyof SettingsType, value: string) {
+    const lastValue = await this.getSettingsByName(name);
+    if (value === lastValue) {
+      return await Settings.findOne({ where: { name } });
+    }
+    // if (name === 'webhookProxyUrl') {
+    //   app.github.smee.options.url = value;
+    //   await app.github.smee.connect()
+    // } else if (name === 'webhookSecret') {
+    //   // await app.github.connect({
+    //   //   webhooks: {
+    //   //     secret: value
+    //   //   }
+    //   // })
+    // } else if (name === 'metricsCronExpression') {
+    //   app.github.installations.forEach(install => {
+    //     install.queryService.cronJob.setTime(new CronTime(value));
+    //   });
+    // }
     await Settings.upsert({ name, value });
-    if (name === 'webhookProxyUrl') {
-      setup.addToEnv({ WEBHOOK_PROXY_URL: value });
-      await SmeeService.createSmeeWebhookProxy();
-    }
-    if (name === 'webhookSecret') {
-      setup.addToEnv({ GITHUB_WEBHOOK_SECRET: value });
-      try {
-        await setup.createAppFromEnv();
-      } catch {
-        console.warn('failed to create app from env')
-      }
-    }
-    if (name === 'baseUrl') {
-      this.baseUrl = value;
-    }
-    if (name === 'metricsCronExpression') QueryService.getInstance()?.updateCronJob(value);
-    return await Settings.findOne({ where: { name } });
+    return this.getSettingsByName(name);
   }
 
   async updateSettings(obj: { [key: string]: string }) {
     Object.entries(obj).forEach(([name, value]) => {
-      this.updateSetting(name, value);
+      this.updateSetting(name as keyof SettingsType, value);
     });
   }
 
@@ -111,4 +92,4 @@ class SettingsService {
   }
 }
 
-export default new SettingsService();
+export default SettingsService;

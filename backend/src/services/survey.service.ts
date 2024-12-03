@@ -2,11 +2,6 @@ import { Survey, SurveyType } from "../models/survey.model.js";
 import { Op } from 'sequelize';
 
 class SurveyService {
-
-  constructor() {
-    
-  }
-
   async createSurvey(survey: SurveyType) {
     return await Survey.create(survey);
   }
