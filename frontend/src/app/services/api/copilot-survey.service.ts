@@ -31,6 +31,10 @@ export class CopilotSurveyService {
     return this.http.post<Survey>(this.apiUrl, survey);
   }
 
+  createSurveyGitHub(survey: Survey) {
+    return this.http.post(`${this.apiUrl}/${survey.id}/github`, survey);
+  }
+
   getAllSurveys(org?: string) {
     return this.http.get<Survey[]>(this.apiUrl, {
       params: org ? { org } : undefined

@@ -17,9 +17,10 @@ router.get('/', (req: Request, res: Response) => {
 router.get('/survey', surveyController.getAllSurveys);
 router.post('/survey', surveyController.createSurvey);
 router.get('/survey/:id', surveyController.getSurveyById);
-router.put('/survey/:id', surveyController.updateSurvey);
+router.put('/survey/:id', surveyController.updateSurvey); // put github survey logic here
 router.delete('/survey/:id', surveyController.deleteSurvey);
 router.get('/survey/recent-good-reasons/:minReasonLength', surveyController.getRecentSurveysWithGoodReasons);
+router.put('/survey/:id/github', surveyController.updateSurveyGitHub);
 
 router.get('/usage', usageController.getUsage);
 
