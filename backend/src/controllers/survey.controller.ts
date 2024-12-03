@@ -46,6 +46,7 @@ class SurveyController {
         throw error;
       }
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   }
@@ -55,6 +56,16 @@ class SurveyController {
       const surveys = await Survey.findAll({
         order: [['updatedAt', 'DESC']]
       });
+      res.status(200).json(surveys);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
+  async getRecentSurveysWithGoodReasons(req: Request, res: Response): Promise<void> {
+    try {
+      const minReasonLength = parseInt(req.query.minReasonLength as string) || 20;
+      const surveys = await surveyService.getRecentSurveysWithGoodReasons(minReasonLength);
       res.status(200).json(surveys);
     } catch (error) {
       res.status(500).json(error);

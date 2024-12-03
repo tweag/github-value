@@ -19,6 +19,7 @@ router.post('/survey', surveyController.createSurvey);
 router.get('/survey/:id', surveyController.getSurveyById);
 router.put('/survey/:id', surveyController.updateSurvey);
 router.delete('/survey/:id', surveyController.deleteSurvey);
+router.get('/survey/recent-good-reasons/:minReasonLength', surveyController.getRecentSurveysWithGoodReasons);
 
 router.get('/usage', usageController.getUsage);
 

@@ -1,4 +1,5 @@
 import { Survey, SurveyType } from "../models/survey.model.js";
+import { Op } from 'sequelize';
 
 class SurveyService {
 
@@ -15,6 +16,20 @@ class SurveyService {
       where: { id: survey.id }
     });
     return await Survey.findByPk(survey.id);
+  }
+
+  async getRecentSurveysWithGoodReasons(minReasonLength: number = 20) {
+    return await Survey.findAll({
+      where: {
+        reason: {
+          [Op.and]: [
+            { [Op.ne]: null },
+            { [Op.length]: { [Op.gt]: minReasonLength } }
+          ]
+        }
+      },
+      order: [['updatedAt', 'DESC']]
+    });
   }
 }
 

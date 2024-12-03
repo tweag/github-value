@@ -62,8 +62,17 @@ form {
   padding-top: 60px; /* Add padding to ensure content does not overlap with the title */
 }
 
+.scrollable-card-content:hover {
+  animation-play-state: paused; /* Pause animation on hover */
+}
+
 .scrollable-card-content div {
   margin-bottom: 3em; /* Add extra space between reasons */
+}
+
+.kudos-count {
+  font-size: 0.8em;
+  margin-left: 5px;
 }
 
 @keyframes scroll {

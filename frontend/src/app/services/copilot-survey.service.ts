@@ -1,6 +1,7 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { serverUrl } from './server.service';
+import { Observable } from 'rxjs';
 
 export interface Survey {
   id?: number;
@@ -16,6 +17,7 @@ export interface Survey {
   reason: string;
   createdAt?: Date;
   updatedAt?: Date;
+  kudos?: number; // Add kudos property
 }
 
 @Injectable({
@@ -26,15 +28,20 @@ export class CopilotSurveyService {
 
   constructor(private http: HttpClient) { }
 
-  createSurvey(survey: Survey) {
-    return this.http.post(this.apiUrl, survey);
+  createSurvey(survey: Survey): Observable<Survey> {
+    return this.http.post<Survey>(this.apiUrl, survey);
   }
 
-  getAllSurveys() {
+  getAllSurveys(): Observable<Survey[]> {
     return this.http.get<Survey[]>(this.apiUrl);
   }
 
-  getSurveyById(id: number) {
+  getRecentSurveysWithGoodReasons(minReasonLength: number = 20): Observable<Survey[]> {
+    //const params = new HttpParams().set('minReasonLength', minReasonLength.toString());
+    return this.http.get<Survey[]>(`${this.apiUrl}/recent-good-reasons/${minReasonLength}`);
+  }
+
+  getSurveyById(id: number): Observable<Survey> {
     return this.http.get<Survey>(`${this.apiUrl}/${id}`);
   }
 
@@ -42,4 +49,7 @@ export class CopilotSurveyService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
+  updateSurvey(survey: Survey): Observable<Survey> {
+    return this.http.put<Survey>(`${this.apiUrl}/${survey.id}`, survey);
+  }
 }
