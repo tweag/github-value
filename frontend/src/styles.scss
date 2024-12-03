@@ -92,3 +92,9 @@ highcharts-chart {
   width: 100% !important;
   height: 100% !important;
 }
+
+:root {
+  --error: #93000a; /* Error */
+  --success: #28a745; /* Green */
+  --warning: #FFAB00; /* Orange/Yellow */
+}
