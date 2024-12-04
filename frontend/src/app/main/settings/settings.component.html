@@ -8,34 +8,32 @@
       <h3>Assumptions</h3>
     </div>
     <div class="settings-content auto-fit-grid">
-      <mat-form-field>
-        <mat-label>Number of Developers</mat-label>
-        <input type="number" matInput formControlName="developerCount" placeholder="Ex: 100">
-        <mat-error *ngIf="form.controls.developerCount.hasError('required')">
-          Number of developers is <strong>required</strong>
-        </mat-error>
-      </mat-form-field>
-
-      <mat-form-field floatLabel="always">
-        <mat-label>Total Loaded Cost per Developer per Year</mat-label>
-        <input type="number" matInput formControlName="devCostPerYear" placeholder="Ex: 150000"
-          class="example-right-align">
-        <mat-error *ngIf="form.controls.devCostPerYear.hasError('required')">
-          Developer cost is <strong>required</strong>
-        </mat-error>
-        <span matTextPrefix>$&nbsp;</span>
-        <span matTextSuffix>.00</span>
-      </mat-form-field>
-
-      <mat-form-field>
-        <mat-label>Hours Available per Developer per Year</mat-label>
-        <input type="number" matInput formControlName="hoursPerYear" placeholder="Ex: 2080" min="0"
-          class="example-right-align">
-        <mat-error *ngIf="form.controls.hoursPerYear.hasError('required')">
-          Hours per year is <strong>required</strong>
-        </mat-error>
-        <span matTextSuffix>Hrs</span>
-      </mat-form-field>
+        <mat-form-field floatLabel="always">
+          <mat-label>Max number of Developers</mat-label>
+          <input type="text" matInput [value]="(form.controls.developerCount.value ?? 1000) | thousandSeparator"  formControlName="developerCount"
+            (input)="onDeveloperCountInput($event)" placeholder="Ex: 100">
+          <mat-error *ngIf="form.controls.developerCount.hasError('required')">
+            Number of developers is <strong>required</strong>
+          </mat-error>
+        </mat-form-field>
+      
+        <mat-form-field floatLabel="always">
+          <mat-label>Total Loaded Cost per Developer per Year</mat-label>
+          <input type="text" matInput [value]="(form.controls.devCostPerYear.value ?? 100000) | thousandSeparator" formControlName="devCostPerYear"
+            (input)="onDevCostPerYearInput($event)" placeholder="Ex: 150000" class="example-right-align">
+          <mat-error *ngIf="form.controls.devCostPerYear.hasError('required')">
+            Developer cost is <strong>required</strong>
+          </mat-error>
+          <span matTextPrefix>$&nbsp;</span>
+          <span matTextSuffix></span>
+        </mat-form-field>
+      
+        <mat-form-field>
+          <mat-label>Hours Available per Developer per Year</mat-label>
+          <input type="text" matInput [value]="(form.controls.hoursPerYear.value ?? 2000) | thousandSeparator" formControlName="hoursPerYear"
+            (input)="onHoursPerYearInput($event)" placeholder="Ex: 2080" 
+            class="example-right-align">
+        </mat-form-field>
 
       <mat-form-field>
         <mat-label>Time Spent Coding</mat-label>

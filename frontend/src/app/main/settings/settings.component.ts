@@ -11,6 +11,9 @@ import { ThemeService } from '../../services/theme.service';
 import { Endpoints } from '@octokit/types';
 import cronstrue from 'cronstrue';
 import { InstallationsService } from '../../services/api/installations.service';
+import { SharedModule } from '../settings/shared.module'; // Adjust the path as necessary
+import { ThousandSeparatorPipe } from '../settings/thousand-separator.pipe'; // Adjust the path as necessary
+
 
 export class MyErrorStateMatcher implements ErrorStateMatcher {
   isErrorState(control: FormControl | null, form: FormGroupDirective | NgForm | null): boolean {
@@ -26,23 +29,18 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     MaterialModule,
     AppModule,
     CommonModule,
-    MatCheckboxModule
+    MatCheckboxModule,
+    SharedModule
   ],
+  providers: [ThousandSeparatorPipe],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
 export class SettingsComponent implements OnInit {
   form = new FormGroup({
-    developerCount: new FormControl(0, [
-      Validators.min(1)
-    ]),
-    devCostPerYear: new FormControl(0, [
-      Validators.min(0)
-    ]),
-    hoursPerYear: new FormControl(2080, [
-      Validators.min(1),
-      Validators.max(8760)
-    ]),
+    developerCount: new FormControl('1,000'),
+    devCostPerYear: new FormControl('100,000'),
+    hoursPerYear: new FormControl("2,000"),
     percentCoding: new FormControl(0, [
       Validators.min(0),
       Validators.max(100)
@@ -80,7 +78,9 @@ export class SettingsComponent implements OnInit {
     private settingsService: SettingsHttpService,
     private router: Router,
     public installationsService: InstallationsService,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    public sharedModule: SharedModule,
+    private thousandSeparatorPipe: ThousandSeparatorPipe
   ) { }
 
   ngOnInit() {
@@ -90,9 +90,9 @@ export class SettingsComponent implements OnInit {
         baseUrl: settings.baseUrl || '',
         webhookProxyUrl: settings.webhookProxyUrl || '',
         webhookSecret: settings.webhookSecret || '',
-        devCostPerYear: settings.devCostPerYear || 0,
-        developerCount: settings.developerCount || 0,
-        hoursPerYear: settings.hoursPerYear || 0,
+        devCostPerYear: this.thousandSeparatorPipe.transform(settings.devCostPerYear ?? 0 ),
+        developerCount: this.thousandSeparatorPipe.transform(settings.developerCount ?? 0),
+        hoursPerYear: this.thousandSeparatorPipe.transform(settings.hoursPerYear ?? 0),
         percentCoding: settings.percentCoding || 0,
         percentTimeSaved: settings.percentTimeSaved || 0
       });
@@ -104,8 +104,50 @@ export class SettingsComponent implements OnInit {
     if (this.form.invalid) {
       return;
     }
-    this.settingsService.createSettings(this.form.value).subscribe(() => {
+    
+    const settings = {
+      metricsCronExpression: this.form.controls.metricsCronExpression.value,
+      baseUrl: this.form.controls.baseUrl.value,
+      webhookProxyUrl: this.form.controls.webhookProxyUrl.value,
+      webhookSecret: this.form.controls.webhookSecret.value,
+      devCostPerYear: parseInt((this.form.controls.devCostPerYear.value ?? '0').replace(/,/g, ''), 10) || 0,
+      developerCount: parseInt((this.form.controls.developerCount.value ?? '0').replace(/,/g, ''), 10) || 0,
+      hoursPerYear: parseInt((this.form.controls.hoursPerYear.value ?? '0').replace(/,/g, ''), 10) || 0,
+      percentCoding: this.form.controls.percentCoding.value,
+      percentTimeSaved: this.form.controls.percentTimeSaved.value
+    };
+    console.log('Saving settings', settings)
+  
+    // Now you can store the settings object in the database
+    this.settingsService.createSettings(settings).subscribe(() => {
       this.router.navigate(['/']);
     });
+  }
+
+  onDevCostPerYearInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/,/g, ''); // Remove existing commas
+    const numericValue = value ? parseInt(value, 10) : 0;
+    const formattedValue = this.thousandSeparatorPipe.transform(numericValue);
+    this.form.controls.devCostPerYear.setValue(formattedValue);
+    input.value = formattedValue; // Update the input value with the formatted value
+  }
+
+  onDeveloperCountInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/,/g, ''); // Remove existing commas
+    const numericValue = value ? parseInt(value, 10) : 0;
+    const formattedValue = this.thousandSeparatorPipe.transform(numericValue);
+    this.form.controls.developerCount.setValue(formattedValue);
+    input.value = formattedValue; // Update the input value with the formatted value
+  }
+
+  onHoursPerYearInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const value = input.value.replace(/,/g, ''); // Remove existing commas
+    const numericValue = value ? parseInt(value, 10) : 0;
+    const formattedValue = this.thousandSeparatorPipe.transform(numericValue);
+    this.form.controls.hoursPerYear.setValue(formattedValue);
+    input.value = formattedValue; // Update the input value with the formatted value
   }
 }
