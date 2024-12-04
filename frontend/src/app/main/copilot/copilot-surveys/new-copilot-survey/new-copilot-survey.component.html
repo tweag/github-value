@@ -1,64 +1,96 @@
 <div class="page-container">
   <div class="page-header">
-    <h2>Estimate Time Saved With Copilot & <br> Share Insights with your colleagues</h2>
+    <h2>Estimate Time Saved With Copilot</h2>
+    <h4>(and Share Insights with your colleagues)</h4>
   </div>
   <div class="two-column-layout">
     <div class="column" [style.width.%]="formColumnWidth">
       <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
-        <label for="usedCopilot">Did you use Copilot for this PR?</label>
+        <div *ngIf="showConditionalFields" class="conditional-fields">
+          <mat-form-field class="example-form-field">
+            <mat-label>User ID</mat-label>
+            <input matInput formControlName="userId" placeholder="Enter your User ID" (blur)="validateUserId()">
+            <mat-error *ngIf="surveyForm.get('userId')?.hasError('invalidUserId')">
+              Invalid User ID
+            </mat-error>
+          </mat-form-field>
+          <mat-form-field class="example-form-field">
+            <mat-label>Repository</mat-label>
+            <input matInput formControlName="repo" placeholder="Enter the repository name (optional)">
+          </mat-form-field>
+          <mat-form-field class="example-form-field">
+            <mat-label>PR Number</mat-label>
+            <input matInput formControlName="prNumber" placeholder="Enter the PR number (optional)">
+          </mat-form-field>
+        </div>
+        <br> <!-- Add blank line of space -->
+        <div class="question" data-number="1.">
+        <label for="usedCopilot" class="label-large">Did you use Copilot for this PR?</label>
+        </div>
         <mat-radio-group id="usedCopilot" formControlName="usedCopilot" aria-labelledby="example-radio-group-label" class="example-radio-group">
           <mat-radio-button class="example-radio-button" [value]="true">Yes</mat-radio-button>
           <mat-radio-button class="example-radio-button" [value]="false">No</mat-radio-button>
         </mat-radio-group>
-        <label for="percentTimeSavedSlider">How much less time did the PR take with Copilot?</label>
+        <br> <!-- Add blank line of space -->
+        
+        
+        <div class="question" data-number="2.">
+          <label for="percentTimeSavedSlider" class="label-large">How much less time did the PR take with Copilot?</label>
+          </div>
         <div>
-          <mat-slider class="example-mat-slider" id="percentTimeSavedSlider" [max]="100" [min]="0" [step]="5" discrete="true" tickInterval="5" showTickMarks  [displayWith]="formatPercent">
+          <mat-slider class="example-mat-slider" id="percentTimeSavedSlider" [max]="60" [min]="0" [step]="5" discrete="true" tickInterval="5" showTickMarks  [displayWith]="formatPercent">
             <input matSliderThumb formControlName="percentTimeSaved">
           </mat-slider>
           <div class="slider-labels-container">
             <div class="slider-labels">
               <span style="left: 0%">0%</span>
-              <span style="left: 25%">25%</span>
+              <span style="left: 10%">10%</span>
+              <span style="left: 20%">20%</span>
+              <span style="left: 30%">30%</span>
+              <span style="left: 40%">40%</span>
               <span style="left: 50%">50%</span>
-              <span style="left: 75%">75%</span>
-              <span style="left: 100%">100%</span>
+              <span style="left: 60%">60%</span>
             </div>
           </div>
         </div>
-        <mat-form-field class="example-form-field">
-          <mat-label>If possible, Explain how copilot enabled that level of Time Savings </mat-label>
-          <textarea formControlName="reason" placeholder="Ex. Write boilerplate code more quickly, freeing up time to focus on complex logic." matInput (focus)="onReasonFocus()"></textarea>
-        </mat-form-field>
-        <br><br>
-        <label for="timeUsedForGroup">Given the context, where would the Copilot time savings most likely show up?</label>
+        <br> <!-- Add blank line of space -->
+        <div class="question" data-number="4.">
+          <label for="reason" class="label-large">Explain how Copilot enabled that level of Time Savings?</label>
+        
+          <mat-form-field class="example-form-field">
+          <textarea 
+            class="example-form-field"
+            formControlName="reason" 
+            placeholder="Ex. Write boilerplate code more quickly, freeing up time to focus on complex logic." 
+            matInput 
+            (focus)="onReasonFocus()">
+          </textarea>
+      </mat-form-field>
+    </div>
+        
+        <div class="question" data-number="5.">
+        <label for="timeUsedForGroup" class="label-large">Given current priorities, where would the Copilot time savings most likely show up?</label>
+        </div>
         <mat-radio-group id="timeUsedForGroup" formControlName="timeUsedFor" aria-labelledby="example-radio-group-label" class="example-radio-group">
           <mat-radio-button class="example-radio-button" value="fasterPRs">Faster PR's 🚀</mat-radio-button>
           <mat-radio-button class="example-radio-button" value="fasterReleases">Faster Releases 📦</mat-radio-button>
           <mat-radio-button class="example-radio-button" value="repoHousekeeping">Repo/Team Housekeeping 🧹</mat-radio-button>
-          <mat-radio-button class="example-radio-button" value="techDebt">Tech Debt, Reduce Defects and Vulns
-            🛠️</mat-radio-button>
-          <mat-radio-button class="example-radio-button" value="experimentLearn">Experiment, Learn, or Work on Something NEW
-            🧪</mat-radio-button>
+          <mat-radio-button class="example-radio-button" value="techDebt">Tech Debt, Reduce Defects and Vulns 🛠️</mat-radio-button>
+          <mat-radio-button class="example-radio-button" value="experimentLearn">Experiment, Learn, or Share Knowledge 🧪</mat-radio-button>
           <mat-radio-button class="example-radio-button" value="other">Other 🤔</mat-radio-button>
         </mat-radio-group>
+        <br> <!-- Add blank line of space -->
         <button mat-raised-button color="primary" type="submit">Submit</button>
       </form>
     </div>
-    <div class="column" [style.width.%]="historyColumnWidth">
+    <div class="column" >
       <h3>What colleagues are sharing...</h3>
       <mat-card class="scrollable-card">
         <mat-card-content class="scrollable-card-content">
           <div *ngFor="let reason of historicalReasons; let i = index">
             "{{ reason }}"
             <a href="#" (click)="addKudos($event, i)">
-              <mat-icon>thumb_up</mat-icon>
-            </a>
-            <span class="kudos-count">{{ surveys[i].kudos || 0 }}</span>
-          </div>
-          <div *ngFor="let reason of historicalReasons; let i = index">
-            "{{ reason }}"
-            <a href="#" (click)="addKudos($event, i)">
-              <mat-icon>thumb_up</mat-icon>
+              <mat-icon class="small-icon">thumb_up</mat-icon>
             </a>
             <span class="kudos-count">{{ surveys[i].kudos || 0 }}</span>
           </div>
@@ -66,4 +98,4 @@
       </mat-card>
     </div>
   </div>
-</div>```
+</div>

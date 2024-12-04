@@ -21,6 +21,7 @@ router.put('/survey/:id', surveyController.updateSurvey); // put github survey l
 router.delete('/survey/:id', surveyController.deleteSurvey);
 router.get('/survey/recent-good-reasons/:minReasonLength', surveyController.getRecentSurveysWithGoodReasons);
 router.put('/survey/:id/github', surveyController.updateSurveyGitHub);
+router.put('/survey/kudos/:id', surveyController.updateKudos);
 
 router.get('/usage', usageController.getUsage);
 
@@ -34,6 +35,7 @@ router.get('/seats/:id', SeatsController.getSeat);
 
 router.get('/teams', teamsController.getAllTeams);
 router.get('/members', teamsController.getAllMembers);
+router.get('/members/:login', teamsController.getMemberByLogin);
 
 router.get('/settings', settingsController.getAllSettings);
 router.post('/settings', settingsController.createSettings);

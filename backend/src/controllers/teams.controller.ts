@@ -58,6 +58,24 @@ class TeamsController {
       res.status(500).json(error);
     }
   }
+
+  async getMemberByLogin(req: Request, res: Response): Promise<void> {
+    try {
+      const { login } = req.params;
+      const member = await Member.findOne({
+        where: { login },
+        attributes: ['login', 'name', 'url', 'avatar_url']
+      });
+
+      if (member) {
+        res.json(member);
+      } else {
+        res.status(404).json({ message: 'User not found' });
+      }
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
 }
 
 export default new TeamsController();

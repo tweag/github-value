@@ -13,17 +13,20 @@ class SurveyService {
     return await Survey.findByPk(survey.id);
   }
 
-  async getRecentSurveysWithGoodReasons(minReasonLength: number = 20) {
-    return await Survey.findAll({
+  
+  async getRecentSurveysWithGoodReasons(minReasonLength: number): Promise<Survey[]> {
+    return Survey.findAll({
       where: {
         reason: {
           [Op.and]: [
             { [Op.ne]: null },
-            { [Op.length]: { [Op.gt]: minReasonLength } }
+            { [Op.ne]: '' },
+            { [Op.gte]: minReasonLength }
           ]
         }
       },
-      order: [['updatedAt', 'DESC']]
+      order: [['updatedAt', 'DESC']],
+      limit: 20
     });
   }
 }

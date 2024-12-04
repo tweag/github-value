@@ -41,8 +41,7 @@ export class CopilotSurveyService {
     });
   }
 
-  getRecentSurveysWithGoodReasons(minReasonLength: number = 20){
-    //const params = new HttpParams().set('minReasonLength', minReasonLength.toString());
+  getRecentSurveysWithGoodReasons(minReasonLength: number) {
     return this.http.get<Survey[]>(`${this.apiUrl}/recent-good-reasons/${minReasonLength}`);
   }
 
@@ -57,4 +56,11 @@ export class CopilotSurveyService {
   updateSurvey(survey: Survey)  {
     return this.http.put<Survey>(`${this.apiUrl}/${survey.id}`, survey);
   }
+//create a call to the backend to update the kudos property of a survey
+  updateKudos(id: number) {
+  
+    return this.http.put(`${this.apiUrl}/kudos/${id}`, {});
+  }
+
+
 }

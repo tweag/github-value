@@ -35,7 +35,7 @@ class SurveyController {
 
   async getRecentSurveysWithGoodReasons(req: Request, res: Response): Promise<void> {
     try {
-      const minReasonLength = parseInt(req.query.minReasonLength as string) || 20;
+      const minReasonLength = parseInt(req.params.minReasonLength, 10) || 20;
       const surveys = await surveyService.getRecentSurveysWithGoodReasons(minReasonLength);
       res.status(200).json(surveys);
     } catch (error) {
@@ -117,6 +117,26 @@ class SurveyController {
     } catch (error) {
       logger.error('Error updating survey comment', error);
       throw error;
+    }
+  }
+
+  async updateKudos(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+
+      const survey = await Survey.findByPk(id);
+      if (!survey) {
+        res.status(404).json({ error: 'Survey not found' });
+        return;
+      }
+
+      survey.kudos = (survey.kudos || 0) + 1;
+      await survey.save();
+
+      res.status(200).json(survey);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
     }
   }
 

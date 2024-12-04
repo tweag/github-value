@@ -17,7 +17,7 @@ class Database {
   sequelize?: Sequelize;
   options: Options = {
     dialect: 'mysql',
-    logging: (sql) => logger.debug(sql),
+    logging: (sql) => logger.error(sql),
     timezone: '+00:00', // Force UTC timezone
     dialectOptions: {
       timezone: '+00:00' // Force UTC for MySQL connection
