@@ -35,14 +35,14 @@ export class CopilotSurveyService {
     return this.http.post(`${this.apiUrl}/${survey.id}/github`, survey);
   }
 
-  getAllSurveys(org?: string) {
+  getAllSurveys(params?: {
+    org?: string;
+    reasonLength?: number;
+  }) {
+    if (!params?.org) delete params?.org;
     return this.http.get<Survey[]>(this.apiUrl, {
-      params: org ? { org } : undefined
+      params
     });
-  }
-
-  getRecentSurveysWithGoodReasons(minReasonLength: number) {
-    return this.http.get<Survey[]>(`${this.apiUrl}/recent-good-reasons/${minReasonLength}`);
   }
 
   getSurveyById(id: number) {
@@ -53,14 +53,8 @@ export class CopilotSurveyService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  updateSurvey(survey: Survey)  {
+  updateSurvey(survey: Partial<Survey>) {
     return this.http.put<Survey>(`${this.apiUrl}/${survey.id}`, survey);
   }
-//create a call to the backend to update the kudos property of a survey
-  updateKudos(id: number) {
-  
-    return this.http.put(`${this.apiUrl}/kudos/${id}`, {});
-  }
-
 
 }

@@ -1,3 +1,22 @@
+.page-header {
+  margin-bottom: 28px;
+  h1 {
+    margin-bottom: 0;
+  }
+}
+
+.survey-container {
+  display:grid;
+  grid-template-columns: 500px 1fr;
+  gap: 28px;
+}
+
+@media screen and (max-width: 1050px) {
+  .survey-container {
+    grid-template-columns: 1fr;
+  }
+}
+
 .example-radio-group {
   display: flex;
   flex-direction: column;
@@ -30,140 +49,24 @@
     position: relative;
     margin-bottom: 15px;
     > * {
-      position: absolute;
-      transform: translateX(-50%);
+      position:absolute;
+      transform:translateX(-50%);
     }
   }
 }
 
-form {
-  max-width: 1250px;
-}
+#survey-responses {
+  .survey-response-container {
+    max-height: 750px;
+    overflow-y: auto;
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+    scrollbar-width: none;  /* Firefox */
 
-.two-column-layout {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-}
-
-.column {
-  padding: 10px;
-}
-
-.scrollable-card {
-  max-height: 600px; /* Increase the maximum height for the card */
-  overflow: hidden;  /* Hide the scrollbar */
-  white-space: normal; /* Ensure text wraps properly */
-  position: relative;
-  margin-top: 20px; /* Add margin to separate from the header */
-}
-
-.scrollable-card-content {
-  position: relative;
-  animation: scroll 20s linear infinite; /* Adjust duration as needed */
-  padding-top: 60px; /* Add padding to ensure content does not overlap with the title */
-}
-
-.scrollable-card-content:hover {
-  animation-play-state: paused; /* Pause animation on hover */
-}
-
-.scrollable-card-content div {
-  margin-bottom: 3em; /* Add extra space between reasons */
-}
-
-.kudos-count {
-  font-size: 0.9em; // Reduced by 2 points
-  margin-left: 5px;
-}
-
-@keyframes scroll {
-  0% {
-    transform: translateY(0);
+    mat-card {
+      margin-bottom: 20px;
+    }
   }
-  100% {
-    transform: translateY(-50%);
+  .survey-response-container::-webkit-scrollbar { 
+    display: none;  /* Safari and Chrome */
   }
-}
-
-/* Center the mat-card-title */
-.mat-card-title {
-  text-align: center;
-  width: 100%;
-  margin-bottom: 20px; /* Add margin to separate from the content */
-}
-
-.conditional-fields {
-  border: 1px solid #ccc;
-  padding: 15px;
-  margin-bottom: 20px;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-}
-
-.label-large {
-  font-size: 1.5em; // Increase font size by 50%
-}
-
-.small-icon {
-  font-size: 20px; // Adjust the size as needed
-}
-
-.page-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  font-size: 2em;
-  margin: 0;
-}
-
-.page-header h4 {
-  font-size: 1.2em;
-  margin: 0;
-  color: #666;
-}
-
-.page-header h2, .page-header h4 {
-  margin: 0;
-  padding: 0;
-  display: block;
-}
-
-.page-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-.page-header {
-  margin-bottom: 3rem;
-}
-
-.conditional-fields {
-  padding: 2rem;
-  margin: 2rem 0;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.example-form-field {
-  margin-bottom: 1.5rem;
-}
-
-.example-radio-group {
-  margin: 1.5rem 0;
-}
-
-.scrollable-card {
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: box-shadow 0.3s ease;
-}
-
-.kudos-count {
-  transition: color 0.2s ease;
-}
-
-.mat-slider-thumb {
-  transform: scale(1.2);
 }

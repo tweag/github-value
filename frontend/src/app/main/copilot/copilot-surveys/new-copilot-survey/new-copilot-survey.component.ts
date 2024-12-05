@@ -1,9 +1,20 @@
-import { Component, forwardRef, OnInit, AfterViewInit } from '@angular/core';
+import { Component, forwardRef, OnInit } from '@angular/core';
 import { AppModule } from '../../../../app.module';
-import { FormBuilder, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, NG_VALUE_ACCESSOR, ValidationErrors, Validators } from '@angular/forms';
 import { CopilotSurveyService, Survey } from '../../../../services/api/copilot-survey.service';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MembersService } from '../../../../services/api/members.service';
+import { InstallationsService } from '../../../../services/api/installations.service';
+import { catchError, map, Observable, of } from 'rxjs';
+
+export function userIdValidator(membersService: MembersService) {
+  return (control: AbstractControl): Observable<ValidationErrors | null> => {
+    return membersService.getMemberByLogin(control.value).pipe(
+      map(isValid => (isValid ? null : { invalidUserId: true })),
+      catchError(() => of({ invalidUserId: true }))
+    );
+  };
+}
 
 @Component({
   selector: 'app-copilot-survey',
@@ -19,39 +30,32 @@ import { MembersService } from '../../../../services/api/members.service';
     }
   ],
   templateUrl: './new-copilot-survey.component.html',
-  styleUrl: './new-copilot-survey.component-copy.scss'
+  styleUrl: './new-copilot-survey.component.scss'
 })
-export class NewCopilotSurveyComponent implements OnInit, AfterViewInit {
+export class NewCopilotSurveyComponent implements OnInit {
   surveyForm: FormGroup;
   params: Params = {};
   defaultPercentTimeSaved = 25;
   id: number;
-  showConditionalFields = true; // Flag to show/hide conditional fields
-
-  initializationReason = 'I estimated ' + this.defaultPercentTimeSaved + '% because Copilot enabled me to...';
-  didNotUsedCopilotReason = 'I did not use Copilot...';
-  usedCopilotWithPercentTimeSaved = (percent: number) => `I estimated ${percent}% because Copilot enabled me to...`;
-  usedCopilotWithPercentTimeSavedZero = 'I estimated 0% because Copilot did not help me...';
-
-  formColumnWidth = 70; // Percentage width for the form column
-  historyColumnWidth = 30; // Percentage width for the history column
-  historicalReasons: string[] = []; // Array to hold historical reasons
-  surveys: Survey[] = []; // Array to hold survey objects
+  surveys: Survey[] = [];
 
   constructor(
     private fb: FormBuilder,
     private copilotSurveyService: CopilotSurveyService,
     private route: ActivatedRoute,
     private router: Router,
-    private membersService: MembersService
+    private membersService: MembersService,
+    private installationsService: InstallationsService
   ) {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.id = isNaN(id) ? 0 : id;
-    this.showConditionalFields = this.id === 0;
     this.surveyForm = this.fb.group({
-      userId: new FormControl('', Validators.required), // Add userId field
-      repo: new FormControl(''), // Add repo field
-      prNumber: new FormControl(''), // Add prNumber field
+      userId: new FormControl('', {
+        validators: Validators.required,
+        asyncValidators: userIdValidator(this.membersService),
+      }),
+      repo: new FormControl(''),
+      prNumber: new FormControl(''),
       usedCopilot: new FormControl(true, Validators.required),
       percentTimeSaved: new FormControl(this.defaultPercentTimeSaved, Validators.required),
       reason: new FormControl(''),
@@ -64,127 +68,38 @@ export class NewCopilotSurveyComponent implements OnInit, AfterViewInit {
       this.params = params;
     });
 
-    // Set scrollRestoration to auto
-    if ('scrollRestoration' in window.history) {
-      window.history.scrollRestoration = 'auto';
-    }
-
-    // Page Initialization
-    this.setReasonDefault();
     this.loadHistoricalReasons();
 
     this.surveyForm.get('usedCopilot')?.valueChanges.subscribe((value) => {
       if (!value) {
         this.surveyForm.get('percentTimeSaved')?.setValue(0);
-        this.setReasonDefault();
       } else {
         this.surveyForm.get('percentTimeSaved')?.setValue(this.defaultPercentTimeSaved);
-        this.setReasonDefault();
       }
     });
-
-    this.surveyForm.get('percentTimeSaved')?.valueChanges.subscribe((value) => {
-      if (!this.surveyForm.get('reason')?.dirty) {
-        this.setReasonDefault();
-      } else {
-        this.promptUserForConfirmation();
-      }
-    });
-
-    // Debugging: Confirm the reason list is not empty
-    console.log('Historical Reasons:', this.historicalReasons);
-  }
-
-  ngAfterViewInit() {
-    // Restart the animation after the view is initialized
-    this.restartAnimation();
-  }
-
-  restartAnimation() {
-    const content = document.querySelector('.scrollable-card-content') as HTMLElement;
-    if (content) {
-      content.style.animation = 'none';
-      content.offsetHeight; // Trigger reflow
-      content.style.animation = '';
-    }
-  }
-
-  setReasonDefault() {
-    const reasonControl = this.surveyForm.get('reason');
-    if (reasonControl && !reasonControl.dirty) {
-      const percentTimeSaved = this.surveyForm.get('percentTimeSaved')?.value;
-      const usedCopilot = this.surveyForm.get('usedCopilot')?.value;
-      reasonControl.setValue(
-        usedCopilot
-          ? (percentTimeSaved === 0 ? this.usedCopilotWithPercentTimeSavedZero : this.usedCopilotWithPercentTimeSaved(percentTimeSaved))
-          : this.didNotUsedCopilotReason
-      );
-    }
-  }
-
-  onReasonFocus() {
-    const reasonControl = this.surveyForm.get('reason');
-    if (reasonControl && !reasonControl.value) {
-      this.setReasonDefault();
-    }
-  }
-
-  promptUserForConfirmation() {
-    // Implement the logic to prompt the user with a warning
-    alert("Detected that reason and percentTimeSaved might be incorrect. Please confirm.");
   }
 
   loadHistoricalReasons() {
-    this.copilotSurveyService.getRecentSurveysWithGoodReasons(20).subscribe(
-      (surveys: Survey[]) => {
-        this.surveys = surveys;
-        this.historicalReasons = surveys.map(survey => survey.reason);
-
-        // Debugging: Confirm the historical reasons are loaded
-        console.log('Historical Reasons:', this.historicalReasons);
-        if (this.historicalReasons.length > 0) {
-          console.log('First Reason:', this.historicalReasons[0]);
-        }
-        if (this.historicalReasons.length < 1) {
-          this.historicalReasons =[
-            'I chose 5% because Copilot enabled me to tidy up loose ends because I got added to pilot after I\'d already completed most of this task.',
-            'I chose 10% because Copilot enabled me to make a very small change.',
-            'I chose 10% because Copilot enabled me to make small familiar changes for which Copilot\'s main use was double-checking my work.',
-            'I chose 10% because Copilot enabled me to connect files and models together, which Copilot isn\'t savvy on doing. It was helpful to figure out why a test wasn\'t working though.',
-            'I chose 0% because this is my first time trying co-pilot so I expect this % to raise for future PR\'s.',
-            'I chose 20% because Copilot enabled me to save time typing similar lines of code or docstrings.',
-            'I chose 20% because Copilot chat asking how to use specific command. Gives faster accurate answer without having to dig in the CLI documentation.',
-            'I chose 30% because Copilot helped with unit tests and writing boilerplate.',
-            'I chose 30% because Copilot enabled me to save time writing comments and test-case boilerplate.',
-            'I chose 30% because Copilot automatically adapted the code from previous lines so I barely wrote anything by hand.',
-            'I chose 25% because I created a new nestJS service to provide Github App authentication to other services. I was adapting logic from another Shift-left service. My thinking behind the 21%-30% savings is that Copilot autocompleted several of the tie-ins to other parts of the application and felt to provide about that much productivity increase.',
-            'I chose 20% because it was good when I had writer\'s block to suggest the next line, or what I might do. It was also very convenient to quickly search for an answer to a small question I had.',
-            'I chose 20% because less typing required, prefilled code blocks for me.',
-            'I chose 25% because for about half the work in this PR, I did the first quarter of it, told GH Copilot "see what I did at lines N through N in #file? Do that for...." and let it do the other one-quarter of the work for me.',
-            'I chose 30% because Copilot was awesome for this. I used it for a combination of starting code blocks with comments and it made the function, and I used the inline chat. Compared to both it typing out stuff I knew how to do, and it finding solutions to stuff that would have taken time on the web, it felt like a really substantial time saver.',
-            'I chose 30% because raw time spent coding and generating tests. Copilot was able to suggest more than 90% of the code I would have had to manually create.',
-            'I chose 40% because Copilot reduced the amount of thought required.',
-            'I chose 50% because it takes most of the time to write test cases for functionality. Copilot did it automatically for simple function with one input.',
-            'I chose 45% because when scaffolding React components, there is much boilerplate that can be autofilled with Copilot. For example, in many cases, a small React component return value may be 10 lines. Copilot is often smart enough to autocomplete these components for me. The greatest gains are seen when scaffolding a brand new codebase. Gains are smaller if making small code changes or performing analysis.',
-            'I chose 40% because Copilot assisted with formatting large sets of data for a test that normally would have taken much longer to do manually.',
-            'I chose 50% because I was able to tab out the entire process.'
-          ];
-        }
-
-        // Restart the animation after loading historical reasons
-        this.restartAnimation();
-      },
-      (error) => {
-        console.error('Error loading historical reasons:', error);
-      }
+    this.copilotSurveyService.getAllSurveys({
+      reasonLength: 20,
+      // org: this.installationsService.currentInstallation.value?.account?.login
+    }).subscribe((surveys: Survey[]) => {
+      this.surveys = [
+        ...surveys,
+        ...surveys,
+        ...surveys,
+        ...surveys,
+      ];
+    }
     );
   }
 
-  addKudos(event: Event, index: number) {
-    event.preventDefault();
-    const survey = this.surveys[index];
-    if (survey && survey.id !== undefined) {
-      this.copilotSurveyService.updateKudos(survey.id).subscribe(() => {
+  addKudos(survey: Survey) {
+    if (survey && survey.id) {
+      this.copilotSurveyService.updateSurvey({
+        id: survey.id,
+        kudos: survey.kudos ? survey.kudos + 1 : 1
+      }).subscribe(() => {
         survey.kudos = (survey.kudos || 0) + 1;
         console.log(`Kudos added to survey with id ${survey.id}. Total kudos: ${survey.kudos}`);
       });
@@ -212,8 +127,8 @@ export class NewCopilotSurveyComponent implements OnInit, AfterViewInit {
       id: this.id,
       userId: this.surveyForm.value.userId,
       org,
-      repo: this.surveyForm.value.repo,
-      prNumber: this.surveyForm.value.prNumber,
+      repo: repo || this.surveyForm.value.repo,
+      prNumber: prNumber || this.surveyForm.value.prNumber,
       usedCopilot: this.surveyForm.value.usedCopilot,
       percentTimeSaved: Number(this.surveyForm.value.percentTimeSaved),
       reason: this.surveyForm.value.reason,
@@ -235,28 +150,7 @@ export class NewCopilotSurveyComponent implements OnInit, AfterViewInit {
     }
   }
 
-  formatPercent(value: number): string {
+  formatPercent(value: number) {
     return `${value}%`
-  }
-
-  validateUserId() {
-    const userIdControl = this.surveyForm.get('userId');
-    if (userIdControl) {
-      const userId = userIdControl.value;
-      if (userId) {
-        this.membersService.getMemberByLogin(userId).subscribe(
-          (response) => {
-            if (response) {
-              userIdControl.setErrors(null);
-            } else {
-              userIdControl.setErrors({ invalidUserId: true });
-            }
-          },
-          () => {
-            userIdControl.setErrors({ invalidUserId: true });
-          }
-        );
-      }
-    }
   }
 }

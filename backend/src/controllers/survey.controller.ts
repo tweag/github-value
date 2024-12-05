@@ -3,79 +3,9 @@ import { Survey } from '../models/survey.model.js';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
+import { Op, Sequelize } from 'sequelize';
 
 class SurveyController {
-  async createSurvey(req: Request, res: Response): Promise<void> {
-    try {
-      const survey = await surveyService.createSurvey({
-        ...req.body,
-        status: 'completed'
-      })
-      res.status(201).json(survey);
-    } catch (error) {
-      console.log(error);
-      res.status(500).json(error);
-      return;
-    }
-  }
-
-  async getAllSurveys(req: Request, res: Response): Promise<void> {
-    try {
-      const surveys = await Survey.findAll({
-        order: [['updatedAt', 'DESC']],
-        where: {
-          ...req.query.org ? { userId: req.query.org as string } : {}
-        }
-      });
-      res.status(200).json(surveys);
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
-
-  async getRecentSurveysWithGoodReasons(req: Request, res: Response): Promise<void> {
-    try {
-      const minReasonLength = parseInt(req.params.minReasonLength, 10) || 20;
-      const surveys = await surveyService.getRecentSurveysWithGoodReasons(minReasonLength);
-      res.status(200).json(surveys);
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
-
-  async getSurveyById(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      const survey = await Survey.findByPk(id);
-      if (survey) {
-        res.status(200).json(survey);
-      } else {
-        res.status(404).json({ error: 'Survey not found' });
-      }
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
-
-  async updateSurvey(req: Request, res: Response): Promise<void> {
-    try {
-      const { id } = req.params;
-      // implement the other fields... possibly
-      const { userId, usedCopilot, percentTimeSaved, timeUsedFor } = req.body;
-      const [updated] = await Survey.update({ userId, usedCopilot, percentTimeSaved, timeUsedFor }, {
-        where: { id }
-      });
-      if (updated) {
-        const updatedSurvey = await Survey.findByPk(id);
-        res.status(200).json(updatedSurvey);
-      } else {
-        res.status(404).json({ error: 'Survey not found' });
-      }
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
-
   async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
     let survey: Survey;
     try {
@@ -120,22 +50,81 @@ class SurveyController {
     }
   }
 
-  async updateKudos(req: Request, res: Response): Promise<void> {
+  async createSurvey(req: Request, res: Response): Promise<void> {
     try {
-      const { id } = req.params;
-
-      const survey = await Survey.findByPk(id);
-      if (!survey) {
-        res.status(404).json({ error: 'Survey not found' });
-        return;
-      }
-
-      survey.kudos = (survey.kudos || 0) + 1;
-      await survey.save();
-
-      res.status(200).json(survey);
+      const survey = await surveyService.createSurvey({
+        ...req.body,
+        status: 'completed'
+      })
+      res.status(201).json(survey);
     } catch (error) {
       console.log(error);
+      res.status(500).json(error);
+      return;
+    }
+  }
+
+  async getAllSurveys(req: Request, res: Response): Promise<void> {
+    try {
+      const { org, reasonLength } = req.query;
+      const minReasonLength = parseInt(reasonLength as string);
+      const surveys = await Survey.findAll({
+        order: [['updatedAt', 'DESC']],
+        where: {
+          ...org ? { org: org as string } : {},
+          ...reasonLength ? {
+            reason: {
+              [Op.and]: [
+                Sequelize.where(Sequelize.fn('LENGTH', Sequelize.col('reason')), {
+                  [Op.gte]: minReasonLength
+                })
+              ]
+            }
+          } : {}
+        }
+      });
+      console.log('test', JSON.stringify({
+        reason: {
+          [Op.and]: [
+            { [Op.ne]: '' },
+            { [Op.gte]: minReasonLength }
+          ]
+        }
+      }));
+      res.status(200).json(surveys);
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
+  async getSurveyById(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      const survey = await Survey.findByPk(id);
+      if (survey) {
+        res.status(200).json(survey);
+      } else {
+        res.status(404).json({ error: 'Survey not found' });
+      }
+    } catch (error) {
+      res.status(500).json(error);
+    }
+  }
+
+  async updateSurvey(req: Request, res: Response): Promise<void> {
+    try {
+      const { id } = req.params;
+      // implement the other fields... possibly
+      const [updated] = await Survey.update(req.body, {
+        where: { id }
+      });
+      if (updated) {
+        const updatedSurvey = await Survey.findByPk(id);
+        res.status(200).json(updatedSurvey);
+      } else {
+        res.status(404).json({ error: 'Survey not found' });
+      }
+    } catch (error) {
       res.status(500).json(error);
     }
   }

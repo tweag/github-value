@@ -12,9 +12,8 @@ type SurveyType = {
   percentTimeSaved: number;
   timeUsedFor: string;
   reason: string;
-  kudos?: number; // Add kudos property
+  kudos?: number;
   createdAt?: Date;
-  kudos: number;
   updatedAt?: Date;
 }
 
@@ -33,7 +32,6 @@ class Survey extends Model<SurveyType> {
   declare kudos: number;
   declare createdAt: CreationOptional<Date>;
   declare updatedAt: CreationOptional<Date>;
-  declare kudos?: number; // Add kudos property
 
   static initModel(sequelize: Sequelize) {
     Survey.init({
