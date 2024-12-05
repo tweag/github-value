@@ -1,21 +1,21 @@
+import app from "index.js";
 import { Seat } from "../models/copilot.seats.model.js";
 import { Survey } from "../models/survey.model.js";
 import { Member } from "../models/teams.model.js";
+import { Endpoints } from "@octokit/types";
+import copilotSeatsService from "./copilot.seats.service.js";
 
 export interface StatusType {
-  github?: {
-    isGood: boolean
+  github?: boolean;
+  seatsHistory?: {
+    oldestCreatedAt: string;
+    daysSinceOldestCreatedAt?: number;
   };
-  pollingHistory?: {
-    isGood: boolean;
-    message: string;
-    value?: any;
-    progress?: string;
-  };
-  repos?: {
-    value: number;
-  };
-  surveys?: StatusType;
+  installations: {
+    installation: Endpoints["GET /app/installations"]["response"]["data"][0]
+    repos: Endpoints["GET /app/installations"]["response"]["data"];
+  }[];
+  surveyCount: number;
 }
 
 class StatusService {
@@ -24,6 +24,7 @@ class StatusService {
   }
 
   async getStatus(): Promise<StatusType> {
+    console.log('Getting status');
     const status = {} as StatusType;
 
     const assignee = await Member.findOne();
@@ -36,15 +37,24 @@ class StatusService {
         where: {
           assignee_id: assignee.id
         },
-        order: [['createdAt', 'DESC']],
+        order: [['createdAt', 'ASC']],
       });
       const oldestSeat = seats.find(seat => seat.createdAt);
       const daysSince = oldestSeat ? Math.floor((new Date().getTime() - oldestSeat.createdAt.getTime()) / (1000 * 3600 * 24)) : undefined;
-      status.pollingHistory = {
-        isGood: true,
-        message: `${oldestSeat?.createdAt}`,
-        value: daysSince
+      status.seatsHistory = {
+        oldestCreatedAt: oldestSeat?.createdAt.toISOString() || 'No data',
+        daysSinceOldestCreatedAt: daysSince
       }
+    }
+
+
+    status.installations = [];
+    for (const installation of app.github.installations) {
+      const repos = await installation.octokit.request(installation.installation.repositories_url);
+      status.installations.push({
+        installation: installation.installation,
+        repos: repos.data.repositories
+      });
     }
 
     const surveys = await Survey.findAll({
@@ -52,11 +62,14 @@ class StatusService {
     });
 
     if (surveys) {
-      // status.surveys = {
-      //   message: `${surveys.length} surveys created`,
-      //   value: surveys.length
-      // }
+      status.surveyCount = surveys.length;
     }
+
+    const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
+    const activity = await copilotSeatsService.getMembersActivity({
+      since: yesterday.toISOString(),
+    });
+    console.log(Object.keys(activity));
 
     return status;
   }
