@@ -5,12 +5,57 @@
 
   <!-- Charts Section -->
   <div class="charts-grid">
-    <mat-card *ngFor="let options of chartOptions">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Adopted Users</mat-card-title>
+      </mat-card-header>
       <mat-card-content>
         <div class="chart-container">
           <highcharts-chart 
             [Highcharts]="Highcharts"
-            [options]="options"
+            [options]="adoptionChartOption"
+            style="width: 100%; height: 100%; display: block;">
+          </highcharts-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Activity Per Daily User</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <highcharts-chart 
+            [Highcharts]="Highcharts"
+            [options]="activityChartOptions"
+            style="width: 100%; height: 100%; display: block;">
+          </highcharts-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Reported Weekly Time Savings per Dev</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <highcharts-chart 
+            [Highcharts]="Highcharts"
+            [options]="timeSavingsChartOptions"
+            style="width: 100%; height: 100%; display: block;">
+          </highcharts-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Productivity Boost</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <highcharts-chart 
+            [Highcharts]="Highcharts"
+            [options]="productivityChartOptions"
             style="width: 100%; height: 100%; display: block;">
           </highcharts-chart>
         </div>
@@ -32,7 +77,6 @@
       <input matInput
              type="text"
              formControlName="adoption"
-             (input)="onInputChange($event, 'adoption', level)"
              [readonly]="level === 'max'"
              class="example-right-align">
       <span matTextSuffix>%</span>
@@ -46,7 +90,6 @@
         <input matInput
                type="text"
                formControlName="activityLevel"
-               (input)="onInputChange($event, 'activityLevel', level)"
                [readonly]="level === 'max'"
                class="example-right-align">
         <span matTextSuffix>%</span>
@@ -56,7 +99,6 @@
         <input matInput
                type="text"
                formControlName="timeSavings"
-               (input)="onInputChange($event, 'timeSavings', level)"
                [readonly]="level === 'max'"
                class="example-right-align">
         <span matTextSuffix>%</span>
@@ -69,7 +111,6 @@
       <input matInput
              type="text"
              formControlName="timeSavedDollars"
-             (input)="onInputChange($event, 'timeSavedDollars', level)"
              [readonly]="level === 'max'"
              class="example-right-align">
       <span matTextPrefix>$&nbsp;</span>
@@ -81,7 +122,6 @@
       <input matInput
              type="text"
              formControlName="downstreamProductivity"
-             (input)="onInputChange($event, 'downstreamProductivity', level)"
              [readonly]="level === 'max'"
              class="example-right-align">
       <span matTextSuffix>%</span>
