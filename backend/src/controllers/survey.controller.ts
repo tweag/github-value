@@ -3,9 +3,10 @@ import { Survey } from '../models/survey.model.js';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
+import { Op, Sequelize, WhereOptions } from 'sequelize';
 
 class SurveyController {
-  async createSurvey(req: Request, res: Response): Promise<void> {
+  async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
     let survey: Survey;
     try {
       const _survey = await surveyService.updateSurvey({
@@ -49,14 +50,47 @@ class SurveyController {
     }
   }
 
+  async createSurvey(req: Request, res: Response): Promise<void> {
+    try {
+      const survey = await surveyService.createSurvey({
+        ...req.body,
+        status: 'completed'
+      })
+      res.status(201).json(survey);
+    } catch (error) {
+      console.log(error);
+      res.status(500).json(error);
+      return;
+    }
+  }
+
   async getAllSurveys(req: Request, res: Response): Promise<void> {
     try {
+      const { org, reasonLength } = req.query;
+      const minReasonLength = parseInt(reasonLength as string);
       const surveys = await Survey.findAll({
         order: [['updatedAt', 'DESC']],
         where: {
-          ...req.query.org ? { userId: req.query.org as string } : {}
-        }
+          ...org ? { org: org as string } : {},
+          ...reasonLength ? {
+            reason: {
+              [Op.and]: [
+                Sequelize.where(Sequelize.fn('LENGTH', Sequelize.col('reason')), {
+                  [Op.gte]: minReasonLength
+                })
+              ]
+            }
+          } : {}
+        } as WhereOptions
       });
+      console.log('test', JSON.stringify({
+        reason: {
+          [Op.and]: [
+            { [Op.ne]: '' },
+            { [Op.gte]: minReasonLength }
+          ]
+        }
+      }));
       res.status(200).json(surveys);
     } catch (error) {
       res.status(500).json(error);
@@ -81,8 +115,7 @@ class SurveyController {
     try {
       const { id } = req.params;
       // implement the other fields... possibly
-      const { userId, usedCopilot, percentTimeSaved, timeUsedFor } = req.body;
-      const [updated] = await Survey.update({ userId, usedCopilot, percentTimeSaved, timeUsedFor }, {
+      const [updated] = await Survey.update(req.body, {
         where: { id }
       });
       if (updated) {

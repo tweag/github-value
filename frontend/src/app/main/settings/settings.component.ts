@@ -26,23 +26,16 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
     MaterialModule,
     AppModule,
     CommonModule,
-    MatCheckboxModule
+    MatCheckboxModule,
   ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss'
 })
 export class SettingsComponent implements OnInit {
   form = new FormGroup({
-    developerCount: new FormControl(0, [
-      Validators.min(1)
-    ]),
-    devCostPerYear: new FormControl(0, [
-      Validators.min(0)
-    ]),
-    hoursPerYear: new FormControl(2080, [
-      Validators.min(1),
-      Validators.max(8760)
-    ]),
+    developerCount: new FormControl(1000),
+    devCostPerYear: new FormControl(100000),
+    hoursPerYear: new FormControl(2000),
     percentCoding: new FormControl(0, [
       Validators.min(0),
       Validators.max(100)
@@ -80,7 +73,7 @@ export class SettingsComponent implements OnInit {
     private settingsService: SettingsHttpService,
     private router: Router,
     public installationsService: InstallationsService,
-    public themeService: ThemeService
+    public themeService: ThemeService,
   ) { }
 
   ngOnInit() {
@@ -104,7 +97,22 @@ export class SettingsComponent implements OnInit {
     if (this.form.invalid) {
       return;
     }
-    this.settingsService.createSettings(this.form.value).subscribe(() => {
+    
+    const settings = {
+      metricsCronExpression: this.form.controls.metricsCronExpression.value,
+      baseUrl: this.form.controls.baseUrl.value,
+      webhookProxyUrl: this.form.controls.webhookProxyUrl.value,
+      webhookSecret: this.form.controls.webhookSecret.value,
+      devCostPerYear: this.form.controls.devCostPerYear.value,
+      developerCount: this.form.controls.developerCount.value,
+      hoursPerYear: this.form.controls.hoursPerYear.value,
+      percentCoding: this.form.controls.percentCoding.value,
+      percentTimeSaved: this.form.controls.percentTimeSaved.value
+    };
+    console.log('Saving settings', settings)
+  
+    // Now you can store the settings object in the database
+    this.settingsService.createSettings(settings).subscribe(() => {
       this.router.navigate(['/']);
     });
   }

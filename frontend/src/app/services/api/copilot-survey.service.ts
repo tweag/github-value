@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { serverUrl } from '../server.service';
 
@@ -16,6 +16,7 @@ export interface Survey {
   reason: string;
   createdAt?: Date;
   updatedAt?: Date;
+  kudos?: number; // Add kudos property
 }
 
 @Injectable({
@@ -27,12 +28,20 @@ export class CopilotSurveyService {
   constructor(private http: HttpClient) { }
 
   createSurvey(survey: Survey) {
-    return this.http.post(this.apiUrl, survey);
+    return this.http.post<Survey>(this.apiUrl, survey);
   }
 
-  getAllSurveys(org?: string) {
+  createSurveyGitHub(survey: Survey) {
+    return this.http.post(`${this.apiUrl}/${survey.id}/github`, survey);
+  }
+
+  getAllSurveys(params?: {
+    org?: string;
+    reasonLength?: number;
+  }) {
+    if (!params?.org) delete params?.org;
     return this.http.get<Survey[]>(this.apiUrl, {
-      params: org ? { org } : undefined
+      params
     });
   }
 
@@ -42,6 +51,10 @@ export class CopilotSurveyService {
 
   deleteSurvey(id: number) {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  updateSurvey(survey: Partial<Survey>) {
+    return this.http.put<Survey>(`${this.apiUrl}/${survey.id}`, survey);
   }
 
 }

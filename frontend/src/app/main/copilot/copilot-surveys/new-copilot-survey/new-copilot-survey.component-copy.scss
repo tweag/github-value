@@ -1,0 +1,165 @@
+/* Core Layout */
+.page-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 1.5rem;
+ }
+ 
+ .two-column-layout {
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 2rem;
+  align-items: start;
+ }
+ 
+ /* Typography & Questions */
+ .page-header {
+  margin-bottom: 2rem;
+ }
+ 
+ .page-header h2 {
+  font-size: 1.75rem;
+  font-weight: 600;
+  color: #1a202c;
+  margin: 0;
+ }
+ 
+ .page-header h4 {
+  font-size: 1rem;
+  color: #718096;
+  margin: 0.25rem 0 0;
+ }
+ 
+ .conditional-fields {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+ }
+ 
+ /* Numbered Questions */
+ .question {
+  position: relative;
+  padding-left: 2rem;
+  margin: 1.5rem 0;
+ }
+ 
+ .question::before {
+  content: attr(data-number);
+  position: absolute;
+  left: 0;
+  color: #4a5568;
+  font-weight: 500;
+ }
+ 
+ /* Form Elements */
+ .example-form-field {
+  width: 100%;
+  margin-bottom: 1rem;
+ }
+ 
+ .reason-label {
+  font-size: 0.875rem;
+  color: #4a5568;
+  margin-top: 0.5rem;
+ }
+ 
+ /* Radio & Slider */
+ .example-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+ }
+ 
+ .slider-labels-container {
+  width: 95%;
+  margin: 0 8px;
+ }
+ 
+ /* Insights Card */
+ .scrollable-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+ }
+ 
+ .scrollable-card-content div {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+ }
+ 
+ /* Submit Button */
+ button[type="submit"] {
+  width: 100%;
+  padding: 0.75rem;
+  font-size: 1rem;
+  margin-top: 1rem;
+  background: #4299e1;
+  color: white;
+  border-radius: 6px;
+ }
+
+ .example-mat-slider {
+  width: 100%;
+}
+
+
+.slider-labels-container {
+  display: inline-block;
+  margin: 0 5px;
+  width: 90%;
+  .slider-labels {    
+    display: block;
+    width: 90%;
+    height: 12px;
+    margin-top: -10px;
+    position: relative;
+    margin-bottom: 18px;
+    > * {
+      position: relative;
+      transform: translateX(-40%);
+    }
+  }
+}
+
+.small-icon {
+  font-size: 20px; // Adjust the size as needed
+}
+
+
+@keyframes scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+
+.scrollable-card {
+  max-height: 600px; /* Increase the maximum height for the card */
+  overflow: hidden;  /* Hide the scrollbar */
+  white-space: normal; /* Ensure text wraps properly */
+  position: relative;
+  margin-top: 20px; /* Add margin to separate from the header */
+}
+
+.scrollable-card-content {
+  position: relative;
+  animation: scroll 20s linear infinite; /* Adjust duration as needed */
+  padding-top: 60px; /* Add padding to ensure content does not overlap with the title */
+}
+
+.scrollable-card-content:hover {
+  animation-play-state: paused; /* Pause animation on hover */
+}
+
+.scrollable-card-content div {
+  margin-bottom: 3em; /* Add extra space between reasons */
+}
+
+.kudos-count {
+  font-size: 0.9em; // Reduced by 2 points
+  margin-left: 5px;
+}

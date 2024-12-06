@@ -26,7 +26,7 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
   _chartOptions: Highcharts.Options = {
     yAxis: {
       title: {
-        text: 'Percent Active'
+        text: 'Adoption %'
       },
       min: 0,
       max: 100,

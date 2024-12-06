@@ -108,7 +108,9 @@ export class CopilotValueComponent implements OnInit {
       )
 
       this.subscriptions.push(
-        this.copilotSurveyService.getAllSurveys(installation?.account?.login).subscribe(data => {
+        this.copilotSurveyService.getAllSurveys({
+          org: installation?.account?.login
+        }).subscribe(data => {
           this.surveysData = data;
         })
       )

@@ -1,0 +1,130 @@
+<div class="page-container">
+  <div class="page-header">
+    <h1>Value Modeling and Targeting</h1>
+  </div>
+
+  <!-- Charts Section -->
+  <div class="charts-grid">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Adopted Users</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <highcharts-chart 
+            [Highcharts]="Highcharts"
+            [options]="adoptionChartOption"
+            style="width: 100%; height: 100%; display: block;">
+          </highcharts-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Activity Per Daily User</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <highcharts-chart 
+            [Highcharts]="Highcharts"
+            [options]="activityChartOptions"
+            style="width: 100%; height: 100%; display: block;">
+          </highcharts-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Reported Weekly Time Savings per Dev</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <highcharts-chart 
+            [Highcharts]="Highcharts"
+            [options]="timeSavingsChartOptions"
+            style="width: 100%; height: 100%; display: block;">
+          </highcharts-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Productivity Boost</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="chart-container">
+          <highcharts-chart 
+            [Highcharts]="Highcharts"
+            [options]="productivityChartOptions"
+            style="width: 100%; height: 100%; display: block;">
+          </highcharts-chart>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Metrics Grid -->
+  <form [formGroup]="form" class="metrics-grid">
+    <!-- Headers -->
+    <div class="grid-header metrics-label"></div>
+    <div class="grid-header">Current Level</div>
+    <div class="grid-header">Target Level</div>
+    <div class="grid-header">Max Level</div>
+
+    <!-- Adoption -->
+    <div class="metrics-label">Adopted Users</div>
+    <mat-form-field *ngFor="let level of ['current', 'target', 'max']" [formGroupName]="level">
+      <input matInput
+             type="text"
+             formControlName="adoption"
+             [readonly]="level === 'max'"
+             class="example-right-align">
+      <span matTextSuffix>%</span>
+    </mat-form-field>
+
+    <!-- Usage & Time Savings -->
+    <div class="metrics-label">Activity Per Daily User</div>
+    <div *ngFor="let level of ['current', 'target', 'max']" [formGroupName]="level" class="usage-inputs">
+      <mat-form-field>
+        <mat-label>Activity</mat-label>
+        <input matInput
+               type="text"
+               formControlName="activityLevel"
+               [readonly]="level === 'max'"
+               class="example-right-align">
+        <span matTextSuffix>%</span>
+      </mat-form-field>
+      <mat-form-field>
+        <mat-label>Time Savings</mat-label>
+        <input matInput
+               type="text"
+               formControlName="timeSavings"
+               [readonly]="level === 'max'"
+               class="example-right-align">
+        <span matTextSuffix>%</span>
+      </mat-form-field>
+    </div>
+
+    <!-- Time Saved As Dollars -->
+    <div class="metrics-label">Total Time Saved</div>
+    <mat-form-field *ngFor="let level of ['current', 'target', 'max']" [formGroupName]="level">
+      <input matInput
+             type="text"
+             formControlName="timeSavedDollars"
+             [readonly]="level === 'max'"
+             class="example-right-align">
+      <span matTextPrefix>$&nbsp;</span>
+    </mat-form-field>
+
+    <!-- Downstream Productivity -->
+    <div class="metrics-label">Time Saved as Dollars</div>
+    <mat-form-field *ngFor="let level of ['current', 'target', 'max']" [formGroupName]="level">
+      <input matInput
+             type="text"
+             formControlName="downstreamProductivity"
+             [readonly]="level === 'max'"
+             class="example-right-align">
+      <span matTextSuffix>%</span>
+    </mat-form-field>
+  </form>
+</div>

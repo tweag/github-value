@@ -24,16 +24,16 @@ export class TimeSavedChartComponent implements OnInit, OnChanges {
   _chartOptions: Highcharts.Options = {
     yAxis: {
       title: {
-        text: 'Time Saved (%)'
+        text: 'Time Saved (hrs per week)'
       },
       min: 0,
-      max: 100,
+      max: 12,
       labels: {
-        format: '{value}%'
+        format: '{value}hrs'
       },
       plotBands: [{
-        from: 5,
-        to: 15,
+        from: 4,
+        to: 7,
         color: 'var(--sys-surface-variant)',
         label: {
           text: 'Typical Range',
@@ -43,7 +43,7 @@ export class TimeSavedChartComponent implements OnInit, OnChanges {
         }
       }],
       plotLines: [{
-        value: 10,
+        value: 5,
         color: 'var(--sys-primary)',
         dashStyle: 'Dash',
         width: 2,
