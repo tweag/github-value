@@ -1,15 +1,16 @@
 <div class="page-container">
-  <div class="page-header">
+  <!-- <div class="page-header">
     <div>
       <h1>Estimate Time Saved With Copilot</h1>
       <h5 mat-card-subtitle>(and Share Insights with your colleagues)</h5>
     </div>
-  </div>
+  </div> -->
   <div class="survey-container">
     <div>
+      <h5>Estimate Time Savings</h5>
       <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
         <div *ngIf="!id" class="conditional-fields">
-          <label for="usedCopilot" class="label-large">Who is submitting this estimate?</label>
+          <label for="usedCopilot" class="label-large">   Who is submitting this estimate?</label>
           <mat-form-field class="example-form-field">
             <mat-label>GitHub Handle</mat-label>
             <input matInput formControlName="userId" placeholder="Ex. mona">
@@ -26,14 +27,15 @@
             <input matInput formControlName="prNumber" placeholder="Ex. 23">
           </mat-form-field>
         </div>
-        <label for="usedCopilot" class="label-large">Did you use Copilot for this PR?</label>
+        <label for="usedCopilot" class="label-large">1. Did you use Copilot for this PR?</label>
         <mat-radio-group id="usedCopilot" formControlName="usedCopilot" aria-labelledby="example-radio-group-label"
           class="example-radio-group">
           <mat-radio-button class="example-radio-button" [value]="true">Yes</mat-radio-button>
           <mat-radio-button class="example-radio-button" [value]="false">No</mat-radio-button>
         </mat-radio-group>
-        <label for="percentTimeSavedSlider" class="label-large">How much less time did the PR take with Copilot?</label>
-        <div>
+        <label for="percentTimeSavedSlider" class="label-large">2. How much less time did the PR take with Copilot?
+        </label>
+        <div id="slider">
           <mat-slider class="example-mat-slider" id="percentTimeSavedSlider" [max]="60" [min]="0" [step]="5"
             discrete="true" tickInterval="5" showTickMarks [displayWith]="formatPercent">
             <input matSliderThumb formControlName="percentTimeSaved">
@@ -48,13 +50,13 @@
             </div>
           </div>
         </div>
-        <label for="reason" class="label-large">Explain how Copilot enabled that level of Time Savings?</label>
+        <label for="reason" class="label-large">3. Explain how Copilot enabled that level of Time Savings?</label>
         <mat-form-field class="example-form-field">
           <textarea class="example-form-field" formControlName="reason"
             placeholder="Ex. Write boilerplate code more quickly, freeing up time to focus on complex logic." matInput>
           </textarea>
         </mat-form-field>
-        <label for="timeUsedForGroup" class="label-large">Given current priorities, where would the Copilot time
+        <label for="timeUsedForGroup" class="label-large">4. Given current priorities, where would the Copilot time
           savings most likely show up?</label>
         <mat-radio-group id="timeUsedForGroup" formControlName="timeUsedFor" aria-labelledby="example-radio-group-label"
           class="example-radio-group">
@@ -71,7 +73,7 @@
         <button mat-raised-button color="primary" type="submit">Submit</button>
       </form>
     </div>
-    <div id="survey-responses">
+    <div id="survey-responses" *ngIf="surveys.length">
       <h5>What colleagues are sharing...</h5>
       <div class="survey-response-container">
         <mat-card *ngFor="let survey of surveys">
@@ -96,4 +98,8 @@
       </div>
     </div>
   </div>
+  <p class="footer-text">
+    For developers to have a Downstream Impact with Copilot, they must Adopt, have consistent Activity, get consistent Time Savings, and intentionally spend it on a downstream outcome.
+Using the 3 upstream metrics we can view how copilot is being adopted, utilized and if it results in recognized benefit to developers. Downstream metrics have low signal to noise ratios making small improvements very hard to reliably measure. Capturing time savings at the developer level therefore provides critical visibility for understanding the level of impact and how impact is trending. When high levels of time savings are consistently reported then it becomes more likely to find confirmation in the downstream metrics even if the noise levels are high.
+  </p>
 </div>

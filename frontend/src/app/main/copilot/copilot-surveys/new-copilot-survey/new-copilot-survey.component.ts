@@ -6,6 +6,7 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { MembersService } from '../../../../services/api/members.service';
 import { InstallationsService } from '../../../../services/api/installations.service';
 import { catchError, map, Observable, of } from 'rxjs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export function userIdValidator(membersService: MembersService) {
   return (control: AbstractControl): Observable<ValidationErrors | null> => {
@@ -21,6 +22,7 @@ export function userIdValidator(membersService: MembersService) {
   standalone: true,
   imports: [
     AppModule,
+    MatTooltipModule
   ],
   providers: [
     {
@@ -84,12 +86,7 @@ export class NewCopilotSurveyComponent implements OnInit {
       reasonLength: 20,
       // org: this.installationsService.currentInstallation.value?.account?.login
     }).subscribe((surveys: Survey[]) => {
-      this.surveys = [
-        ...surveys,
-        ...surveys,
-        ...surveys,
-        ...surveys,
-      ];
+      this.surveys = surveys;
     }
     );
   }
