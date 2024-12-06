@@ -3,7 +3,7 @@ import { Survey } from '../models/survey.model.js';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
-import { Op, Sequelize } from 'sequelize';
+import { Op, Sequelize, WhereOptions } from 'sequelize';
 
 class SurveyController {
   async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
@@ -81,7 +81,7 @@ class SurveyController {
               ]
             }
           } : {}
-        } as any
+        } as WhereOptions
       });
       console.log('test', JSON.stringify({
         reason: {

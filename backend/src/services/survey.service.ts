@@ -1,5 +1,5 @@
 import { Survey, SurveyType } from "../models/survey.model.js";
-import { Op } from 'sequelize';
+import { Op, WhereOptions } from 'sequelize';
 
 class SurveyService {
   async createSurvey(survey: SurveyType) {
@@ -24,7 +24,7 @@ class SurveyService {
             { [Op.gte]: minReasonLength }
           ]
         }
-      } as any,
+      } as WhereOptions,
       order: [['updatedAt', 'DESC']],
       limit: 20
     });
