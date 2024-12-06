@@ -14,6 +14,7 @@ import { CopilotSurveyComponent } from './main/copilot/copilot-surveys/copilot-s
 import { CopilotSeatComponent } from './main/copilot/copilot-seats/copilot-seat/copilot-seat.component';
 import { PredictiveModelingComponent } from './main/copilot/predictive-modeling/predictive-modeling.component';
 import { DatabaseComponent } from './database/database.component';
+import { ValueModelingComponent } from './main/copilot/value-modeling/value-modeling.component';
 
 export const routes: Routes = [
   { path: 'setup', component: InstallComponent },
@@ -34,7 +35,7 @@ export const routes: Routes = [
       { path: 'copilot/surveys/new', component: NewCopilotSurveyComponent, title: 'New Survey' },
       { path: 'copilot/surveys/new/:id', component: NewCopilotSurveyComponent, title: 'New Survey' },
       { path: 'copilot/surveys/:id', component: CopilotSurveyComponent, title: 'Survey' },
-      { path: 'copilot/predictive-modeling', component: PredictiveModelingComponent, title: 'Predictive Modeling' },
+      { path: 'copilot/value-modeling', component: ValueModelingComponent, title: 'Value Modeling' },
       { path: 'settings', component: SettingsComponent, title: 'Settings' },
       { path: '', redirectTo: 'copilot', pathMatch: 'full' }
     ]
