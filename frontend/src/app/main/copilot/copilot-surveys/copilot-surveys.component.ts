@@ -41,7 +41,9 @@ export class CopilotSurveysComponent implements OnInit {
     this.installationsService.currentInstallation.pipe(
       takeUntil(this.installationsService.destroy$)
     ).subscribe(installation => {
-      this.copilotSurveyService.getAllSurveys(installation?.account?.login).subscribe((surveys) => {
+      this.copilotSurveyService.getAllSurveys({
+        org: installation?.account?.login
+      }).subscribe((surveys) => {
         this.surveys = surveys;
       });
     });

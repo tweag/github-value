@@ -1,14 +1,28 @@
 import { Component, forwardRef, OnInit } from '@angular/core';
 import { AppModule } from '../../../../app.module';
-import { FormBuilder, FormControl, FormGroup, NG_VALUE_ACCESSOR, Validators } from '@angular/forms';
-import { CopilotSurveyService } from '../../../../services/api/copilot-survey.service';
-import { ActivatedRoute, Params } from '@angular/router';
+import { AbstractControl, FormBuilder, FormControl, FormGroup, NG_VALUE_ACCESSOR, ValidationErrors, Validators } from '@angular/forms';
+import { CopilotSurveyService, Survey } from '../../../../services/api/copilot-survey.service';
+import { ActivatedRoute, Params, Router } from '@angular/router';
+import { MembersService } from '../../../../services/api/members.service';
+import { InstallationsService } from '../../../../services/api/installations.service';
+import { catchError, map, Observable, of } from 'rxjs';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+export function userIdValidator(membersService: MembersService) {
+  return (control: AbstractControl): Observable<ValidationErrors | null> => {
+    return membersService.getMemberByLogin(control.value).pipe(
+      map(isValid => (isValid ? null : { invalidUserId: true })),
+      catchError(() => of({ invalidUserId: true }))
+    );
+  };
+}
 
 @Component({
   selector: 'app-copilot-survey',
   standalone: true,
   imports: [
     AppModule,
+    MatTooltipModule
   ],
   providers: [
     {
@@ -23,17 +37,27 @@ import { ActivatedRoute, Params } from '@angular/router';
 export class NewCopilotSurveyComponent implements OnInit {
   surveyForm: FormGroup;
   params: Params = {};
-  defaultPercentTimeSaved = 30;
+  defaultPercentTimeSaved = 25;
   id: number;
+  surveys: Survey[] = [];
 
   constructor(
     private fb: FormBuilder,
     private copilotSurveyService: CopilotSurveyService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router,
+    private membersService: MembersService,
+    private installationsService: InstallationsService
   ) {
     const id = Number(this.route.snapshot.paramMap.get('id'));
-    this.id = isNaN(id) ? 0 : id
+    this.id = isNaN(id) ? 0 : id;
     this.surveyForm = this.fb.group({
+      userId: new FormControl('', {
+        validators: Validators.required,
+        asyncValidators: userIdValidator(this.membersService),
+      }),
+      repo: new FormControl(''),
+      prNumber: new FormControl(''),
       usedCopilot: new FormControl(true, Validators.required),
       percentTimeSaved: new FormControl(this.defaultPercentTimeSaved, Validators.required),
       reason: new FormControl(''),
@@ -42,7 +66,12 @@ export class NewCopilotSurveyComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.route.queryParams.subscribe(params => this.params = params);
+    this.route.queryParams.subscribe(params => {
+      this.params = params;
+    });
+
+    this.loadHistoricalReasons();
+
     this.surveyForm.get('usedCopilot')?.valueChanges.subscribe((value) => {
       if (!value) {
         this.surveyForm.get('percentTimeSaved')?.setValue(0);
@@ -50,6 +79,28 @@ export class NewCopilotSurveyComponent implements OnInit {
         this.surveyForm.get('percentTimeSaved')?.setValue(this.defaultPercentTimeSaved);
       }
     });
+  }
+
+  loadHistoricalReasons() {
+    this.copilotSurveyService.getAllSurveys({
+      reasonLength: 20,
+      // org: this.installationsService.currentInstallation.value?.account?.login
+    }).subscribe((surveys: Survey[]) => {
+      this.surveys = surveys;
+    }
+    );
+  }
+
+  addKudos(survey: Survey) {
+    if (survey && survey.id) {
+      this.copilotSurveyService.updateSurvey({
+        id: survey.id,
+        kudos: survey.kudos ? survey.kudos + 1 : 1
+      }).subscribe(() => {
+        survey.kudos = (survey.kudos || 0) + 1;
+        console.log(`Kudos added to survey with id ${survey.id}. Total kudos: ${survey.kudos}`);
+      });
+    }
   }
 
   parseGitHubPRUrl(url: string) {
@@ -69,27 +120,34 @@ export class NewCopilotSurveyComponent implements OnInit {
 
   onSubmit() {
     const { org, repo, prNumber } = this.parseGitHubPRUrl(this.params['url']);
-    this.copilotSurveyService.createSurvey({
+    const survey = {
       id: this.id,
-      userId: this.params['author'],
+      userId: this.surveyForm.value.userId,
       org,
-      repo,
-      prNumber,
+      repo: repo || this.surveyForm.value.repo,
+      prNumber: prNumber || this.surveyForm.value.prNumber,
       usedCopilot: this.surveyForm.value.usedCopilot,
       percentTimeSaved: Number(this.surveyForm.value.percentTimeSaved),
       reason: this.surveyForm.value.reason,
       timeUsedFor: this.surveyForm.value.timeUsedFor
-    }).subscribe(() => {
-      const redirectUrl = this.params['url'];
-      if (redirectUrl && redirectUrl.startsWith('https://github.com/')) {
-        window.location.href = redirectUrl;
-      } else {
-        console.error('Unauthorized URL:', redirectUrl);
-      }
-    });
+    };
+    if (!this.id) {
+      this.copilotSurveyService.createSurvey(survey).subscribe(() => {
+        this.router.navigate(['/copilot/surveys']);
+      });
+    } else {
+      this.copilotSurveyService.createSurveyGitHub(survey).subscribe(() => {
+        const redirectUrl = this.params['url'];
+        if (redirectUrl && redirectUrl.startsWith('https://github.com/')) {
+          window.location.href = redirectUrl;
+        } else {
+          console.error('Unauthorized URL:', redirectUrl);
+        }
+      });
+    }
   }
 
-  formatPercent(value: number): string {
+  formatPercent(value: number) {
     return `${value}%`
   }
 }
