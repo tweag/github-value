@@ -488,8 +488,8 @@ export class HighchartsService {
       );
   
       if (dateSurveys.length > 0) {
-          acc[dateKey].sum = dateSurveys.reduce((sum, survey) => 
-              sum + survey.percentTimeSaved, 0);
+          const avgPercentTimeSaved = dateSurveys.reduce((sum, survey) => sum + survey.percentTimeSaved, 0)
+          acc[dateKey].sum = avgPercentTimeSaved * 0.01 * 0.3 * 40; // TODO pull settings
           acc[dateKey].count = dateSurveys.length;
       }
   
@@ -539,33 +539,35 @@ export class HighchartsService {
             lineWidth: 3
           }
         }
-      }, {
-        type: 'scatter' as const,
-        name: 'Survey',
-        data: surveys.map(survey => ({
-          x: new Date(survey.createdAt!).getTime(),
-          y: survey.percentTimeSaved,
-          raw: survey
-        })),
-        marker: {
-          enabled: true,
-          radius: 4,
-          symbol: 'triangle',
-        },
-        tooltip: {
-          headerFormat: '<b>{point.x:%b %d, %Y}</b><br/>',
-          pointFormatter: function () {
-            return [
-              `User: `,
-              '<b>' + this.raw?.userId + '</b>',
-              `</br>Time saved: `,
-              '<b>' + Math.round(this.y || 0) + '%</b>',
-              `</br>PR: `,
-              '<b>#' + this.raw?.prNumber + '</b>',
-            ].join('');
-          } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
-        }
-      }]
+      },
+      // {
+      //   type: 'scatter' as const,
+      //   name: 'Survey',
+      //   data: surveys.map(survey => ({
+      //     x: new Date(survey.createdAt!).getTime(),
+      //     y: survey.percentTimeSaved,
+      //     raw: survey
+      //   })),
+      //   marker: {
+      //     enabled: true,
+      //     radius: 4,
+      //     symbol: 'triangle',
+      //   },
+      //   tooltip: {
+      //     headerFormat: '<b>{point.x:%b %d, %Y}</b><br/>',
+      //     pointFormatter: function () {
+      //       return [
+      //         `User: `,
+      //         '<b>' + this.raw?.userId + '</b>',
+      //         `</br>Time saved: `,
+      //         '<b>' + Math.round(this.y || 0) + '%</b>',
+      //         `</br>PR: `,
+      //         '<b>#' + this.raw?.prNumber + '</b>',
+      //       ].join('');
+      //     } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
+      //   }
+      // }
+    ]
     };
   }
 
