@@ -256,7 +256,6 @@ class SeatsService {
     //   replacements: { org },
     //   type: QueryTypes.SELECT
     // });
-    // console.log(assignees2);
     const { org, since, until } = params;    
     const dateFilter = {
       ...(since && { [Op.gte]: new Date(since as string) }),

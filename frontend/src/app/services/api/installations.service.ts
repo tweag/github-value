@@ -39,7 +39,6 @@ export class InstallationsService implements OnDestroy {
   }
 
   ngOnDestroy(): void {  
-    console.log('DESTROY!');
     this._destroy$.next();
     this._destroy$.complete();
   }

@@ -123,7 +123,6 @@ export class CopilotDashboardComponent implements OnInit, OnDestroy {
 
       this.subscriptions.push(
         this.installationsService.getStatus2().subscribe(status => {
-          console.log('Status:', status);
           this.status = status;
           this.statuses[0] = {
             title: 'GitHub App',

@@ -19,10 +19,4 @@ export class StatusComponent {
   @Input() title?: string;
   @Input() message?: string;
   @Input() status?: 'success' | 'error' | 'warning' = 'error';
-  constructor() {
-  }
-
-  ngOnInit() {
-    console.log(this.status);
-  }
 }

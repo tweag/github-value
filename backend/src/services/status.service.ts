@@ -24,7 +24,6 @@ class StatusService {
   }
 
   async getStatus(): Promise<StatusType> {
-    console.log('Getting status');
     const status = {} as StatusType;
 
     const assignee = await Member.findOne();
@@ -64,12 +63,6 @@ class StatusService {
     if (surveys) {
       status.surveyCount = surveys.length;
     }
-
-    const yesterday = new Date(new Date().setDate(new Date().getDate() - 1));
-    const activity = await copilotSeatsService.getMembersActivity({
-      since: yesterday.toISOString(),
-    });
-    console.log(Object.keys(activity));
 
     return status;
   }
