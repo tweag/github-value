@@ -81,7 +81,7 @@ class SurveyController {
               ]
             }
           } : {}
-        }
+        } as any
       });
       console.log('test', JSON.stringify({
         reason: {

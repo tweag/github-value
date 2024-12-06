@@ -24,7 +24,7 @@ class SurveyService {
             { [Op.gte]: minReasonLength }
           ]
         }
-      },
+      } as any,
       order: [['updatedAt', 'DESC']],
       limit: 20
     });
