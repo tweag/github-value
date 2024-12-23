@@ -27,6 +27,6 @@ COPY --from=frontend-builder /app/frontend/node_modules ./frontend/node_modules
 
 WORKDIR /app/backend
 
-EXPOSE 80
+EXPOSE 8080
 
 CMD node dist/index.js | ./node_modules/.bin/bunyan

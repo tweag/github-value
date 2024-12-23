@@ -65,7 +65,7 @@ class SetupController {
   async setupStatus(req: Request, res: Response) {
     try {
       const status = {
-        dbConnected: await app.database.sequelize?.authenticate().then(() => true).catch(() => false),
+        dbConnected: app.database.mongoose?.connection.readyState === 1,
         isSetup: app.github.app !== undefined,
         installations: app.github.installations.map(i => ({
           installation: i.installation,
@@ -74,6 +74,7 @@ class SetupController {
       };
       return res.json(status);
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   }

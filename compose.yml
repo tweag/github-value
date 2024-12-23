@@ -37,5 +37,14 @@ services:
       timeout: 5s
       retries: 10
 
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: octocat
+
 volumes:
   db:

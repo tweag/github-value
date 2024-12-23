@@ -9,12 +9,13 @@ import { Seat } from './models/copilot.seats.model.js';
 import { Team } from './models/teams.model.js';
 import { MetricDaily } from './models/metrics.model.js';
 import { Survey } from './models/survey.model.js';
+import mongoose, { mongo, Schema } from 'mongoose';
 
 // CACHE
 // https://github.com/sequelize-transparent-cache/sequelize-transparent-cache?tab=readme-ov-file
 
 class Database {
-  sequelize?: Sequelize;
+  mongoose: mongoose.Mongoose | null = null;
   options: Options = {
     dialect: 'mysql',
     logging: (sql) => logger.debug(sql),
@@ -40,63 +41,8 @@ class Database {
     }
     logger.info('Connecting to the database', this.input);
     try {
-      let sequelize;
-      try {
-        sequelize = typeof this.input === 'string' ?
-          new Sequelize(this.input, {
-            pool: {
-              max: 5,
-              acquire: 30000,
-              idle: 10000
-            },
-            ...this.options
-          }) :
-          new Sequelize({
-            pool: {
-              max: 10,
-              acquire: 30000,
-              idle: 10000
-            },
-            ...this.input,
-            ...this.options
-          });
-      } catch (error) {
-        logger.error('Unable to connect to the database');
-        throw error;
-      }
-
-      if (typeof this.input !== 'string') {
-        try {
-          const connection = await mysql2.createConnection({
-            host: this.input.host,
-            port: this.input.port,
-            user: this.input.username,
-            password: this.input.password,
-          });
-
-          await connection.query('CREATE DATABASE IF NOT EXISTS ??', [this.input.database]);
-          await connection.end();
-          await connection.destroy();
-        } catch (error) {
-          logger.error('Unable to create the database');
-          throw error;
-        }
-        logger.info('Database created successfully');
-      }
-
-      try {
-        await sequelize.authenticate()
-        await this.initializeModels(sequelize);
-        this.sequelize = sequelize;
-        await sequelize.sync({ alter: true })
-        logger.info('Database models were synchronized successfully');
-      } catch (error) {
-        logger.info('Unable to initialize the database');
-        throw error;
-      }
-      
+      this.mongoose = await mongoose.connect('mongodb://root:octocat@localhost:27017/');
       logger.info('Database setup completed successfully');
-      return this.sequelize;
     } catch (error) {
       logger.debug(error);
       if (error instanceof Error) {
@@ -104,11 +50,217 @@ class Database {
       }
       throw error;
     }
+    mongoose.model('Settings', new mongoose.Schema({
+      name: String,
+      value: String
+    }));
+    mongoose.model('Usage', new mongoose.Schema({
+      org: String,
+      team: String,
+      day: Date,
+      total_suggestions_count: Number,
+      total_acceptances_count: Number,
+      total_lines_suggested: Number,
+      total_lines_accepted: Number,
+      total_active_users: Number,
+      total_chat_acceptances: Number,
+      total_chat_turns: Number,
+      total_active_chat_users: Number,
+      breakdown: [{
+        language: String,
+        editor: String,
+        suggestions_count: Number,
+        acceptances_count: Number,
+        lines_suggested: Number,
+        lines_accepted: Number,
+        active_users: Number
+      }]
+    }));
+
+    // Language Schema 📝
+    const LanguageSchema = new mongoose.Schema({
+      name: String,
+      total_engaged_users: Number,
+      total_code_acceptances: Number,
+      total_code_suggestions: Number,
+      total_code_lines_accepted: Number,
+      total_code_lines_suggested: Number
+    });
+
+    // Model Schema 🤖
+    const ModelSchema = new mongoose.Schema({
+      name: String,
+      is_custom_model: Boolean,
+      total_engaged_users: Number,
+      total_code_acceptances: Number,
+      total_code_suggestions: Number,
+      total_code_lines_accepted: Number,
+      total_code_lines_suggested: Number,
+      languages: [LanguageSchema],
+      total_chats: Number,
+      total_chat_copy_events: Number,
+      total_chat_insertion_events: Number,
+      total_pr_summaries_created: Number
+    });
+
+    // Editor Schema 🖥️
+    const EditorSchema = new mongoose.Schema({
+      name: String,
+      total_engaged_users: Number,
+      total_code_acceptances: Number,
+      total_code_suggestions: Number,
+      total_code_lines_accepted: Number,
+      total_code_lines_suggested: Number,
+      models: [ModelSchema],
+      total_chats: Number,
+      total_chat_copy_events: Number,
+      total_chat_insertion_events: Number
+    });
+
+    // Repository Schema 📚
+    const RepositorySchema = new mongoose.Schema({
+      name: String,
+      total_engaged_users: Number,
+      total_pr_summaries_created: Number,
+      models: [ModelSchema]
+    });
+
+    mongoose.model('Metrics', new mongoose.Schema({
+      org: String,
+      team: String,
+      date: Date,
+      total_active_users: Number,
+      total_engaged_users: Number,
+
+      copilot_ide_code_completions: {
+        total_engaged_users: Number,
+        total_code_acceptances: Number,
+        total_code_suggestions: Number,
+        total_code_lines_accepted: Number,
+        total_code_lines_suggested: Number,
+        editors: [EditorSchema]
+      },
+      copilot_ide_chat: {
+        total_engaged_users: Number,
+        total_chats: Number,
+        total_chat_copy_events: Number,
+        total_chat_insertion_events: Number,
+        editors: [EditorSchema]
+      },
+      copilot_dotcom_chat: {
+        total_engaged_users: Number,
+        total_chats: Number,
+        models: [ModelSchema]
+      },
+      copilot_dotcom_pull_requests: {
+        total_engaged_users: Number,
+        total_pr_summaries_created: Number,
+        repositories: [RepositorySchema]
+      }
+    }));
+    // Team Schema 🏢
+    const teamSchema = new Schema({
+      org: { type: String, required: true },
+      team: String,
+      githubId: { type: Number, required: true, unique: true }, // renamed from id
+      node_id: String,
+      name: String,
+      slug: String,
+      description: String,
+      privacy: String,
+      notification_setting: String,
+      permission: String,
+      url: String,
+      html_url: String,
+      members_url: String,
+      repositories_url: String,
+      parent: { type: Schema.Types.ObjectId, ref: 'Team' }
+    }, {
+      timestamps: true
+    });
+
+    // Member Schema 👥
+    const memberSchema = new Schema({
+      org: { type: String, required: true },
+      login: { type: String, required: true },
+      id: { type: Number, required: true, unique: true }, // renamed from id
+      node_id: String,
+      avatar_url: String,
+      gravatar_id: String,
+      url: String,
+      html_url: String,
+      followers_url: String,
+      following_url: String,
+      gists_url: String,
+      starred_url: String,
+      subscriptions_url: String,
+      organizations_url: String,
+      repos_url: String,
+      events_url: String,
+      received_events_url: String,
+      type: String,
+      site_admin: Boolean,
+      name: String,
+      email: String,
+      starred_at: String,
+      user_view_type: String,
+      activity: [{ type: Schema.Types.ObjectId, ref: 'Seats' }]
+    }, {
+      timestamps: true
+    });
+
+    // TeamMember Association Schema 🤝
+    const teamMemberSchema = new Schema({
+      team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
+      member: { type: Schema.Types.ObjectId, ref: 'Member', required: true }
+    }, {
+      timestamps: false
+    });
+
+    // Create indexes for faster queries 🔍
+    teamMemberSchema.index({ team: 1, member: 1 }, { unique: true });
+
+    // Create models 📦
+    mongoose.model('Team', teamSchema);
+    mongoose.model('Member', memberSchema);
+    mongoose.model('TeamMember', teamMemberSchema);
+
+    mongoose.model('Seats', new mongoose.Schema({
+      org: String,
+      team: String,
+      assigning_team_id: Number,
+      plan_type: String,
+      last_activity_at: Date,
+      last_activity_editor: String,
+      queryAt: Date,
+      assignee_id: Number,
+      assignee: {
+        type: Schema.Types.ObjectId,
+        ref: 'Member'
+      },
+    }, {
+      timestamps: true
+    }));
+
+    mongoose.model('Survey', new mongoose.Schema({
+      org: String,
+      team: String,
+      user: String,
+      used_copilot: Boolean,
+      percent_time_saved: Number,
+      reason: String,
+      time_used_for: String,
+      repo: String,
+      pr_number: Number,
+      kudos: Number,
+      queryAt: Date
+    }, {
+      timestamps: true
+    }));
   }
 
   async disconnect() {
-    await this.sequelize?.connectionManager.close();
-    await this.sequelize?.close();
+    await this.mongoose?.disconnect();
   }
 
   initializeModels(sequelize: Sequelize) {

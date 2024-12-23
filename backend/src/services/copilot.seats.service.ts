@@ -4,6 +4,7 @@ import { Op, QueryTypes, Sequelize } from 'sequelize';
 import { components } from "@octokit/openapi-types";
 import { Member, Team } from '../models/teams.model.js';
 import app from '../index.js';
+import mongoose from 'mongoose';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
@@ -27,46 +28,63 @@ type MemberDailyActivity = {
 
 class SeatsService {
   async getAllSeats(org?: string) {
-    const latestQuery = await Seat.findOne({
-      attributes: [[Sequelize.fn('MAX', Sequelize.col('queryAt')), 'queryAt']],
-      where: {
-        ...(org ? { org } : {}),
-      }
-    });
+    const Seats = mongoose.model('Seats');
+    const Member = mongoose.model('Member');
 
-    return Seat.findAll({
-      include: [{
+    const latestQuery = await Seats.findOne()
+      .sort({ queryAt: -1 })  // -1 for descending order
+      .select('queryAt');
+
+    const seats = await Seats.find({
+      ...(org ? { org } : {}),
+      queryAt: latestQuery?.queryAt
+    }, '-_id -__v')
+      .lean()
+      .populate({
+        path: 'assignee',  // Link to Member model 👤
         model: Member,
-        as: 'assignee',
-        attributes: ['login', 'id', 'avatar_url']
-      }],
-      where: {
-        ...(org ? { org } : {}),
-        queryAt: latestQuery?.queryAt
-      },
-      order: [['last_activity_at', 'DESC']]
-    });
+        select: 'login id avatar_url -_id'  // Only select needed fields 🎯
+      })
+      .sort({ last_activity_at: -1 });  // DESC ordering ⬇️
+
+    console.log(seats);
+    return seats;
   }
 
   async getAssignee(id: number) {
-    return Seat.findAll({
-      include: [{
+    const Seats = mongoose.model('Seats');
+    const Member = mongoose.model('Member');
+
+    return Seats.find({
+      assignee_id: id
+    })
+      .lean()
+      .populate({
+        path: 'assignee',  // Link to Member model 👤
         model: Member,
-        as: 'assignee'
-      }],
-      where: {
-        assignee_id: id
-      }
-    });
+        select: 'login id avatar_url -_id'  // Only select needed fields 🎯
+      });
   }
 
   async getAssigneeByLogin(login: string) {
+    const Seats = mongoose.model('Seats');
+    const Member = mongoose.model('Member');
+
     const assignee = await Member.findOne({
-      where: {
-        login
-      }
-    });
+      login
+    })
+    console.log('assignee', assignee.login)
     if (!assignee) throw new Error(`Assignee ${login} not found`);
+    return Seats.find({
+      assignee_id: assignee.id
+    })
+      .lean()
+      .populate({
+        path: 'assignee',  // Link to Member model 👤
+        model: Member,
+        select: 'login id avatar_url -_id'  // Only select needed fields 🎯
+      });
+
     return Seat.findAll({
       include: [{
         model: Member,
@@ -80,12 +98,15 @@ class SeatsService {
 
   async insertSeats(org: string, data: SeatEntry[], team?: string) {
     const queryAt = new Date();
+    const Members = mongoose.model('Member');
+    const Seats = mongoose.model('Seats');
     for (const seat of data) {
-      const [assignee] = await Member.findOrCreate({
-        where: { id: seat.assignee.id },
-        defaults: {
-          org,
+
+      const member = await Members.findOneAndUpdate(
+        { org, id: seat.assignee.id },
+        {
           ...team ? { team } : undefined,
+          org,
           id: seat.assignee.id,
           login: seat.assignee.login,
           node_id: seat.assignee.node_id,
@@ -104,29 +125,30 @@ class SeatsService {
           received_events_url: seat.assignee.received_events_url,
           type: seat.assignee.type,
           site_admin: seat.assignee.site_admin,
-        }
-      });
+        },
+        { upsert: false }
+      );
 
-      const [assigningTeam] = seat.assigning_team ? await Team.findOrCreate({
-        where: { id: seat.assigning_team.id },
-        defaults: {
-          org,
-          id: seat.assigning_team.id,
-          node_id: seat.assigning_team.node_id,
-          url: seat.assigning_team.url,
-          html_url: seat.assigning_team.html_url,
-          name: seat.assigning_team.name,
-          slug: seat.assigning_team.slug,
-          description: seat.assigning_team.description,
-          privacy: seat.assigning_team.privacy,
-          notification_setting: seat.assigning_team.notification_setting,
-          permission: seat.assigning_team.permission,
-          members_url: seat.assigning_team.members_url,
-          repositories_url: seat.assigning_team.repositories_url
-        }
-      }) : [null];
+      // const [assigningTeam] = seat.assigning_team ? await Team.findOrCreate({
+      //   where: { id: seat.assigning_team.id },
+      //   defaults: {
+      //     org,
+      //     id: seat.assigning_team.id,
+      //     node_id: seat.assigning_team.node_id,
+      //     url: seat.assigning_team.url,
+      //     html_url: seat.assigning_team.html_url,
+      //     name: seat.assigning_team.name,
+      //     slug: seat.assigning_team.slug,
+      //     description: seat.assigning_team.description,
+      //     privacy: seat.assigning_team.privacy,
+      //     notification_setting: seat.assigning_team.notification_setting,
+      //     permission: seat.assigning_team.permission,
+      //     members_url: seat.assigning_team.members_url,
+      //     repositories_url: seat.assigning_team.repositories_url
+      //   }
+      // }) : [null];
 
-      await Seat.create({
+      await Seats.create({
         queryAt,
         org,
         team,
@@ -136,9 +158,24 @@ class SeatsService {
         last_activity_at: seat.last_activity_at,
         last_activity_editor: seat.last_activity_editor,
         plan_type: seat.plan_type,
-        assignee_id: assignee.id,
-        assigning_team_id: assigningTeam?.id
+        assignee_id: seat.assignee.id,
+        assignee: member._id,
+        // assigning_team_id: assigningTeam?.id
       });
+
+      // await Seat.create({
+      //   queryAt,
+      //   org,
+      //   team,
+      //   created_at: seat.created_at,
+      //   updated_at: seat.updated_at,
+      //   pending_cancellation_date: seat.pending_cancellation_date,
+      //   last_activity_at: seat.last_activity_at,
+      //   last_activity_editor: seat.last_activity_editor,
+      //   plan_type: seat.plan_type,
+      //   assignee_id: assignee.id,
+      //   assigning_team_id: assigningTeam?.id
+      // });
     }
   }
 
@@ -149,52 +186,44 @@ class SeatsService {
     since?: string;
     until?: string;
   } = {}): Promise<MemberDailyActivity> {
+    const Seats = mongoose.model('Seats');
+    // const Member = mongoose.model('Member');
     const { org, daysInactive = 30, precision = 'day', since, until } = params;
-    if (!app.database.sequelize) throw new Error('No database connection available');
-    // const assignees = await app.database.sequelize.query<Member>(
-    //   `SELECT 
-    //       Member.login,
-    //       Member.id,
-    //       activity.id AS 'activity.id',
-    //       activity.createdAt AS 'activity.createdAt',
-    //       activity.last_activity_at AS 'activity.last_activity_at',
-    //       activity.last_activity_editor AS 'activity.last_activity_editor'
-    //   FROM Members AS Member 
-    //   INNER JOIN Seats AS activity ON Member.id = activity.assignee_id
-    //   ${org ? 'WHERE activity.org = :org' : ''}
-    //   ORDER BY activity.last_activity_at ASC`,
-    //   {
-    //     replacements: {
-    //       org
-    //     },
-    //     type: QueryTypes.SELECT,
-    //     nest: true,
-    //     mapToModel: true // 🎯 Maps results to the Model
-    //   }
-    // );
-    
-    const dateFilter = {
-      ...(since && { [Op.gte]: new Date(since as string) }),
-      ...(until && { [Op.lte]: new Date(until as string) })
-    };
-    const assignees = await Member.findAll({
-      attributes: ['login', 'id'],
-      include: [
-        {
-          model: Seat,
-          as: 'activity',
-          attributes: ['createdAt', 'last_activity_at', 'last_activity_editor'],
-          order: [['last_activity_at', 'ASC']],
-          where: {
-            ...(org ? { org } : {}),
-            ...Object.getOwnPropertySymbols(dateFilter).length ? { createdAt: dateFilter } : {}
+    const assignees = await Seats.aggregate([
+      {
+        $match: {
+          ...(org && { org }),
+          ...(since && { createdAt: { $gte: new Date(since) } }),
+          ...(until && { createdAt: { $lte: new Date(until) } })
+        }
+      },
+      {
+        $lookup: {
+          from: 'members',
+          localField: 'assignee',
+          foreignField: '_id',
+          as: 'memberDetails'
+        }
+      },
+      {
+        $unwind: '$memberDetails'
+      },
+      {
+        $group: {
+          _id: '$memberDetails._id',
+          login: { $first: '$memberDetails.login' },
+          id: { $first: '$memberDetails.id' },
+          activity: {
+            $push: {
+              last_activity_at: '$last_activity_at',
+              createdAt: '$createdAt',
+              last_activity_editor: '$last_activity_editor'
+            }
           }
         }
-      ],
-      order: [
-        [{ model: Seat, as: 'activity' }, 'last_activity_at', 'ASC']
-      ]
-    });
+      }
+    ]);
+
     const activityDays: MemberDailyActivity = {};
     assignees.forEach((assignee) => {
       assignee.activity.forEach((activity) => {
@@ -256,24 +285,30 @@ class SeatsService {
     //   replacements: { org },
     //   type: QueryTypes.SELECT
     // });
-    const { org, since, until } = params;    
+    const { org, since, until } = params;
     const dateFilter = {
       ...(since && { [Op.gte]: new Date(since as string) }),
       ...(until && { [Op.lte]: new Date(until as string) })
     };
-    const assignees = await Member.findAll({
-      attributes: ['login', 'id'],
-      include: [{
-        model: Seat,
-        as: 'activity',
-        attributes: ['last_activity_at'],
-        order: [['last_activity_at', 'ASC']],
-        where: {
-          ...(org ? { org } : {}),
-          ...Object.getOwnPropertySymbols(dateFilter).length ? { createdAt: dateFilter } : {}
-        }
-      }]
-    });
+    const Seats = mongoose.model('Seats');
+    const Member = mongoose.model('Member');
+
+    const assignees = await Member.find()
+      .select('login id')  // 🎯 Select specific fields
+      .populate({
+        path: 'activity',
+        match: {
+          ...(org && { org }),
+          ...(since && { createdAt: { $gte: new Date(since) } }),
+          ...(until && { createdAt: { $lte: new Date(until) } })
+        },
+        options: {
+          sort: { last_activity_at: 0 }  // ⬆️ ASC sorting
+        },
+        select: 'last_activity_at'  // 📊 Only get needed fields
+      })
+
+    console.log(assignees)
 
     const activityTotals = assignees.reduce((totals, assignee) => {
       totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {

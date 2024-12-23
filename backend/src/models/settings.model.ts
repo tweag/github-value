@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Model, DataTypes, Sequelize } from 'sequelize';
 
 type SettingsType = {

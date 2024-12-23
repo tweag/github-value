@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import app from "../index.js";
 import { Seat } from "../models/copilot.seats.model.js";
 import { Survey } from "../models/survey.model.js";
@@ -25,26 +26,15 @@ class StatusService {
   async getStatus(): Promise<StatusType> {
     const status = {} as StatusType;
 
-    const assignee = await Member.findOne();
-    if (assignee) {
-      const seats = await Seat.findAll({
-        include: [{
-          model: Member,
-          as: 'assignee'
-        }],
-        where: {
-          assignee_id: assignee.id
-        },
-        order: [['createdAt', 'ASC']],
-      });
-      const oldestSeat = seats.find(seat => seat.createdAt);
-      const daysSince = oldestSeat ? Math.floor((new Date().getTime() - oldestSeat.createdAt.getTime()) / (1000 * 3600 * 24)) : undefined;
-      status.seatsHistory = {
-        oldestCreatedAt: oldestSeat?.createdAt.toISOString() || 'No data',
-        daysSinceOldestCreatedAt: daysSince
-      }
-    }
+    const Seats = mongoose.model('Seats');
+    const Member = mongoose.model('Member');
 
+    const oldestSeat = await Seats.findOne().sort({ createdAt: 1 });
+    const daysSince = oldestSeat ? Math.floor((new Date().getTime() - oldestSeat.createdAt.getTime()) / (1000 * 3600 * 24)) : undefined;
+    status.seatsHistory = {
+      oldestCreatedAt: oldestSeat?.createdAt.toISOString() || 'No data',
+      daysSinceOldestCreatedAt: daysSince
+    }
 
     status.installations = [];
     for (const installation of app.github.installations) {
@@ -55,13 +45,13 @@ class StatusService {
       });
     }
 
-    const surveys = await Survey.findAll({
-      order: [['updatedAt', 'DESC']]
-    });
+    // const surveys = await Survey.findAll({
+    //   order: [['updatedAt', 'DESC']]
+    // });
 
-    if (surveys) {
-      status.surveyCount = surveys.length;
-    }
+    // if (surveys) {
+    //   status.surveyCount = surveys.length;
+    // }
 
     return status;
   }

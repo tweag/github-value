@@ -4,6 +4,7 @@ import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
 import { Op, Sequelize, WhereOptions } from 'sequelize';
+import mongoose from 'mongoose';
 
 class SurveyController {
   async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
@@ -52,10 +53,11 @@ class SurveyController {
 
   async createSurvey(req: Request, res: Response): Promise<void> {
     try {
-      const survey = await surveyService.createSurvey({
-        ...req.body,
-        status: 'completed'
-      })
+      const Survey = mongoose.model('Survey');
+      const survey = await Survey.create(
+        req.body,
+        { upsert: true }
+      );
       res.status(201).json(survey);
     } catch (error) {
       res.status(500).json(error);
@@ -65,25 +67,18 @@ class SurveyController {
 
   async getAllSurveys(req: Request, res: Response): Promise<void> {
     try {
+      console.log('getting surveys')
       const { org, reasonLength } = req.query;
-      const minReasonLength = parseInt(reasonLength as string);
-      const surveys = await Survey.findAll({
-        order: [['updatedAt', 'DESC']],
-        where: {
-          ...org ? { org: org as string } : {},
-          ...reasonLength ? {
-            reason: {
-              [Op.and]: [
-                Sequelize.where(Sequelize.fn('LENGTH', Sequelize.col('reason')), {
-                  [Op.gte]: minReasonLength
-                })
-              ]
-            }
-          } : {}
-        } as WhereOptions
+      const Survey = mongoose.model('Survey');
+
+      const surveys = await Survey.find({
+        ...org ? { org: org as string } : {},
+        ...reasonLength ? {$expr: { $gt: [{ $strLenCP: '$name' }, 40] } } : {}
       });
+      console.log('good', surveys)
       res.status(200).json(surveys);
     } catch (error) {
+      console.log('error', error)
       res.status(500).json(error);
     }
   }

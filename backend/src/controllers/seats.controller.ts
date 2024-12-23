@@ -39,6 +39,7 @@ class SeatsController {
       });
       res.status(200).json(activityDays);
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   }
@@ -48,6 +49,7 @@ class SeatsController {
       const totals = await SeatsService.getMembersActivityTotals(req.query);
       res.status(200).json(totals);
     } catch (error) {
+      console.log(error);
       res.status(500).json(error);
     }
   }

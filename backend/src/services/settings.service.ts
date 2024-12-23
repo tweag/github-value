@@ -1,3 +1,5 @@
+import mongoose from 'mongoose';
+import app from '../index.js';
 import { Settings } from '../models/settings.model.js';
 
 export interface SettingsType {
@@ -52,28 +54,24 @@ class SettingsService {
       return undefined;
     }
   }
-
   async updateSetting(name: keyof SettingsType, value: string) {
-    const lastValue = await this.getSettingsByName(name);
-    if (value === lastValue) {
-      return await Settings.findOne({ where: { name } });
+    try {
+      const Setting = mongoose.model('Settings');
+      
+      const setting = await Setting.findOneAndUpdate(
+        { name },
+        { value },
+        { 
+          new: true,
+          upsert: true,
+        }
+      );
+  
+      return setting.value;
+    } catch (error) {
+      console.error('Failed to update setting:', error);
+      throw error;
     }
-    // if (name === 'webhookProxyUrl') {
-    //   app.github.smee.options.url = value;
-    //   await app.github.smee.connect()
-    // } else if (name === 'webhookSecret') {
-    //   // await app.github.connect({
-    //   //   webhooks: {
-    //   //     secret: value
-    //   //   }
-    //   // })
-    // } else if (name === 'metricsCronExpression') {
-    //   app.github.installations.forEach(install => {
-    //     install.queryService.cronJob.setTime(new CronTime(value));
-    //   });
-    // }
-    await Settings.upsert({ name, value });
-    return this.getSettingsByName(name);
   }
 
   async updateSettings(obj: { [key: string]: string }) {

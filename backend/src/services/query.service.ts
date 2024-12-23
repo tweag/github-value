@@ -6,6 +6,7 @@ import { Octokit } from 'octokit';
 import metricsService from './metrics.service.js';
 import { MetricDailyResponseType } from '../models/metrics.model.js';
 import teamsService from './teams.service.js';
+import mongoose from 'mongoose';
 
 const DEFAULT_CRON_EXPRESSION = '0 * * * *';
 class QueryService {
@@ -43,23 +44,16 @@ class QueryService {
   private async task(org: string) {
     logger.info(`${org} task started`);
     try {
+      console.log('task started');
       const queries = [
         this.queryCopilotUsageMetrics(org).then(() => this.status.usage = true),
         this.queryCopilotUsageMetricsNew(org).then(() => this.status.metrics = true),
         this.queryCopilotSeatAssignments(org).then(() => this.status.copilotSeats = true),
       ]
 
-      const lastUpdated = await teamsService.getLastUpdatedAt();
-      const elapsedHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
-      if (elapsedHours > 24) {
-        queries.push(
-          this.queryTeamsAndMembers(org).then(() =>
-            this.status.teamsAndMembers = true
-          )
-        );
-      } else {
+      this.queryTeamsAndMembers(org).then(() =>
         this.status.teamsAndMembers = true
-      }
+      )
 
       await Promise.all(queries).then(() => {
         this.status.dbInitialized = true;
@@ -87,6 +81,7 @@ class QueryService {
 
   public async queryCopilotUsageMetrics(org: string) {
     try {
+      console.log('queryCopilotUsageMetrics', org)
       const rsp = await this.octokit.rest.copilot.usageMetricsForOrg({
         org
       });
@@ -127,26 +122,38 @@ class QueryService {
     const members = await this.octokit.paginate("GET /orgs/{org}/members", {
       org
     });
-    await teamsService.updateMembers(org, members);
-    try {
-      const teams = await this.octokit.paginate(this.octokit.rest.teams.list, {
-        org
-      });
-      await teamsService.updateTeams(org, teams);
+    // await teamsService.updateMembers(org, members);
+    
+    console.log('members', members[0])
+    
+    const Members = mongoose.model('Member');
+    members.forEach(async (member) => {
+      await Members.findOneAndUpdate(
+        { org, id: member.id },
+        member,
+        { upsert: true }
+      );
+    });
 
-      await Promise.all(
-        teams.map(async (team) => this.octokit.paginate(this.octokit.rest.teams.listMembersInOrg, {
-          org,
-          team_slug: team.slug
-        }).then(async (members) =>
-          await Promise.all(
-            members.map(async (member) => teamsService.addMemberToTeam(team.id, member.id))
-          )).catch((error) => {
-            logger.debug(error);
-            logger.error('Error updating team members for team', { team: team, error: error });
-          })
-        )
-      )
+    try {
+      // const teams = await this.octokit.paginate(this.octokit.rest.teams.list, {
+      //   org
+      // });
+      // await teamsService.updateTeams(org, teams);
+
+      // await Promise.all(
+      //   teams.map(async (team) => this.octokit.paginate(this.octokit.rest.teams.listMembersInOrg, {
+      //     org,
+      //     team_slug: team.slug
+      //   }).then(async (members) =>
+      //     await Promise.all(
+      //       members.map(async (member) => teamsService.addMemberToTeam(team.id, member.id))
+      //     )).catch((error) => {
+      //       logger.debug(error);
+      //       logger.error('Error updating team members for team', { team: team, error: error });
+      //     })
+      //   )
+      // )
       logger.info("Teams & Members successfully updated! 🧑‍🤝‍🧑");
     } catch (error) {
       logger.error('Error querying teams', error);
