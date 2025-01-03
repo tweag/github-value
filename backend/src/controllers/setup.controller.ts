@@ -74,7 +74,6 @@ class SetupController {
       };
       return res.json(status);
     } catch (error) {
-      console.log(error);
       res.status(500).json(error);
     }
   }

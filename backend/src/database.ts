@@ -1,14 +1,6 @@
 import { Options, Sequelize } from 'sequelize';
-import mysql2 from 'mysql2/promise';
 import updateDotenv from 'update-dotenv';
 import logger from './services/logger.js';
-import { TargetValues } from './models/target-values.model.js';
-import { Settings } from './models/settings.model.js';
-import { Usage } from './models/usage.model.js';
-import { Seat } from './models/copilot.seats.model.js';
-import { Team } from './models/teams.model.js';
-import { MetricDaily } from './models/metrics.model.js';
-import { Survey } from './models/survey.model.js';
 import mongoose, { mongo, Schema } from 'mongoose';
 
 // CACHE
@@ -24,24 +16,17 @@ class Database {
       timezone: '+00:00' // Force UTC for MySQL connection
     },
   }
-  input: string | Options;
+  mongodbUri: string;
 
-  constructor(input: string | Options) {
-    this.input = input;
+  constructor(mongodbUri: string) {
+    this.mongodbUri = mongodbUri;
   }
 
-  async connect(options?: Options) {
-    this.input = options || this.input;
-    if (typeof this.input !== 'string') {
-      if (this.input.host) await updateDotenv({ MYSQL_HOST: this.input.host })
-      if (this.input.port) await updateDotenv({ MYSQL_PORT: String(this.input.port) })
-      if (this.input.username) await updateDotenv({ MYSQL_USER: this.input.username })
-      if (this.input.password) await updateDotenv({ MYSQL_PASSWORD: this.input.password })
-      if (this.input.database) await updateDotenv({ MYSQL_DATABASE: this.input.database })
-    }
-    logger.info('Connecting to the database', this.input);
+  async connect() {
+    logger.info('Connecting to the database', this.mongodbUri);
+    if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
-      this.mongoose = await mongoose.connect('mongodb://root:octocat@localhost:27017/');
+      this.mongoose = await mongoose.connect(this.mongodbUri);
       logger.info('Database setup completed successfully');
     } catch (error) {
       logger.debug(error);
@@ -243,17 +228,15 @@ class Database {
     }));
 
     mongoose.model('Survey', new mongoose.Schema({
+      id: Number,
+      userId: String,
       org: String,
-      team: String,
-      user: String,
-      used_copilot: Boolean,
-      percent_time_saved: Number,
-      reason: String,
-      time_used_for: String,
       repo: String,
-      pr_number: Number,
-      kudos: Number,
-      queryAt: Date
+      prNumber: String,
+      usedCopilot: Boolean,
+      percentTimeSaved: Number,
+      reason: String,
+      timeUsedFor: String
     }, {
       timestamps: true
     }));
@@ -261,16 +244,6 @@ class Database {
 
   async disconnect() {
     await this.mongoose?.disconnect();
-  }
-
-  initializeModels(sequelize: Sequelize) {
-    Settings.initModel(sequelize);
-    Team.initModel(sequelize);
-    Seat.initModel(sequelize);
-    Survey.initModel(sequelize);
-    Usage.initModel(sequelize);
-    MetricDaily.initModel(sequelize);
-    TargetValues.initModel(sequelize);
   }
 
 }

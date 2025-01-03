@@ -27,13 +27,7 @@ class App {
     this.baseUrl = process.env.BASE_URL || 'http://localhost:' + port;
     this.e = express();
     this.port = port;
-    this.database = new Database(process.env.JAWSDB_URL ? process.env.JAWSDB_URL : {
-      host: process.env.MYSQL_HOST,
-      port: Number(process.env.MYSQL_PORT) || 3306,
-      username: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PASSWORD,
-      database: process.env.MYSQL_DATABASE || 'value'
-    });
+    this.database = new Database(process.env.MONGODB_URI);
     const webhookService = new WebhookService({
       url: process.env.WEBHOOK_PROXY_URL,
       path: '/api/github/webhooks',

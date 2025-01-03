@@ -7,6 +7,7 @@ import metricsService from './metrics.service.js';
 import { MetricDailyResponseType } from '../models/metrics.model.js';
 import teamsService from './teams.service.js';
 import mongoose from 'mongoose';
+import fs from 'fs';
 
 const DEFAULT_CRON_EXPRESSION = '0 * * * *';
 class QueryService {
@@ -44,7 +45,6 @@ class QueryService {
   private async task(org: string) {
     logger.info(`${org} task started`);
     try {
-      console.log('task started');
       const queries = [
         this.queryCopilotUsageMetrics(org).then(() => this.status.usage = true),
         this.queryCopilotUsageMetricsNew(org).then(() => this.status.metrics = true),
@@ -81,7 +81,6 @@ class QueryService {
 
   public async queryCopilotUsageMetrics(org: string) {
     try {
-      console.log('queryCopilotUsageMetrics', org)
       const rsp = await this.octokit.rest.copilot.usageMetricsForOrg({
         org
       });
@@ -122,10 +121,10 @@ class QueryService {
     const members = await this.octokit.paginate("GET /orgs/{org}/members", {
       org
     });
+    fs.writeFileSync('members.json', JSON.stringify(members, null, 2));
+    logger.info('Members data written to members.json 📄');
     // await teamsService.updateMembers(org, members);
-    
-    console.log('members', members[0])
-    
+        
     const Members = mongoose.model('Member');
     members.forEach(async (member) => {
       await Members.findOneAndUpdate(

@@ -102,7 +102,7 @@ Right click the terminal sidebar and click **Unsplit terminal** if you're lackin
 Start up the database. It's defined in the `docker-compose.yml` file.
 
 ```bash
-docker-compose up -d db
+docker-compose up -d mongo
 ```
 
 Then, you can run the server and the client separately.

@@ -46,8 +46,6 @@ class SeatsService {
         select: 'login id avatar_url -_id'  // Only select needed fields 🎯
       })
       .sort({ last_activity_at: -1 });  // DESC ordering ⬇️
-
-    console.log(seats);
     return seats;
   }
 
@@ -73,7 +71,6 @@ class SeatsService {
     const assignee = await Member.findOne({
       login
     })
-    console.log('assignee', assignee.login)
     if (!assignee) throw new Error(`Assignee ${login} not found`);
     return Seats.find({
       assignee_id: assignee.id
@@ -84,16 +81,6 @@ class SeatsService {
         model: Member,
         select: 'login id avatar_url -_id'  // Only select needed fields 🎯
       });
-
-    return Seat.findAll({
-      include: [{
-        model: Member,
-        as: 'assignee'
-      }],
-      where: {
-        assignee_id: assignee.id
-      }
-    });
   }
 
   async insertSeats(org: string, data: SeatEntry[], team?: string) {
@@ -307,8 +294,6 @@ class SeatsService {
         },
         select: 'last_activity_at'  // 📊 Only get needed fields
       })
-
-    console.log(assignees)
 
     const activityTotals = assignees.reduce((totals, assignee) => {
       totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {

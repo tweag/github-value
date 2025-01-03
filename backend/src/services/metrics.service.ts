@@ -468,7 +468,6 @@ class MetricsService {
         });
       }
 
-      console.log('day', day.date)
       await Metrics.findOneAndUpdate(
         { date: day.date, org, team },
         { ...day },

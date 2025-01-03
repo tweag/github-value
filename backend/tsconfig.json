@@ -13,6 +13,6 @@
     "sourceMap": true,
     "inlineSources": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/__tests__/services/teams.service.spec.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

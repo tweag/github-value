@@ -96,7 +96,6 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
         ...this._chartOptions,
         ...this.highchartsService.transformMetricsToDailyActivityLine(this.activity, this.metrics)
       };
-      console.log('chart options', this._chartOptions);
       this.updateFlag = true;
     }
   }

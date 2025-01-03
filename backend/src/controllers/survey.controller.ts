@@ -54,10 +54,8 @@ class SurveyController {
   async createSurvey(req: Request, res: Response): Promise<void> {
     try {
       const Survey = mongoose.model('Survey');
-      const survey = await Survey.create(
-        req.body,
-        { upsert: true }
-      );
+      const survey = await Survey.create(req.body);
+      console.log(req.body, survey);
       res.status(201).json(survey);
     } catch (error) {
       res.status(500).json(error);
@@ -67,18 +65,15 @@ class SurveyController {
 
   async getAllSurveys(req: Request, res: Response): Promise<void> {
     try {
-      console.log('getting surveys')
       const { org, reasonLength } = req.query;
       const Survey = mongoose.model('Survey');
 
       const surveys = await Survey.find({
         ...org ? { org: org as string } : {},
-        ...reasonLength ? {$expr: { $gt: [{ $strLenCP: '$name' }, 40] } } : {}
+        ...reasonLength ? { $expr: { $and: [{ $gt: [{ $strLenCP: { $ifNull: ['$reason', ''] } }, 40] }, { $ne: ['$reason', null] }] } } : {}
       });
-      console.log('good', surveys)
       res.status(200).json(surveys);
     } catch (error) {
-      console.log('error', error)
       res.status(500).json(error);
     }
   }
@@ -86,12 +81,9 @@ class SurveyController {
   async getSurveyById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const survey = await Survey.findByPk(id);
-      if (survey) {
-        res.status(200).json(survey);
-      } else {
-        res.status(404).json({ error: 'Survey not found' });
-      }
+      const Survey = mongoose.model('Survey');
+      const survey = await Survey.findById(id);
+      res.status(200).json(survey);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -99,14 +91,11 @@ class SurveyController {
 
   async updateSurvey(req: Request, res: Response): Promise<void> {
     try {
+      const Survey = mongoose.model('Survey');
       const { id } = req.params;
-      // implement the other fields... possibly
-      const [updated] = await Survey.update(req.body, {
-        where: { id }
-      });
+      const updated = await Survey.findByIdAndUpdate(id, req.body);
       if (updated) {
-        const updatedSurvey = await Survey.findByPk(id);
-        res.status(200).json(updatedSurvey);
+        res.status(200).json({ _id: id, ...req.body });
       } else {
         res.status(404).json({ error: 'Survey not found' });
       }
@@ -117,10 +106,9 @@ class SurveyController {
 
   async deleteSurvey(req: Request, res: Response): Promise<void> {
     try {
+      const Survey = mongoose.model('Survey');
       const { id } = req.params;
-      const deleted = await Survey.destroy({
-        where: { id }
-      });
+      const deleted = await Survey.findByIdAndDelete(id);
       if (deleted) {
         res.status(204).send();
       } else {

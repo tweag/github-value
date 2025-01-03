@@ -24,7 +24,7 @@
 			"icon": {
 				"id": "database"
 			},
-			"detail": "docker-compose -f ../compose.yml up -d db",
+			"detail": "docker-compose -f ../compose.yml up -d mongo",
 			"promptOnClose": false,
 			"runOptions": {
 				"reevaluateOnRerun": true

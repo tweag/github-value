@@ -15,27 +15,27 @@ services:
       MYSQL_PASSWORD: octocat
       MYSQL_DATABASE: value
     depends_on:
-      db:
+      mongo:
         condition: service_healthy
     volumes:
       - ./:/src
 
-  db:
-    image: mysql
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: octocat
-      MYSQL_DATABASE: value
-      TZ: UTC
-    ports:
-      - '3306:3306'
-    volumes:
-      - db:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
-      interval: 1s
-      timeout: 5s
-      retries: 10
+  # db:
+  #   image: mysql
+  #   restart: always
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: octocat
+  #     MYSQL_DATABASE: value
+  #     TZ: UTC
+  #   ports:
+  #     - '3306:3306'
+  #   volumes:
+  #     - db:/var/lib/mysql
+  #   healthcheck:
+  #     test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+  #     interval: 1s
+  #     timeout: 5s
+  #     retries: 10
 
   mongo:
     image: mongo
@@ -45,6 +45,14 @@ services:
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: octocat
+    volumes:
+      - mongo-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongo", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
 volumes:
-  db:
+  mongo-data:
