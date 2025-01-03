@@ -1,6 +1,4 @@
 import mongoose from 'mongoose';
-import app from '../index.js';
-import { Settings } from '../models/settings.model.js';
 
 export interface SettingsType {
   baseUrl?: string,
@@ -40,20 +38,28 @@ class SettingsService {
   }
 
   async getAllSettings() {
-    return await Settings.findAll();
+    try {
+      const Setting = mongoose.model('Settings');
+      return await Setting.find({});
+    } catch (error) {
+      console.error('Failed to get all settings:', error);
+      throw error;
+    }
   }
 
   async getSettingsByName(name: string): Promise<string | undefined> {
     try {
-      const rsp = await Settings.findOne({ where: { name } });
-      if (!rsp) {
+      const setting = await mongoose.model('Settings').findOne({ name });
+      if (!setting) {
         return undefined;
       }
-      return rsp.dataValues.value;
-    } catch {
+      return setting.value;
+    } catch (error) {
+      console.error('Failed to get setting by name:', error);
       return undefined;
     }
   }
+
   async updateSetting(name: keyof SettingsType, value: string) {
     try {
       const Setting = mongoose.model('Settings');
@@ -75,17 +81,23 @@ class SettingsService {
   }
 
   async updateSettings(obj: { [key: string]: string }) {
-    Object.entries(obj).forEach(([name, value]) => {
-      this.updateSetting(name as keyof SettingsType, value);
-    });
+    await Promise.all(
+      Object.entries(obj).map(([name, value]) => 
+      this.updateSetting(name as keyof SettingsType, value)
+      )
+    );
   }
 
   async deleteSettings(name: string) {
-    const deleted = await Settings.destroy({
-      where: { name }
-    });
-    if (!deleted) {
-      throw new Error('Settings not found');
+    try {
+      const Setting = mongoose.model('Settings');
+      await Setting.findOneAndDelete({ name });
+      // if (!result) {
+      //   throw new Error('Settings not found');
+      // }
+    } catch (error) {
+      console.error('Failed to delete setting:', error);
+      throw error;
     }
   }
 }
