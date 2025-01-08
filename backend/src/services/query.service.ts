@@ -3,11 +3,10 @@ import logger from './logger.js';
 import { insertUsage } from '../models/usage.model.js';
 import SeatService, { SeatEntry } from '../services/copilot.seats.service.js';
 import { Octokit } from 'octokit';
-import metricsService from './metrics.service.js';
 import { MetricDailyResponseType } from '../models/metrics.model.js';
-import teamsService from './teams.service.js';
 import mongoose from 'mongoose';
-import fs from 'fs';
+import metricsService from './metrics.service.js';
+import teamsService from './teams.service.js';
 
 const DEFAULT_CRON_EXPRESSION = '0 * * * *';
 class QueryService {
@@ -118,41 +117,43 @@ class QueryService {
   }
 
   public async queryTeamsAndMembers(org: string) {
-    const members = await this.octokit.paginate("GET /orgs/{org}/members", {
-      org
-    });
-    fs.writeFileSync('members.json', JSON.stringify(members, null, 2));
-    logger.info('Members data written to members.json 📄');
-    // await teamsService.updateMembers(org, members);
-        
-    const Members = mongoose.model('Member');
-    members.forEach(async (member) => {
-      await Members.findOneAndUpdate(
-        { org, id: member.id },
-        member,
-        { upsert: true }
-      );
-    });
-
     try {
-      // const teams = await this.octokit.paginate(this.octokit.rest.teams.list, {
-      //   org
-      // });
-      // await teamsService.updateTeams(org, teams);
+      const teams = await this.octokit.paginate(this.octokit.rest.teams.list, {
+        org
+      });
+      await teamsService.updateTeams(org, teams);
 
-      // await Promise.all(
-      //   teams.map(async (team) => this.octokit.paginate(this.octokit.rest.teams.listMembersInOrg, {
-      //     org,
-      //     team_slug: team.slug
-      //   }).then(async (members) =>
-      //     await Promise.all(
-      //       members.map(async (member) => teamsService.addMemberToTeam(team.id, member.id))
-      //     )).catch((error) => {
-      //       logger.debug(error);
-      //       logger.error('Error updating team members for team', { team: team, error: error });
-      //     })
-      //   )
-      // )
+      await Promise.all(
+        teams.map(async (team) => this.octokit.paginate(this.octokit.rest.teams.listMembersInOrg, {
+          org,
+          team_slug: team.slug
+        }).then(async (members) =>
+          await Promise.all(
+            members.map(async (member) => teamsService.addMemberToTeam(team.id, member.id))
+          )).catch((error) => {
+            logger.debug(error);
+            logger.error('Error updating team members for team', { team: team, error: error });
+          })
+        )
+      )
+
+      const members = await this.octokit.paginate("GET /orgs/{org}/members", {
+        org
+      });
+
+      const Members = mongoose.model('Member');
+
+      // Use bulkWrite with updateOne operations
+      const bulkOps = members.map((member) => ({
+        updateOne: {
+          filter: { org, id: member.id },
+          update: member,
+          upsert: true
+        }
+      }));
+
+      await Members.bulkWrite(bulkOps, { ordered: false });
+
       logger.info("Teams & Members successfully updated! 🧑‍🤝‍🧑");
     } catch (error) {
       logger.error('Error querying teams', error);

@@ -1,21 +1,10 @@
-import { Options, Sequelize } from 'sequelize';
 import updateDotenv from 'update-dotenv';
 import logger from './services/logger.js';
-import mongoose, { mongo, Schema } from 'mongoose';
-
-// CACHE
-// https://github.com/sequelize-transparent-cache/sequelize-transparent-cache?tab=readme-ov-file
+import mongoose, { Schema } from 'mongoose';
+import util from 'util';
 
 class Database {
   mongoose: mongoose.Mongoose | null = null;
-  options: Options = {
-    dialect: 'mysql',
-    logging: (sql) => logger.debug(sql),
-    timezone: '+00:00', // Force UTC timezone
-    dialectOptions: {
-      timezone: '+00:00' // Force UTC for MySQL connection
-    },
-  }
   mongodbUri: string;
 
   constructor(mongodbUri: string) {
@@ -27,6 +16,15 @@ class Database {
     if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
       this.mongoose = await mongoose.connect(this.mongodbUri);
+      this.mongoose.set('debug', true);
+      this.mongoose.set('debug', (collectionName, methodName, ...methodArgs) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const msgMapper = (m: any) => {
+          return util.inspect(m, false, 10, true)
+            .replace(/\n/g, '').replace(/\s{2,}/g, ' ');
+        };
+        logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`)
+      });
       logger.info('Database setup completed successfully');
     } catch (error) {
       logger.debug(error);
@@ -191,7 +189,7 @@ class Database {
       user_view_type: String,
       activity: [{ type: Schema.Types.ObjectId, ref: 'Seats' }]
     }, {
-      timestamps: true
+      timestamps: true,
     });
 
     // TeamMember Association Schema 🤝

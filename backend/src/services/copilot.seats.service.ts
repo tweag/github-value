@@ -1,10 +1,8 @@
 import { Endpoints } from '@octokit/types';
-import { Seat } from "../models/copilot.seats.model.js";
-import { Op, QueryTypes, Sequelize } from 'sequelize';
+import { SeatType } from "../models/copilot.seats.model.js";
 import { components } from "@octokit/openapi-types";
-import { Member, Team } from '../models/teams.model.js';
-import app from '../index.js';
 import mongoose from 'mongoose';
+import { MemberActivityType, MemberType } from 'models/teams.model.js';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
@@ -18,10 +16,10 @@ type MemberDailyActivity = {
     totalActive: number,
     totalInactive: number,
     active: {
-      [assignee: string]: Seat
+      [assignee: string]: SeatType
     },
     inactive: {
-      [assignee: string]: Seat
+      [assignee: string]: SeatType
     }
   };
 };
@@ -38,13 +36,8 @@ class SeatsService {
     const seats = await Seats.find({
       ...(org ? { org } : {}),
       queryAt: latestQuery?.queryAt
-    }, '-_id -__v')
-      .lean()
-      .populate({
-        path: 'assignee',  // Link to Member model 👤
-        model: Member,
-        select: 'login id avatar_url -_id'  // Only select needed fields 🎯
-      })
+    })
+      .populate('assignee')
       .sort({ last_activity_at: -1 });  // DESC ordering ⬇️
     return seats;
   }
@@ -85,6 +78,7 @@ class SeatsService {
 
   async insertSeats(org: string, data: SeatEntry[], team?: string) {
     const queryAt = new Date();
+    queryAt.setDate(queryAt.getDate() + 1);
     const Members = mongoose.model('Member');
     const Seats = mongoose.model('Seats');
     for (const seat of data) {
@@ -139,13 +133,7 @@ class SeatsService {
         queryAt,
         org,
         team,
-        created_at: seat.created_at,
-        updated_at: seat.updated_at,
-        pending_cancellation_date: seat.pending_cancellation_date,
-        last_activity_at: seat.last_activity_at,
-        last_activity_editor: seat.last_activity_editor,
-        plan_type: seat.plan_type,
-        assignee_id: seat.assignee.id,
+        ...seat,
         assignee: member._id,
         // assigning_team_id: assigningTeam?.id
       });
@@ -176,7 +164,7 @@ class SeatsService {
     const Seats = mongoose.model('Seats');
     // const Member = mongoose.model('Member');
     const { org, daysInactive = 30, precision = 'day', since, until } = params;
-    const assignees = await Seats.aggregate([
+    const assignees: MemberActivityType[] = await Seats.aggregate([
       {
         $match: {
           ...(org && { org }),
@@ -213,6 +201,7 @@ class SeatsService {
 
     const activityDays: MemberDailyActivity = {};
     assignees.forEach((assignee) => {
+      if (!assignee.activity) return;
       assignee.activity.forEach((activity) => {
         const fromTime = activity.last_activity_at?.getTime() || 0;
         const toTime = activity.createdAt.getTime();
@@ -264,23 +253,11 @@ class SeatsService {
     since?: string;
     until?: string;
   }) {
-    // const assignees2 = await app.database.sequelize?.query(`
-    //   SELECT \`Member\`.\`login\`, \`Member\`.\`id\`, \`activity\`.\`id\` AS \`activity.id\`, \`activity\`.\`last_activity_at\` AS \`activity.last_activity_at\`
-    //   FROM \`Members\` AS \`Member\`
-    //   INNER JOIN \`Seats\` AS \`activity\` ON \`Member\`.\`id\` = \`activity\`.\`assignee_id\`
-    // `, {
-    //   replacements: { org },
-    //   type: QueryTypes.SELECT
-    // });
     const { org, since, until } = params;
-    const dateFilter = {
-      ...(since && { [Op.gte]: new Date(since as string) }),
-      ...(until && { [Op.lte]: new Date(until as string) })
-    };
     const Seats = mongoose.model('Seats');
     const Member = mongoose.model('Member');
 
-    const assignees = await Member.find()
+    const assignees: MemberType[] = await Member.find()
       .select('login id')  // 🎯 Select specific fields
       .populate({
         path: 'activity',
@@ -296,23 +273,26 @@ class SeatsService {
       })
 
     const activityTotals = assignees.reduce((totals, assignee) => {
-      totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {
-        if (index === 0) return totalMs;
-        const prev = assignee.activity[index - 1];
-        const diff = activity.last_activity_at?.getTime() - prev.last_activity_at?.getTime();
-        if (diff) {
-          if (diff > 1000 * 60 * 30) {
-            totalMs += 1000 * 60 * 30;
-          } else {
-            totalMs += diff;
+      if (assignee.activity) {
+        totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {
+          if (index === 0) return totalMs;
+          if (!activity.last_activity_at) return totalMs;
+          const prev = assignee.activity?.[index - 1];
+          const diff = activity.last_activity_at?.getTime() - (prev?.last_activity_at?.getTime() || 0);
+          if (diff) {
+            if (diff > 1000 * 60 * 30) {
+              totalMs += 1000 * 60 * 30;
+            } else {
+              totalMs += diff;
+            }
           }
-        }
-        return totalMs;
-      }, 0);
+          return totalMs;
+        }, 0);
+      }
       return totals;
     }, {} as { [assignee: string]: number });
 
-    return Object.entries(activityTotals).sort((a, b) => b[1] - a[1]);
+    return Object.entries(activityTotals).sort((a: any, b: any) => b[1] - a[1]);
   }
 }
 

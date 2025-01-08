@@ -430,8 +430,10 @@ export class HighchartsService {
       data: [] as CustomHighchartsPointOptions[]
     };
 
+    console.log(metrics);
     Object.entries(activity).forEach(([date, dateData]) => {
       const currentMetrics = metrics.find(m => m.date.startsWith(date.slice(0, 10)));
+      console.log(date, date.slice(0, 10), currentMetrics);
       if (currentMetrics?.copilot_ide_code_completions) {
         (dailyActiveIdeCompletionsSeries.data).push({
           x: new Date(date).getTime(),
@@ -461,6 +463,8 @@ export class HighchartsService {
         });
       }
     });
+
+    console.log(dailyActiveIdeCompletionsSeries);
 
     return {
       series: [

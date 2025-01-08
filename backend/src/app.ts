@@ -27,6 +27,9 @@ class App {
     this.baseUrl = process.env.BASE_URL || 'http://localhost:' + port;
     this.e = express();
     this.port = port;
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI must be set');
+    }
     this.database = new Database(process.env.MONGODB_URI);
     const webhookService = new WebhookService({
       url: process.env.WEBHOOK_PROXY_URL,

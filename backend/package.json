@@ -24,7 +24,6 @@
     "mongoose": "^8.8.4",
     "mysql2": "^3.11.4",
     "octokit": "^4.0.2",
-    "sequelize": "^6.37.5",
     "smee-client": "^2.0.4",
     "update-dotenv": "^1.1.1",
     "why-is-node-running": "^3.2.1"

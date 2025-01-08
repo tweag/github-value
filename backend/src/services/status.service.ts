@@ -1,8 +1,5 @@
 import mongoose from "mongoose";
 import app from "../index.js";
-import { Seat } from "../models/copilot.seats.model.js";
-import { Survey } from "../models/survey.model.js";
-import { Member } from "../models/teams.model.js";
 import { Endpoints } from "@octokit/types";
 
 export interface StatusType {

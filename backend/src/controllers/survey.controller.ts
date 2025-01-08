@@ -1,14 +1,13 @@
 import { Request, Response } from 'express';
-import { Survey } from '../models/survey.model.js';
+import { SurveyType } from '../models/survey.model.js';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
-import { Op, Sequelize, WhereOptions } from 'sequelize';
 import mongoose from 'mongoose';
 
 class SurveyController {
   async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
-    let survey: Survey;
+    let survey: SurveyType;
     try {
       const _survey = await surveyService.updateSurvey({
         ...req.body,
@@ -55,7 +54,6 @@ class SurveyController {
     try {
       const Survey = mongoose.model('Survey');
       const survey = await Survey.create(req.body);
-      console.log(req.body, survey);
       res.status(201).json(survey);
     } catch (error) {
       res.status(500).json(error);

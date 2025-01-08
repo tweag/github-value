@@ -1,43 +1,32 @@
 import { Request, Response } from 'express';
-import { Team, Member } from '../models/teams.model.js';
+import mongoose from 'mongoose';
+
+// const TeamMember = mongoose.model('TeamMember');
 
 class TeamsController {
   async getAllTeams(req: Request, res: Response): Promise<void> {
+    const Team = mongoose.model('Team');
+    const Member = mongoose.model('Member');
     try {
-      const teams = await Team.findAll({
-        where: {
-          ...req.query.org ? { '$Team.org$': req.query.org as string } : {}
-        },
-        include: [
-          {
-            model: Member,
-            as: 'members',
-            through: {
-              attributes: []
-            },
-            attributes: ['login', 'avatar_url']
-          },
-          {
-            model: Team,
-            as: 'children',
-            include: [{
-              model: Member,
-              as: 'members',
-              through: {
-                attributes: []
-              },
-              attributes: ['login', 'avatar_url']
-            }],
-            attributes: ['name', 'org', 'slug', 'description', 'html_url']
+      const query = req.query.org ? { org: req.query.org as string } : {};
+      const teams = await Team.find(query)
+        .populate({
+          path: 'members',
+          select: 'login avatar_url',
+          model: Member
+        })
+        .populate({
+          path: 'children',
+          select: 'name org slug description html_url',
+          populate: {
+            path: 'members',
+            select: 'login avatar_url',
+            model: Member
           }
-        ],
-        attributes: ['name', 'org', 'slug', 'description', 'html_url'],
-        order: [
-          ['name', 'ASC'],
-          [{ model: Member, as: 'members' }, 'login', 'ASC']
-        ]
-      });
-  
+        })
+        .sort({ name: 'asc', 'members.login': 'asc' })
+        .exec();
+
       res.json(teams);
     } catch (error) {
       res.status(500).json(error);
@@ -45,14 +34,13 @@ class TeamsController {
   }
 
   async getAllMembers(req: Request, res: Response): Promise<void> {
+    const Member = mongoose.model('Member');
     try {
-      const members = await Member.findAll({
-        attributes: ['login', 'name', 'url', 'avatar_url'],
-        order: [
-          ['login', 'ASC']
-        ]
-      });
-  
+      const members = await Member.find()
+        .select('login name url avatar_url')
+        .sort({ login: 'asc' })
+        .exec();
+
       res.json(members);
     } catch (error) {
       res.status(500).json(error);
@@ -60,12 +48,12 @@ class TeamsController {
   }
 
   async getMemberByLogin(req: Request, res: Response): Promise<void> {
+    const Member = mongoose.model('Member');
     try {
       const { login } = req.params;
-      const member = await Member.findOne({
-        where: { login },
-        attributes: ['login', 'name', 'url', 'avatar_url']
-      });
+      const member = await Member.findOne({ login })
+        .select('login name url avatar_url')
+        .exec();
 
       if (member) {
         res.json(member);

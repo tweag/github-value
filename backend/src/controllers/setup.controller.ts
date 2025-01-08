@@ -102,13 +102,7 @@ class SetupController {
 
   async setupDB(req: Request, res: Response) {
     try {
-      await app.database.connect(req.body.url || {
-        database: req.body.database || 'value',
-        host: req.body.host,
-        port: req.body.port,
-        username: req.body.username,
-        password: req.body.password
-      });
+      await app.database.connect();
       res.json({ message: 'DB setup started' });
     } catch (error) {
       res.status(500).json(error);

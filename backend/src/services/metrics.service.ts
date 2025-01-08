@@ -1,6 +1,4 @@
-import { BaseError, Op } from "sequelize";
-import logger from "./logger.js";
-import { MetricDaily, MetricDailyResponseType, MetricDotcomChatMetrics, MetricDotcomChatModelStats, MetricEditor, MetricIdeChatEditor, MetricIdeChatMetrics, MetricIdeChatModelStats, MetricIdeCompletions, MetricLanguageStats, MetricModelStats, MetricPrMetrics, MetricPrModelStats, MetricPrRepository } from "../models/metrics.model.js";
+import { MetricDailyResponseType } from "../models/metrics.model.js";
 import mongoose from "mongoose";
 
 export interface MetricsQueryParams {
@@ -9,156 +7,78 @@ export interface MetricsQueryParams {
   until?: string,
   editor?: string,
   language?: string,
-  model?: string
+  model?: string,
   org?: string
 };
 
 class MetricsService {
   async getMetrics(params: MetricsQueryParams) {
     const { org, type, since, until, editor, language, model } = params;
-    // consider the fact that these are UTC dates...
+    
     const dateFilter = {
-      ...(since && { [Op.gte]: new Date(since as string) }),
-      ...(until && { [Op.lte]: new Date(until as string) })
+      ...(since && { $gte: new Date(since) }),
+      ...(until && { $lte: new Date(until) })
     };
-    const where = {
-      ...(org ? { org } : {}),
-      ...Object.getOwnPropertySymbols(dateFilter).length ? { date: dateFilter } : {}
-    }
 
-    const Metrics = mongoose.model('Metrics');
-    return await Metrics.find({
-      ...org ? { org } : {},
-    })
+    const query: any = {
+      ...(org && { org }),
+      ...(Object.keys(dateFilter).length && { date: dateFilter })
+    };
 
-    const types = type ? (type as string).split(/[ ,]+/) : [];
-    const findAlls = {} as {
-      copilot_ide_code_completions: Promise<MetricDaily[]>,
-      copilot_ide_chat: Promise<MetricDaily[]>,
-      copilot_dotcom_chat: Promise<MetricDaily[]>,
-      copilot_dotcom_pull_requests: Promise<MetricDaily[]>,
-    }
-    if (types.length === 0 || types.includes('copilot_ide_code_completions')) {
-      findAlls.copilot_ide_code_completions = MetricDaily.findAll({
-        where,
-        include: {
-          attributes: { exclude: ['id', 'daily_metric_id'] },
-          model: MetricIdeCompletions,
-          as: 'copilot_ide_code_completions',
-          include: [{
-            attributes: { exclude: ['id', 'ide_completion_id'] },
-            model: MetricEditor,
-            as: 'editors',
-            where: editor ? { name: editor } : {},
-            required: true,
-            include: [{
-              attributes: { exclude: ['id', 'editor_id'] },
-              model: MetricModelStats,
-              as: 'models',
-              where: model ? { name: model } : {},
-              required: true,
-              include: [{
-                attributes: { exclude: ['id', 'model_stat_id'] },
-                model: MetricLanguageStats,
-                as: 'languages',
-                where: language ? { name: language } : {},
-                required: true,
-              }]
-            }]
-          }]
+    const types = type ? type.split(/[ ,]+/) : [];
+
+    const metrics = await mongoose.model('Metrics').find(query).lean();
+
+    if (editor || language || model) {
+      metrics.forEach(metric => {
+        if (metric.copilot_ide_code_completions) {
+          metric.copilot_ide_code_completions.editors = metric.copilot_ide_code_completions.editors.filter((editorItem: any) => {
+            if (editor && editorItem.name !== editor) return false;
+            if (model) {
+              editorItem.models = editorItem.models.filter((modelItem: any) => {
+                if (modelItem.name !== model) return false;
+                if (language) {
+                  modelItem.languages = modelItem.languages.filter((languageItem: any) => languageItem.name === language);
+                }
+                return true;
+              });
+            }
+            return true;
+          });
         }
-      })
-    }
-    if (types.length === 0 || types.includes('copilot_ide_chat')) {
-      findAlls.copilot_ide_chat =
-        MetricDaily.findAll({
-          where,
-          include: {
-            attributes: { exclude: ['id', 'daily_metric_id'] },
-            model: MetricIdeChatMetrics,
-            as: 'copilot_ide_chat',
-            required: true,
-            include: [{
-              attributes: { exclude: ['id', 'chat_metrics_id'] },
-              model: MetricIdeChatEditor,
-              as: 'editors',
-              where: editor ? { name: editor } : {},
-              required: true,
-              include: [{
-                attributes: { exclude: ['id', 'editor_id'] },
-                model: MetricIdeChatModelStats,
-                as: 'models',
-                where: model ? { name: model } : {},
-                required: true,
-              }]
-            }]
-          }
-        })
-    }
-    if (types.length === 0 || types.includes('copilot_dotcom_chat')) {
-      findAlls.copilot_dotcom_chat =
-        MetricDaily.findAll({
-          where,
-          include: {
-            attributes: { exclude: ['id', 'daily_metric_id'] },
-            model: MetricDotcomChatMetrics,
-            as: 'copilot_dotcom_chat',
-            include: [{
-              attributes: { exclude: ['id', 'chat_metrics_id'] },
-              model: MetricDotcomChatModelStats,
-              as: 'models',
-              where: model ? { name: model } : {},
-              required: false,
-            }]
-          }
-        })
-    }
-    if (types.length === 0 || types.includes('copilot_dotcom_pull_requests')) {
-      findAlls.copilot_dotcom_pull_requests =
-        MetricDaily.findAll({
-          where,
-          include: {
-            attributes: { exclude: ['id', 'daily_metric_id'] },
-            model: MetricPrMetrics,
-            as: 'copilot_dotcom_pull_requests',
-            include: [{
-              attributes: { exclude: ['id', 'pr_metrics_id'] },
-              model: MetricPrRepository,
-              as: 'repositories',
-              include: [{
-                attributes: { exclude: ['id', 'repository_id'] },
-                model: MetricPrModelStats,
-                as: 'models',
-                where: model ? { name: model } : {},
-                required: false,
-              }]
-            }]
-          }
-        })
+        if (metric.copilot_ide_chat) {
+          metric.copilot_ide_chat.editors = metric.copilot_ide_chat.editors.filter((editorItem: any) => {
+            if (editor && editorItem.name !== editor) return false;
+            if (model) {
+              editorItem.models = editorItem.models.filter((modelItem: any) => {
+                if (modelItem.name !== model) return false;
+                return true;
+              });
+            }
+            return true;
+          });
+        }
+        if (metric.copilot_dotcom_chat) {
+          metric.copilot_dotcom_chat.models = metric.copilot_dotcom_chat.models.filter((modelItem: any) => {
+            if (modelItem.name !== model) return false;
+            return true;
+          });
+        }
+        if (metric.copilot_dotcom_pull_requests) {
+          metric.copilot_dotcom_pull_requests.repositories = metric.copilot_dotcom_pull_requests.repositories.filter((repositoryItem: any) => {
+            if (model) {
+              repositoryItem.models = repositoryItem.models.filter((modelItem: any) => {
+                if (modelItem.name !== model) return false;
+                return true;
+              });
+            }
+            return true;
+          });
+        }
+      });
     }
 
-    const rsps = await Promise.all([
-      findAlls.copilot_ide_code_completions,
-      findAlls.copilot_ide_chat,
-      findAlls.copilot_dotcom_chat,
-      findAlls.copilot_dotcom_pull_requests
-    ]);
-
-    const result = rsps[0] as MetricDaily[]
-    rsps[1].reduce((acc, val, i) => {
-      if (val.copilot_ide_chat) acc[i].setDataValue('copilot_ide_chat', val.copilot_ide_chat);
-      return acc;
-    }, result);
-    rsps[2].reduce((acc, val, i) => {
-      if (val.copilot_dotcom_chat) acc[i].setDataValue('copilot_dotcom_chat', val.copilot_dotcom_chat);
-      return acc;
-    }, result);
-    rsps[3].reduce((acc, val, i) => {
-      if (val.copilot_dotcom_pull_requests) acc[i].setDataValue('copilot_dotcom_pull_requests', val.copilot_dotcom_pull_requests);
-      return acc;
-    }, result);
-
-    return result;
+    return metrics;
   }
 
   async getMetricsTotals(params: MetricsQueryParams) {
@@ -232,13 +152,13 @@ class MetricsService {
       }
     };
 
-    metrics.forEach(daily => {
+    metrics.forEach((daily: any) => {
       if (daily.copilot_ide_code_completions) {
         periodMetrics.copilot_ide_code_completions.total_code_acceptances += daily.copilot_ide_code_completions.total_code_acceptances || 0;
         periodMetrics.copilot_ide_code_completions.total_code_suggestions += daily.copilot_ide_code_completions.total_code_suggestions || 0;
         periodMetrics.copilot_ide_code_completions.total_code_lines_accepted += daily.copilot_ide_code_completions.total_code_lines_accepted || 0;
         periodMetrics.copilot_ide_code_completions.total_code_lines_suggested += daily.copilot_ide_code_completions.total_code_lines_suggested || 0;
-        daily.copilot_ide_code_completions.editors?.forEach(editor => {
+        daily.copilot_ide_code_completions.editors?.forEach((editor: any) => {
           let editorTotals = periodMetrics.copilot_ide_code_completions.editors.find(e => e.name === editor.name);
           if (editorTotals) {
             editorTotals.total_code_acceptances += editor.total_code_acceptances || 0;
@@ -256,7 +176,7 @@ class MetricsService {
             }
             periodMetrics.copilot_ide_code_completions.editors.push(editorTotals);
           }
-          editor.models?.forEach(model => {
+          editor.models?.forEach((model: any) => {
             let editorModelTotals = editorTotals?.models.find(m => m.name === model.name);
             if (editorModelTotals) {
               editorModelTotals.total_code_acceptances += model.total_code_acceptances || 0;
@@ -274,7 +194,7 @@ class MetricsService {
               }
               editorTotals?.models.push(editorModelTotals);
             }
-            model.languages?.forEach(language => {
+            model.languages?.forEach((language: any) => {
               let modelLanguageTotals = editorModelTotals?.languages.find(l => l.name === language.name);
               if (modelLanguageTotals) {
                 modelLanguageTotals.total_code_acceptances += language.total_code_acceptances || 0;
@@ -300,7 +220,7 @@ class MetricsService {
         periodMetrics.copilot_ide_chat.total_chats += daily.copilot_ide_chat.total_chats || 0;
         periodMetrics.copilot_ide_chat.total_chat_copy_events += daily.copilot_ide_chat.total_chat_copy_events || 0;
         periodMetrics.copilot_ide_chat.total_chat_insertion_events += daily.copilot_ide_chat.total_chat_insertion_events || 0;
-        daily.copilot_ide_chat.editors?.forEach(editor => {
+        daily.copilot_ide_chat.editors?.forEach((editor: any) => {
           let editorTotals = periodMetrics.copilot_ide_chat.editors.find(e => e.name === editor.name);
           if (editorTotals) {
             editorTotals.total_chats += editor.total_chats || 0;
@@ -316,7 +236,7 @@ class MetricsService {
             }
             periodMetrics.copilot_ide_chat.editors.push(editorTotals);
           }
-          editor.models?.forEach(model => {
+          editor.models?.forEach((model: any) => {
             let editorModelTotals = editorTotals?.models.find(m => m.name === model.name);
             if (editorModelTotals) {
               editorModelTotals.total_chats += model.total_chats || 0;
@@ -337,7 +257,7 @@ class MetricsService {
 
       if (daily.copilot_dotcom_chat) {
         periodMetrics.copilot_dotcom_chat.total_chats += daily.copilot_dotcom_chat.total_chats || 0;
-        daily.copilot_dotcom_chat.models?.forEach(model => {
+        daily.copilot_dotcom_chat.models?.forEach((model: any) => {
           let modelTotals = periodMetrics.copilot_dotcom_chat.models.find(m => m.name === model.name);
           if (modelTotals) {
             modelTotals.total_chats += model.total_chats || 0;
@@ -353,7 +273,7 @@ class MetricsService {
 
       if (daily.copilot_dotcom_pull_requests) {
         periodMetrics.copilot_dotcom_pull_requests.total_pr_summaries_created += daily.copilot_dotcom_pull_requests.total_pr_summaries_created || 0;
-        daily.copilot_dotcom_pull_requests.repositories?.forEach(repository => {
+        daily.copilot_dotcom_pull_requests.repositories?.forEach((repository: any) => {
           let repositoryTotals = periodMetrics.copilot_dotcom_pull_requests.repositories.find(r => r.name === repository.name);
           if (repositoryTotals) {
             repositoryTotals.total_pr_summaries_created += repository.total_pr_summaries_created || 0;
@@ -365,7 +285,7 @@ class MetricsService {
             }
             periodMetrics.copilot_dotcom_pull_requests.repositories.push(repositoryTotals);
           }
-          repository.models?.forEach(model => {
+          repository.models?.forEach((model: any) => {
             const repositoryModelTotals = repositoryTotals?.models.find(m => m.name === model.name);
             if (repositoryModelTotals) {
               repositoryModelTotals.total_pr_summaries_created += model.total_pr_summaries_created || 0;
@@ -384,10 +304,6 @@ class MetricsService {
   }
 
   async insertMetrics(org: string, data: MetricDailyResponseType[], team?: string) {
-    const where = {
-      org: org,
-      ...team ? { team } : undefined,
-    }
     const Metrics = mongoose.model('Metrics');
     for (const day of data) {
       // const parts = day.date.split('-').map(Number);
