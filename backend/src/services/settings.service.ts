@@ -37,10 +37,10 @@ class SettingsService {
     return this.settings;
   }
 
-  async getAllSettings() {
+  async getAllSettings(): Promise<{ [key: string]: string; } | null> {
     try {
       const Setting = mongoose.model('Settings');
-      return await Setting.find({});
+      return await Setting.findOne({});
     } catch (error) {
       console.error('Failed to get all settings:', error);
       throw error;

@@ -42,12 +42,12 @@ class QueryService {
   }
 
   private async task(org: string) {
-    logger.info(`${org} task started`);
+    const queryAt = new Date();
     try {
       const queries = [
         this.queryCopilotUsageMetrics(org).then(() => this.status.usage = true),
         this.queryCopilotUsageMetricsNew(org).then(() => this.status.metrics = true),
-        this.queryCopilotSeatAssignments(org).then(() => this.status.copilotSeats = true),
+        this.queryCopilotSeatAssignments(org, queryAt).then(() => this.status.copilotSeats = true),
       ]
 
       this.queryTeamsAndMembers(org).then(() =>
@@ -91,7 +91,7 @@ class QueryService {
     }
   }
 
-  public async queryCopilotSeatAssignments(org: string) {
+  public async queryCopilotSeatAssignments(org: string, queryAt: Date) {
     try {
       const rsp = await this.octokit.paginate(this.octokit.rest.copilot.listCopilotSeats, {
         org
@@ -107,7 +107,7 @@ class QueryService {
         return;
       }
 
-      await SeatService.insertSeats(org, seatAssignments.seats);
+      await SeatService.insertSeats(org, queryAt, seatAssignments.seats);
 
       logger.info(`${org} seat assignments updated`);
     } catch (error) {

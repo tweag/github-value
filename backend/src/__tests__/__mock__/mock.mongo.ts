@@ -1,10 +1,8 @@
 import { describe, expect, test, beforeAll, beforeEach } from 'vitest';
 import mongoose from 'mongoose';
-import {readFileSync} from 'fs';
 import 'dotenv/config';
-
-import Database from '../../database';
-import SettingsService, { SettingsType } from '../../services/settings.service';
+import Database from '../../database.js';
+import SettingsService, { SettingsType } from '../../services/settings.service.js';
 
 const org = null;
 const defaultSettings: SettingsType = {
@@ -51,9 +49,9 @@ describe('settings.service.spec.ts test', () => {
 
     const updatedSettings = await settingsService.getAllSettings();
     console.log(updatedSettings);
-    const baseUrlSetting = updatedSettings.find(setting => setting.name === 'baseUrl');
+    const baseUrlSetting = updatedSettings.find((setting: SettingsType) => setting.name === 'baseUrl');
     expect(baseUrlSetting?.value).toEqual(newSettings.baseUrl);
-    const webhookProxyUrlSetting = updatedSettings.find(setting => setting.name === 'webhookProxyUrl');
+    const webhookProxyUrlSetting = updatedSettings.find((setting: SettingsType) => setting.name === 'webhookProxyUrl');
     expect(webhookProxyUrlSetting?.value).toEqual(newSettings.webhookProxyUrl);
   });
 
@@ -64,6 +62,6 @@ describe('settings.service.spec.ts test', () => {
     await settingsService.deleteSettings('baseUrl');
 
     const settings = await settingsService.getAllSettings();
-    expect(settings.find(setting => setting.name === 'baseUrl')).toBeUndefined();
+    expect(settings['baseUrl']).toBeUndefined();
   });
 });

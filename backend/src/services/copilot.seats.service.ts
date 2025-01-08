@@ -76,9 +76,7 @@ class SeatsService {
       });
   }
 
-  async insertSeats(org: string, data: SeatEntry[], team?: string) {
-    const queryAt = new Date();
-    queryAt.setDate(queryAt.getDate() + 1);
+  async insertSeats(org: string, queryAt: Date, data: SeatEntry[], team?: string) {
     const Members = mongoose.model('Member');
     const Seats = mongoose.model('Seats');
     for (const seat of data) {
