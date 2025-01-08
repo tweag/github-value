@@ -273,7 +273,7 @@ export class HighchartsService {
         type: 'column',
         name: 'Pull Requests',
         id: `pr_${dateData.date}`,
-        data: dateData.copilot_dotcom_pull_requests?.repositories.map((repo) => ({
+        data: dateData.copilot_dotcom_pull_requests?.repositories?.map((repo) => ({
           name: repo.name || 'Unknown',
           y: repo.total_engaged_users,
           drilldown: `pr_${repo.name}_${dateData.date}`,
@@ -282,7 +282,7 @@ export class HighchartsService {
       });
 
       // PR models drilldown
-      dateData.copilot_dotcom_pull_requests?.repositories.forEach((repo) => {
+      dateData.copilot_dotcom_pull_requests?.repositories?.forEach((repo) => {
         drilldownSeries.push({
           type: 'column',
           name: `${repo.name || 'Unknown'} Models`,
