@@ -188,6 +188,17 @@ class TeamsService {
     const team = await Team.findOne().sort({ updatedAt: -1 });
     return team?.updatedAt || new Date(0);
   }
+
+  async getAllMembers(org: string) {
+    const Member = mongoose.model('Member');
+    try {
+      const members = await Member.find({ org }).select('login name url avatar_url').sort({ login: 'asc' }).exec();
+      return members;
+    } catch (error) {
+      logger.error('Failed to get all members:', error);
+      throw error;
+    }
+  }
 }
 
 export default new TeamsService();
