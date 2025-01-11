@@ -160,7 +160,7 @@ async function runMetricsGen(datetime: Date) {
 
 async function calendarClock() {
   let datetime = new Date('2024-08-11T00:00:00');
-  const endDate = new Date('2025-12-12T00:00:00');
+  const endDate = new Date('2024-12-09T00:00:00');
   members = await TeamsService.getAllMembers('octodemo');
   console.log('count All members:', members.length);
 
