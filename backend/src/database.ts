@@ -16,8 +16,8 @@ class Database {
     if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
       this.mongoose = await mongoose.connect(this.mongodbUri);
-      this.mongoose.set('debug', true);
-      this.mongoose.set('debug', (collectionName, methodName, ...methodArgs) => {
+    //  this.mongoose.set('debug', false);
+      this.mongoose.set('toJSON', (collectionName, methodName, ...methodArgs) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const msgMapper = (m: any) => {
           return util.inspect(m, false, 10, true)
@@ -25,7 +25,7 @@ class Database {
         };
         logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`)
       });
-      logger.info('Database setup completed successfully');
+      //logger.info('Database setup completed successfully');
     } catch (error) {
       logger.debug(error);
       if (error instanceof Error) {
