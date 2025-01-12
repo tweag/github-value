@@ -187,10 +187,17 @@ class Database {
       email: String,
       starred_at: String,
       user_view_type: String,
-      activity: [{ type: Schema.Types.ObjectId, ref: 'Seats' }]
     }, {
       timestamps: true,
     });
+
+    memberSchema.virtual('seats', {
+      ref: 'Seats',
+      localField: '_id',
+      foreignField: 'assignee'
+    });
+    
+    memberSchema.index({ _id: 1, login: 1, id: 1 });
 
     // TeamMember Association Schema 🤝
     const teamMemberSchema = new Schema({
@@ -208,7 +215,7 @@ class Database {
     mongoose.model('Member', memberSchema);
     mongoose.model('TeamMember', teamMemberSchema);
 
-    mongoose.model('Seats', new mongoose.Schema({
+    const seatsSchema = new mongoose.Schema({
       org: String,
       team: String,
       assigning_team_id: Number,
@@ -223,7 +230,13 @@ class Database {
       },
     }, {
       timestamps: true
-    }));
+    });
+
+    seatsSchema.index({ org: 1, createdAt: 1 });
+    seatsSchema.index({ assignee: 1, last_activity_at: 1 });
+    seatsSchema.index({ last_activity_at: 1, createdAt: 1 });
+
+    mongoose.model('Seats', seatsSchema);
 
     mongoose.model('Survey', new mongoose.Schema({
       id: Number,
@@ -238,6 +251,29 @@ class Database {
     }, {
       timestamps: true
     }));
+
+    
+    const adoptionSchema = new Schema({
+      date: {
+      type: Date,
+      required: true,
+      unique: true
+      },
+      totalSeats: Number,
+      totalActive: Number,
+      totalInactive: Number,
+      seats: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Seats'
+      }]
+    }, {
+      timestamps: true
+    });
+
+    // Create indexes
+    adoptionSchema.index({ date: 1 });
+
+    mongoose.model('Adoption', adoptionSchema);
   }
 
   async disconnect() {

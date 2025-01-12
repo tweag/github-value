@@ -3,6 +3,7 @@ import { SeatType } from "../models/copilot.seats.model.js";
 import { components } from "@octokit/openapi-types";
 import mongoose from 'mongoose';
 import { MemberActivityType, MemberType } from 'models/teams.model.js';
+import fs from 'fs';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
@@ -45,9 +46,14 @@ class SeatsService {
   async getAssignee(id: number) {
     const Seats = mongoose.model('Seats');
     const Member = mongoose.model('Member');
+    const member = await Member.findOne({ id });
 
+    if (!member) {
+      throw `Member with id ${id} not found`
+    }
+  
     return Seats.find({
-      assignee_id: id
+      assignee: member._id
     })
       .lean()
       .populate({
@@ -60,13 +66,14 @@ class SeatsService {
   async getAssigneeByLogin(login: string) {
     const Seats = mongoose.model('Seats');
     const Member = mongoose.model('Member');
+    const member = await Member.findOne({ login });
 
-    const assignee = await Member.findOne({
-      login
-    })
-    if (!assignee) throw new Error(`Assignee ${login} not found`);
+    if (!member) {
+      throw `Member with id ${login} not found`
+    }
+
     return Seats.find({
-      assignee_id: assignee.id
+      assignee: member._id
     })
       .lean()
       .populate({
@@ -79,8 +86,8 @@ class SeatsService {
   async insertSeats(org: string, queryAt: Date, data: SeatEntry[], team?: string) {
     const Members = mongoose.model('Member');
     const Seats = mongoose.model('Seats');
+    const seatIds = [];
     for (const seat of data) {
-
       const member = await Members.findOneAndUpdate(
         { org, id: seat.assignee.id },
         {
@@ -127,14 +134,17 @@ class SeatsService {
       //   }
       // }) : [null];
 
-      await Seats.create({
-        queryAt,
-        org,
-        team,
-        ...seat,
-        assignee: member._id,
-        // assigning_team_id: assigningTeam?.id
-      });
+      if (member._id) {
+        const _seat = await Seats.create({
+          queryAt,
+          org,
+          team,
+          ...seat,
+          assignee: member._id,
+          // assigning_team_id: assigningTeam?.id
+        });  
+        seatIds.push(_seat._id);
+      }
 
       // await Seat.create({
       //   queryAt,
@@ -150,6 +160,8 @@ class SeatsService {
       //   assigning_team_id: assigningTeam?.id
       // });
     }
+
+    return seatIds;
   }
 
   async getMembersActivity(params: {
@@ -158,7 +170,8 @@ class SeatsService {
     precision?: 'hour' | 'day' | 'minute';
     since?: string;
     until?: string;
-  } = {}): Promise<MemberDailyActivity> {
+  } = {}): any { // Promise<MemberDailyActivity> {
+    console.log('getMembersActivity', params);
     const Seats = mongoose.model('Seats');
     // const Member = mongoose.model('Member');
     const { org, daysInactive = 30, precision = 'day', since, until } = params;
@@ -167,7 +180,8 @@ class SeatsService {
         $match: {
           ...(org && { org }),
           ...(since && { createdAt: { $gte: new Date(since) } }),
-          ...(until && { createdAt: { $lte: new Date(until) } })
+          ...(until && { createdAt: { $lte: new Date(until) } }),
+          last_activity_at: { $ne: null } // Only get records with activity
         }
       },
       {
@@ -195,7 +209,12 @@ class SeatsService {
           }
         }
       }
-    ]);
+    ])
+    // .hint({ org: 1, createdAt: 1 })
+    // .allowDiskUse(true)
+    // .explain('executionStats');
+
+    console.log('assignees', assignees.length);
 
     const activityDays: MemberDailyActivity = {};
     assignees.forEach((assignee) => {
@@ -210,7 +229,6 @@ class SeatsService {
         } else if (precision === 'hour') {
           dateIndex.setUTCMinutes(0, 0, 0);
         } else if (precision === 'minute') {
-          dateIndex.setUTCSeconds(0, 0);
         }
         const dateIndexStr = new Date(dateIndex).toISOString();
         if (!activityDays[dateIndexStr]) {
@@ -243,6 +261,10 @@ class SeatsService {
         .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
     );
 
+    console.log('sortedActivityDays done');
+
+    fs.writeFileSync('sortedActivityDays.json', JSON.stringify(sortedActivityDays, null, 2), 'utf-8');
+
     return sortedActivityDays;
   }
 
@@ -252,24 +274,21 @@ class SeatsService {
     until?: string;
   }) {
     const { org, since, until } = params;
-    const Seats = mongoose.model('Seats');
     const Member = mongoose.model('Member');
 
-    const assignees: MemberType[] = await Member.find()
-      .select('login id')  // 🎯 Select specific fields
-      .populate({
-        path: 'activity',
-        match: {
-          ...(org && { org }),
-          ...(since && { createdAt: { $gte: new Date(since) } }),
-          ...(until && { createdAt: { $lte: new Date(until) } })
-        },
-        options: {
-          sort: { last_activity_at: 0 }  // ⬆️ ASC sorting
-        },
-        select: 'last_activity_at'  // 📊 Only get needed fields
-      })
+    const assignees: MemberType[] = await Member
+    .aggregate([
+      {
+        $lookup: {
+          from: 'seats',          // MongoDB collection name (lowercase)
+          localField: '_id',      // Member model field
+          foreignField: 'assignee', // Seats model field
+          as: 'activity'            // Name for the array of seats
+        }
+      }
+    ]);
 
+      console.log('assignees', assignees);
     const activityTotals = assignees.reduce((totals, assignee) => {
       if (assignee.activity) {
         totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {
@@ -290,6 +309,7 @@ class SeatsService {
       return totals;
     }, {} as { [assignee: string]: number });
 
+    console.log('activityTotals done');
     return Object.entries(activityTotals).sort((a: any, b: any) => b[1] - a[1]);
   }
 }
