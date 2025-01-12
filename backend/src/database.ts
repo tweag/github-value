@@ -15,7 +15,13 @@ class Database {
     logger.info('Connecting to the database', this.mongodbUri);
     if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
-      this.mongoose = await mongoose.connect(this.mongodbUri);
+      this.mongoose = await mongoose.connect(this.mongodbUri, {
+        //useNewUrlParser: true,
+        //useUnifiedTopology: true,
+        socketTimeoutMS: 60000,           // Set the socket timeout (e.g., 60 seconds)
+        connectTimeoutMS: 30000,          // Connection timeout (e.g., 30 seconds)
+        serverSelectionTimeoutMS: 30000,  // Server selection timeout
+      });
     //  this.mongoose.set('debug', false);
       this.mongoose.set('toJSON', (collectionName, methodName, ...methodArgs) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
