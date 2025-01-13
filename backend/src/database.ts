@@ -15,7 +15,13 @@ class Database {
     logger.info('Connecting to the database', this.mongodbUri);
     if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
-      this.mongoose = await mongoose.connect(this.mongodbUri);
+      this.mongoose = await mongoose.connect(this.mongodbUri, {
+        //useNewUrlParser: true,
+        //useUnifiedTopology: true,
+        socketTimeoutMS: 90000,      // Set the socket timeout (e.g., 60 seconds)
+        connectTimeoutMS: 60000,    // Connection timeout (e.g., 30 seconds)
+        serverSelectionTimeoutMS: 30000, // Server selection timeout
+      });
     //  this.mongoose.set('debug', false);
       this.mongoose.set('toJSON', (collectionName, methodName, ...methodArgs) => {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -207,7 +213,8 @@ class Database {
     mongoose.model('Team', teamSchema);
     mongoose.model('Member', memberSchema);
     mongoose.model('TeamMember', teamMemberSchema);
-
+    mongoose.model('Counter', counterSchema); // Ensure Counter model is registered here
+   console.log('Created Counter model');
     mongoose.model('Seats', new mongoose.Schema({
       org: String,
       team: String,
@@ -237,7 +244,8 @@ class Database {
       timeUsedFor: String
     }, {
       timestamps: true
-    }));
+    },
+  ));
   }
 
   async disconnect() {

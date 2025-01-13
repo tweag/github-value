@@ -126,13 +126,13 @@ function generateSeatsData(datetime: Date, member: any) {
   return mockGenerator.generateMetrics();
 }
 
-function runSurveyGen(datetime: Date) {
+async function runSurveyGen(datetime: Date) {
   if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23) {
     if (Math.random() < 0.2) {
       console.log('Running Survey Generation...', datetime);
-      const surveys = generateSurveysForDate(datetime);
+      const surveys = await generateSurveysForDate(datetime);
       for (const survey of surveys.surveys) {
-         SurveyService.createSurvey(survey);
+        await SurveyService.createSurvey(survey);
       }
     }
   }
@@ -159,8 +159,8 @@ async function runMetricsGen(datetime: Date) {
 }
 
 async function calendarClock() {
-  let datetime = new Date('2024-08-11T00:00:00');
-  const endDate = new Date('2024-12-09T00:00:00');
+  let datetime = new Date('2024-12-07T00:00:00');
+  const endDate = new Date('2025-12-09T00:00:00');
   members = await TeamsService.getAllMembers('octodemo');
   console.log('count All members:', members.length);
 
