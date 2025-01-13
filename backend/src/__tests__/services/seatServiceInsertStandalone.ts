@@ -18,7 +18,7 @@ async function runTest() {
 
 
     //loop through each seat and if the last_activity_at is "false" print the seat object to console.
-      seats.seats.forEach((seat) => {
+      seats.seats.forEach((seat: any) => {
         if (seat.last_activity_at === "false") {
             console.log("a false last activity was found", seat);
         }

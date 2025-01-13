@@ -8,8 +8,7 @@ class SettingsController {
       if (!settings) {
         return res.status(404).json({ error: 'Settings not found' });
       }
-      const settingsRsp = Object.fromEntries(settings.map(setting => [setting.dataValues.name, setting.dataValues.value]));
-      res.json(settingsRsp);
+      res.json(settings);
     } catch (error) {
       res.status(500).json(error);
     }

@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import SeatsService from '../services/copilot.seats.service.js';
-import adoptionService from 'services/adoption.service.js';
+import adoptionService from '../services/adoption.service.js';
 
 class AdoptionController {
   async getAdoptions(req: Request, res: Response): Promise<void> {

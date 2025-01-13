@@ -23,13 +23,12 @@ class Database {
         serverSelectionTimeoutMS: 30000,  // Server selection timeout
       });
     //  this.mongoose.set('debug', false);
-      this.mongoose.set('toJSON', (collectionName, methodName, ...methodArgs) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const msgMapper = (m: any) => {
+      mongoose.set('debug', (collectionName: string, methodName: string, ...methodArgs: unknown[]) => {
+        const msgMapper = (m: unknown) => {
           return util.inspect(m, false, 10, true)
             .replace(/\n/g, '').replace(/\s{2,}/g, ' ');
         };
-        logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`)
+        logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
       });
       //logger.info('Database setup completed successfully');
     } catch (error) {

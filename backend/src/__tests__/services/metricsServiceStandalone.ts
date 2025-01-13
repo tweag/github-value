@@ -81,9 +81,11 @@ const exampleConfig: MockConfig = {
   repositories: ['demo/repo1', 'demo/repo2']
 };
 
+const org = "octodemo";
+
 function generateExampleData() {
   const mockGenerator = new MockMetricsGenerator(exampleConfig);
-  return mockGenerator.generateMetrics();
+  return mockGenerator.generateMetrics(exampleConfig); // pass config?
 }
 
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
@@ -98,7 +100,7 @@ async function runTest() {
     console.log(JSON.stringify(exampleData, null, 2));
 
     // Verify the insertion
-    const insertedMetrics = await metricsService.getMetrics("octodemo");
+    const insertedMetrics = await metricsService.getMetrics(org);
 
     // Assertions
     if (!insertedMetrics || insertedMetrics.length === 0) {

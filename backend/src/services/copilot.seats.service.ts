@@ -5,9 +5,9 @@ import mongoose from 'mongoose';
 import { MemberActivityType, MemberType } from 'models/teams.model.js';
 import fs from 'fs';
 
-type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
+type _Seat = any;// NonNullable<Endpoints["GET /orgs/{org}/copilot"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
-  plan_type: string;
+  plan_type: "business" | "enterprise" | "unknown";
   assignee: components['schemas']['simple-user'];
 }
 
@@ -170,7 +170,7 @@ class SeatsService {
     precision?: 'hour' | 'day' | 'minute';
     since?: string;
     until?: string;
-  } = {}): any { // Promise<MemberDailyActivity> {
+  } = {}): Promise<any> { // Promise<MemberDailyActivity> {
     console.log('getMembersActivity', params);
     const Seats = mongoose.model('Seats');
     // const Member = mongoose.model('Member');
