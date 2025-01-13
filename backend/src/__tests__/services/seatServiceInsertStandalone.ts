@@ -3,6 +3,7 @@ import SeatService from '../../services/copilot.seats.service.js';
 import { generateStatefulMetrics } from '../__mock__/seats-gen/runSeatsGenerator.js';
 import Database from '../../database.js';
 import 'dotenv/config';
+import { SeatType } from 'models/copilot.seats.model.js';
 
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
 const database = new Database(process.env.MONGODB_URI);
@@ -14,7 +15,7 @@ async function runTest() {
     // Test data setup
     const org = 'octodemo';
     const queryAt = new Date();
-    const seats = generateStatefulMetrics();
+    const seats  = generateStatefulMetrics();
 
 
     //loop through each seat and if the last_activity_at is "false" print the seat object to console.

@@ -206,6 +206,11 @@ class Database {
       timestamps: false
     });
 
+    const counterSchema = new Schema({
+      _id: { type: String, required: true }, // Ensure _id is of type String
+      seq: { type: Number, default: 0 }
+    });
+
     // Create indexes for faster queries 🔍
     teamMemberSchema.index({ team: 1, member: 1 }, { unique: true });
 
@@ -247,7 +252,7 @@ class Database {
     },
   ));
   }
-
+  
   async disconnect() {
     await this.mongoose?.disconnect();
   }
