@@ -7,6 +7,7 @@ import { MetricDailyResponseType } from '../models/metrics.model.js';
 import mongoose from 'mongoose';
 import metricsService from './metrics.service.js';
 import teamsService from './teams.service.js';
+import AdoptionService from './adoption.service.js';
 
 const DEFAULT_CRON_EXPRESSION = '0 * * * *';
 class QueryService {
@@ -107,10 +108,56 @@ class QueryService {
         return;
       }
 
-      await SeatService.insertSeats(org, queryAt, seatAssignments.seats);
+      const seatIds = await SeatService.insertSeats(org, queryAt, seatAssignments.seats);
+
+      const adoptionData = seatAssignments.seats.reduce((acc, activity) => {
+        if (!activity.last_activity_at) {
+          acc.totalInactive++;
+          return acc;
+        }
+        const daysInactive = 30;
+        const fromTime = (new Date(activity.last_activity_at)).getTime() || 0;
+        const toTime = queryAt.getTime();
+        const diff = Math.floor((toTime - fromTime) / 86400000);
+        const dateIndex = new Date(queryAt);
+        dateIndex.setUTCMinutes(0, 0, 0);
+        if (activity.last_activity_at && activity.last_activity_editor) {
+          if (diff > daysInactive) {
+            acc.totalActive++;
+          } else {
+            acc.totalInactive++;
+          }
+        }
+        return acc;
+      }, {
+        date: queryAt,
+        totalSeats: seatAssignments.total_seats,
+        totalActive: 0,
+        totalInactive: 0,
+        seats: seatIds
+      });
+
+      //tmp
+      // const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+      // while (1) {
+      //   const queryAt = new Date();
+      //   console.log('again!');
+      //   await AdoptionService.createAdoption({
+      //     date: queryAt,
+      //     totalSeats: seatAssignments.total_seats,
+      //     totalActive: seatAssignments.seats.filter(seat => seat).length,
+      //     totalInactive: seatAssignments.seats.filter(seat => seat).length,
+      //     seats: seatIds
+      //   });
+      //   await sleep(100);
+      // }
+      //endtmp
+
+      await AdoptionService.createAdoption(adoptionData);
 
       logger.info(`${org} seat assignments updated`);
     } catch (error) {
+      console.log(error);
       logger.debug(error)
       logger.error('Error querying copilot seat assignments');
     }

@@ -6,10 +6,9 @@ import { generateSurveys } from '../__mock__/survey-gen/runSurveyGenerator.js';
 import { MockSeatsGenerator } from '../__mock__/seats-gen/mockSeatsGenerator.js';
 import { MockMetricsGenerator } from '../__mock__/metrics-gen/mockGenerator.js';
 import type { MockConfig, SeatsMockConfig } from '../__mock__/types.js';
-import { MetricDailyResponseType } from '../../models/metrics.model.js';
 import Database from '../../database.js';
 import 'dotenv/config';
-import seatsExample from '../__mock__/seats-gen/seatsExample.json'; type: 'json';
+import fs from 'fs';
 
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
 const database = new Database(process.env.MONGODB_URI);
@@ -132,6 +131,7 @@ async function runSeatTest() {
   const queryAt = new Date();
   const seats = generateExampleSeatsData();
       console.log('Generated seats:', seats.length);
+  const seatsExample = JSON.parse(fs.readFileSync('../__mock__/seats-gen/seatsExample.json', 'utf8'));
   await SeatService.insertSeats(org, queryAt, seatsExample.seats);
 //   const insertedSeats = await SeatService.getAllSeats(org);
 //   if (!insertedSeats || insertedSeats.length === 0) {
@@ -145,10 +145,10 @@ async function runSeatTest() {
 
 async function runMetricsTest() {
   console.log('Running Metrics Test...');
-  const exampleData: MetricDailyResponseType[] = generateExampleMetricsData();
+  const exampleData: any = generateExampleMetricsData(); // : MetricDailyResponseType[]
   console.log('Generated metrics:', exampleData.length);
   for (const metric of exampleData) {
-    await metricsService.insertMetrics("octodemo", [metric], null);
+    await metricsService.insertMetrics("octodemo", [metric]);
   }
 
 }

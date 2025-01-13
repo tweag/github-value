@@ -23,13 +23,12 @@ class Database {
         serverSelectionTimeoutMS: 30000, // Server selection timeout
       });
     //  this.mongoose.set('debug', false);
-      this.mongoose.set('toJSON', (collectionName, methodName, ...methodArgs) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const msgMapper = (m: any) => {
+      mongoose.set('debug', (collectionName: string, methodName: string, ...methodArgs: unknown[]) => {
+        const msgMapper = (m: unknown) => {
           return util.inspect(m, false, 10, true)
             .replace(/\n/g, '').replace(/\s{2,}/g, ' ');
         };
-        logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`)
+        logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
       });
       //logger.info('Database setup completed successfully');
     } catch (error) {
@@ -193,10 +192,17 @@ class Database {
       email: String,
       starred_at: String,
       user_view_type: String,
-      activity: [{ type: Schema.Types.ObjectId, ref: 'Seats' }]
     }, {
       timestamps: true,
     });
+
+    memberSchema.virtual('seats', {
+      ref: 'Seats',
+      localField: '_id',
+      foreignField: 'assignee'
+    });
+    
+    memberSchema.index({ _id: 1, login: 1, id: 1 });
 
     // TeamMember Association Schema 🤝
     const teamMemberSchema = new Schema({
@@ -235,7 +241,13 @@ class Database {
       },
     }, {
       timestamps: true
-    }));
+    });
+
+    seatsSchema.index({ org: 1, createdAt: 1 });
+    seatsSchema.index({ assignee: 1, last_activity_at: 1 });
+    seatsSchema.index({ last_activity_at: 1, createdAt: 1 });
+
+    mongoose.model('Seats', seatsSchema);
 
     mongoose.model('Survey', new mongoose.Schema({
       id: Number,
@@ -249,8 +261,30 @@ class Database {
       timeUsedFor: String
     }, {
       timestamps: true
-    },
-  ));
+    }));
+
+    
+    const adoptionSchema = new Schema({
+      date: {
+      type: Date,
+      required: true,
+      unique: true
+      },
+      totalSeats: Number,
+      totalActive: Number,
+      totalInactive: Number,
+      seats: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Seats'
+      }]
+    }, {
+      timestamps: true
+    });
+
+    // Create indexes
+    adoptionSchema.index({ date: 1 });
+
+    mongoose.model('Adoption', adoptionSchema);
   }
   
   async disconnect() {

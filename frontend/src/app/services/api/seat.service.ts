@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { serverUrl } from '../server.service';
 import { Endpoints } from "@octokit/types";
+import { map, reduce } from 'rxjs';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface Seat extends _Seat {
@@ -11,9 +12,17 @@ export interface ActivityResponseData {
   totalSeats: number,
   totalActive: number,
   totalInactive: number,
-  active: Record<string, string>,
-  inactive: Record<string, string>,
+  // active: Record<string, string>,
+  // inactive: Record<string, string>,
 }
+export interface ActivityResponse2 {
+  date: Date;
+  createdAt: Date;
+  totalActive: number
+  totalInactive: number
+  totalSeats: number;
+  updatedAt: Date;
+};
 export type ActivityResponse = Record<string, ActivityResponseData>;
 @Injectable({
   providedIn: 'root'
@@ -34,7 +43,7 @@ export class SeatService {
   }
 
   getActivity(org?: string, daysInactive = 30, precision: 'hour' | 'day' = 'day') {
-    return this.http.get<ActivityResponse>(`${this.apiUrl}/activity`,
+    return this.http.get<ActivityResponse2[]>(`${this.apiUrl}/activity`,
       {
         params: {
           precision,
@@ -42,6 +51,17 @@ export class SeatService {
           ...org ? { org } : undefined
         }
       }
+    ).pipe(
+      map((activities: ActivityResponse2[]) => 
+        activities.reduce((acc, activity) => {
+          acc[activity.date.toString()] = {
+            totalSeats: activity.totalSeats,
+            totalActive: activity.totalActive,
+            totalInactive: activity.totalInactive,
+          };
+          return acc;
+        }, {} as Record<string, ActivityResponseData>)
+      )
     );
   };
 

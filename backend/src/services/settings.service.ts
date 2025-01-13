@@ -37,10 +37,13 @@ class SettingsService {
     return this.settings;
   }
 
-  async getAllSettings(): Promise<{ [key: string]: string; } | null> {
+  async getAllSettings() {
     try {
       const Setting = mongoose.model('Settings');
-      return await Setting.findOne({});
+      return await Setting.find<{
+        name: string;
+        value: string;
+      }>({});
     } catch (error) {
       console.error('Failed to get all settings:', error);
       throw error;
@@ -63,7 +66,6 @@ class SettingsService {
   async updateSetting(name: keyof SettingsType, value: string) {
     try {
       const Setting = mongoose.model('Settings');
-      
       const setting = await Setting.findOneAndUpdate(
         { name },
         { value },
@@ -72,7 +74,6 @@ class SettingsService {
           upsert: true,
         }
       );
-  
       return setting.value;
     } catch (error) {
       console.error('Failed to update setting:', error);

@@ -52,8 +52,8 @@ class SurveyController {
 
   async createSurvey(req: Request, res: Response): Promise<void> {
     try {
-     // const Survey = mongoose.model('Survey');
-     // const survey = await Survey.create(req.body);
+     const Survey = mongoose.model('Survey');
+     const survey = await Survey.create(req.body);
       surveyService.createSurvey(req.body);
       console.log('Creating survey (controller):', survey);
       res.status(201).json(survey);

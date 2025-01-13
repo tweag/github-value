@@ -14,11 +14,16 @@
     "inlineSources": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules", "**/*.spec.ts"],
-
-"ts-node": {
-  "esm": true,
-  "experimentalSpecifiers": true
-}
+  "include": [
+    "src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "src/__tests__/**", // temp
+    "**/*.spec.ts"
+  ],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifiers": true
+  }
 }

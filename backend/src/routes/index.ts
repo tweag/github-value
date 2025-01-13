@@ -7,6 +7,7 @@ import SeatsController from '../controllers/seats.controller.js';
 import metricsController from '../controllers/metrics.controller.js';
 import teamsController from '../controllers/teams.controller.js';
 import targetValuesController from '../controllers/target-values.controller.js';
+import adoptionController from '../controllers/adoption.controller.js';
 
 const router = Router();
 
@@ -27,7 +28,7 @@ router.get('/metrics', metricsController.getMetrics);
 router.get('/metrics/totals', metricsController.getMetricsTotals);
 
 router.get('/seats', SeatsController.getAllSeats);
-router.get('/seats/activity', SeatsController.getActivity);
+router.get('/seats/activity', adoptionController.getAdoptions);
 router.get('/seats/activity/totals', SeatsController.getActivityTotals);
 router.get('/seats/:id', SeatsController.getSeat);
 
