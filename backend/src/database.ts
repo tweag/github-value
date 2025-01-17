@@ -12,11 +12,13 @@ class Database {
   }
 
   async connect() {
+    //improve the logger message  @12:12
+    
     logger.info('Connecting to the database', this.mongodbUri);
     if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
       this.mongoose = await mongoose.connect(this.mongodbUri, {
-        //useNewUrlParser: true,
+        //useNewUrlParser: true,  // 12:08 could be used later
         //useUnifiedTopology: true,
         socketTimeoutMS: 90000,      // Set the socket timeout (e.g., 60 seconds)
         connectTimeoutMS: 60000,    // Connection timeout (e.g., 30 seconds)
@@ -220,13 +222,9 @@ class Database {
     // Create indexes for faster queries 🔍
     teamMemberSchema.index({ team: 1, member: 1 }, { unique: true });
 
-    // Create models 📦
-    mongoose.model('Team', teamSchema);
-    mongoose.model('Member', memberSchema);
-    mongoose.model('TeamMember', teamMemberSchema);
-    mongoose.model('Counter', counterSchema); // Ensure Counter model is registered here
-   console.log('Created Counter model');
-    mongoose.model('Seats', new mongoose.Schema({
+   
+
+    const seatsSchema = new mongoose.Schema({
       org: String,
       team: String,
       assigning_team_id: Number,
@@ -248,6 +246,14 @@ class Database {
     seatsSchema.index({ last_activity_at: 1, createdAt: 1 });
 
     mongoose.model('Seats', seatsSchema);
+
+     // Create models 📦
+     mongoose.model('Team', teamSchema);
+     mongoose.model('Member', memberSchema);
+     mongoose.model('TeamMember', teamMemberSchema);
+     mongoose.model('Counter', counterSchema); // Ensure Counter model is registered here
+    console.log('Created Counter model');
+     mongoose.model('Seats', seatsSchema);
 
     mongoose.model('Survey', new mongoose.Schema({
       id: Number,
