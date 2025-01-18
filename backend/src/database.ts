@@ -20,10 +20,23 @@ class Database {
       this.mongoose = await mongoose.connect(this.mongodbUri, {
         //useNewUrlParser: true,  // 12:08 could be used later
         //useUnifiedTopology: true,
-        socketTimeoutMS: 90000,      // Set the socket timeout (e.g., 60 seconds)
-        connectTimeoutMS: 60000,    // Connection timeout (e.g., 30 seconds)
-        serverSelectionTimeoutMS: 30000, // Server selection timeout
-      });
+        socketTimeoutMS: 90000,
+        connectTimeoutMS: 60000,
+        serverSelectionTimeoutMS: 30000,
+        retryWrites: true,
+        readPreference: 'primaryPreferred',
+        retryReads: true,
+        w: 'majority',
+        // Add these connection pool settings
+        maxPoolSize: 10,        // Limit maximum connections
+        minPoolSize: 5,         // Keep minimum connections ready
+        maxIdleTimeMS: 30000,   // Close idle connections after 30 seconds
+        heartbeatFrequencyMS: 10000,  // Check connection status every 10 seconds
+        // Add buffer commands setting
+        bufferCommands: true,   // Queue operations when connection is lost
+        // Add connection pool monitoring
+        monitorCommands: true
+     });
     //  this.mongoose.set('debug', false);
       mongoose.set('debug', (collectionName: string, methodName: string, ...methodArgs: unknown[]) => {
         const msgMapper = (m: unknown) => {

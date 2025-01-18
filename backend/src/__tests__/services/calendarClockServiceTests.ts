@@ -159,8 +159,8 @@ async function runMetricsGen(datetime: Date) {
 }
 
 async function calendarClock() {
-  let datetime = new Date('2024-12-07T00:00:00');
-  const endDate = new Date('2025-01-09T00:00:00');
+  let datetime = new Date('2024-11-07T00:00:00');
+  const endDate = new Date('2025-01-16T00:00:00');
   members = await TeamsService.getAllMembers('octodemo');
   console.log('count All members:', members.length);
 
@@ -176,14 +176,59 @@ async function calendarClock() {
 }
 
 async function runClock() {
-  try {
-    await database.connect();
-    await calendarClock();
-    console.log('All Clock-Triggered Generations worked successfully.');
-  } catch (error) {
-    console.error('Test failed:', error);
-  } finally {
-    await database.disconnect();
+  let retryCount = 0;
+  const maxRetries = 5;
+  let connected = false;
+
+  while (retryCount < maxRetries) {
+    try {
+      if (!connected) {
+        await database.connect();
+        connected = true;
+      }
+
+      await calendarClock();
+      console.log('All Clock-Triggered Generations worked successfully.');
+      break;
+
+    } catch (error) {
+      retryCount++;
+      console.error(`Attempt ${retryCount}/${maxRetries} failed:`, error.message);
+
+      if (error.name === 'MongoServerSelectionError' || 
+          error.name === 'MongoNetworkError' ||
+          (error.code && error.code === 10107)) {  // Not Primary error code
+        
+        // Wait with exponential backoff before retrying
+        const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 30000);
+        console.log(`Primary failover detected. Waiting ${backoffTime/1000} seconds before retrying...`);
+        await new Promise(resolve => setTimeout(resolve, backoffTime));
+        
+        // Force reconnection
+        try {
+          await database.disconnect();
+          connected = false;
+        } catch (disconnectError) {
+          console.log('Disconnect error (can be ignored):', disconnectError.message);
+        }
+        
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  if (retryCount === maxRetries) {
+    console.error('Max retries reached. Giving up.');
+  }
+
+  if (connected) {
+    try {
+      await database.disconnect();
+    } catch (disconnectError) {
+      console.error('Error during final disconnect:', disconnectError.message);
+    }
   }
 }
 runClock();
