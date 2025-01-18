@@ -13,7 +13,9 @@ import 'dotenv/config';
 import seatsExample from '../__mock__/seats-gen/seatsExampleTest.json'; type: 'json';
 
 
-let members: any[] = [];
+let membersOas: any[] = []; //octoaustenstone org
+let membersOcto: any[] = []; //octodemo org
+
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
 const database = new Database(process.env.MONGODB_URI);
 
@@ -92,12 +94,27 @@ const metricsMockConfig: MockConfig = {
       repositories: ['demo/repo1', 'demo/repo2']
     };
 
-    const seatsMockConfig: SeatsMockConfig = {
+    const seatsMockConfigOcto: SeatsMockConfig = {
       startDate: new Date('2024-11-01'),
       endDate: new Date('2024-11-07'),
       usagePattern: 'heavy',
       heavyUsers: ['nathos', 'arfon', 'kyanny'],
       specificUser: 'nathos',
+      editors: [
+        'copilot-chat-platform',
+        'vscode/1.96.2/copilot/1.254.0',
+        'GitHubGhostPilot/1.0.0/unknown',
+        'vscode/1.96.2/',
+        'vscode/1.97.0-insider/copilot-chat/0.24.2024122001'
+      ]
+    };
+
+    const seatsMockConfigOas: SeatsMockConfig = {
+      startDate: new Date('2024-11-01'),
+      endDate: new Date('2024-11-07'),
+      usagePattern: 'heavy',
+      heavyUsers: ['austenstone', 'mattg57', 'gomtimehta'],
+      specificUser: 'logan-porelle',
       editors: [
         'copilot-chat-platform',
         'vscode/1.96.2/copilot/1.254.0',
@@ -117,13 +134,22 @@ function generateMetricsData(datetime: Date) {
   return mockGenerator.generateMetrics(metricsMockConfig);
 }
 
-function generateSeatsData(datetime: Date, member: any) {
-      seatsMockConfig.startDate=datetime
-      seatsMockConfig.endDate=datetime
-      seatsMockConfig.heavyUsers = [member]
+function generateSeatsDataOcto(datetime: Date, member: any) {
+      seatsMockConfigOcto.startDate=datetime
+      seatsMockConfigOcto.endDate=datetime
+      seatsMockConfigOcto.heavyUsers = [member]
       //add other configuration as needed
-  const mockGenerator = new MockSeatsGenerator(seatsMockConfig, { seats: [] });
+  const mockGenerator = new MockSeatsGenerator(seatsMockConfigOcto, { seats: [] });
   return mockGenerator.generateMetrics();
+}
+
+function generateSeatsDataOas(datetime: Date, member: any) {
+  seatsMockConfigOas.startDate=datetime
+  seatsMockConfigOas.endDate=datetime
+  seatsMockConfigOas.heavyUsers = [member]
+  //add other configuration as needed
+const mockGenerator = new MockSeatsGenerator(seatsMockConfigOas, { seats: [] });
+return mockGenerator.generateMetrics();
 }
 
 async function runSurveyGen(datetime: Date) {
@@ -140,11 +166,18 @@ async function runSurveyGen(datetime: Date) {
 
 async function runSeatsGen(datetime: Date) {
   console.log('Running Seats Generation...', datetime);
-  const org = 'octodemo';
-  //call generateSeatsData for each member of the team by looping through the members array
-members.forEach(async (member) => {
-  const seats = generateSeatsData(datetime, member);
-  await SeatService.insertSeats(org, datetime, seatsExample.seats);
+  const orgOcto = 'octodemo';
+  const orgOas = 'octodemo';
+  //call generateSeatsData for each member of the org by looping through the members array
+  membersOas.forEach(async (member) => {
+  const seats = generateSeatsDataOas(datetime, member);
+  await SeatService.insertSeats(orgOcto, datetime, seatsExample.seats);
+});
+
+//call generateSeatsData for each member of the org by looping through the members array
+membersOcto.forEach(async (member) => {
+  const seats = generateSeatsDataOcto(datetime, member);
+  await SeatService.insertSeats(orgOas, datetime, seatsExample.seats);
 });
 }
 
@@ -161,8 +194,11 @@ async function runMetricsGen(datetime: Date) {
 async function calendarClock() {
   let datetime = new Date('2024-11-07T00:00:00');
   const endDate = new Date('2025-01-16T00:00:00');
-  members = await TeamsService.getAllMembers('octodemo');
-  console.log('count All members:', members.length);
+  membersOcto = await TeamsService.getAllMembers('octodemo');
+  membersOas = await TeamsService.getAllMembers('octoaustenstone');
+  console.log('count Octo members:', membersOcto.length);
+
+  console.log('count octoaustenstone members:', membersOas.length);
 
   while (datetime < endDate) {
     await runSurveyGen(datetime);
