@@ -6,7 +6,6 @@ import cors from 'cors';
 import path, { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import * as http from 'http';
-import * as url from 'url';
 import Database from './database.js';
 import logger, { expressLoggerMiddleware } from './services/logger.js';
 import GitHub from './github.js';
@@ -25,36 +24,17 @@ class App {
   constructor(
     public port: number
   ) {
-    // Default base URL
-    const defaultBaseUrl = `http://localhost:${port}`;
-
-    // Get BASE_URL from environment variables or use the default
-    const baseUrl = process.env.BASE_URL || defaultBaseUrl;
-    this.baseUrl = baseUrl;
-
-    // Extract port from BASE_URL if defined
-    const parsedUrl = url.parse(baseUrl);
-    const baseUrlPort = parsedUrl.port ? parseInt(parsedUrl.port, 10) : undefined;
-
-    // Override the port with the one from BASE_URL if available
-    this.port = baseUrlPort || port;
-
-    // Initialize Express
+    this.baseUrl = process.env.BASE_URL || 'http://localhost:' + port;
     this.e = express();
-
-    // Validate MongoDB URI
+    this.port = port;
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI must be set');
     }
-
-    // Initialize Database
     this.database = new Database(process.env.MONGODB_URI);
-
-    // Initialize Webhook Service
     const webhookService = new WebhookService({
       url: process.env.WEBHOOK_PROXY_URL,
       path: '/api/github/webhooks',
-      port: this.port
+      port
     });
     this.github = new GitHub(
       {
