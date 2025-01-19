@@ -122,7 +122,8 @@ class App {
       (_, res) => res.sendFile(path.join(frontendPath, 'index.html'))
     );
 
-    this.eListener = this.e.listen(this.port);
+    this.eListener = this.e.listen(this.port, '0.0.0.0');
+
   }
 
   private initializeSettings() {
