@@ -29,7 +29,7 @@ router.get('/metrics/totals', metricsController.getMetricsTotals);
 
 router.get('/seats', SeatsController.getAllSeats);
 router.get('/seats/activity', adoptionController.getAdoptions);
-router.get('/seats/activity/totals', SeatsController.getActivityTotals);
+router.get('/seats/activity/totals', adoptionController.getAdoptionTotals);
 router.get('/seats/:id', SeatsController.getSeat);
 
 router.get('/teams', teamsController.getAllTeams);

@@ -183,9 +183,9 @@ class TeamsService {
     return true;
   }
 
-  async getLastUpdatedAt() {
-    const Team = mongoose.model('Team');
-    const team = await Team.findOne().sort({ updatedAt: -1 });
+  async getLastUpdatedAt(org?: string): Promise<Date> {
+    const Team = mongoose.model('Member');
+    const team = await Team.findOne(org ? { org } : {}).sort({ updatedAt: -1 });
     return team?.updatedAt || new Date(0);
   }
 

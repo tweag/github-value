@@ -4,15 +4,23 @@ import adoptionService from '../services/adoption.service.js';
 
 class AdoptionController {
   async getAdoptions(req: Request, res: Response): Promise<void> {
-    const org = req.query.org?.toString()
-    const { daysInactive, precision } = req.query;
-    const _daysInactive = Number(daysInactive);
-    if (!daysInactive || isNaN(_daysInactive)) {
-      res.status(400).json({ error: 'daysInactive query parameter is required' });
-      return;
-    }
+    const org = req.query.org?.toString();
+    const enterprise = req.query.enterprise?.toString();
+    const team = req.query.team?.toString();
+    // const { daysInactive, precision } = req.query;
     try {
-      const adoptions = await adoptionService.getAllAdoptions();
+      const adoptions = await adoptionService.getAllAdoptions2({
+        filter: {
+          org,
+          ...enterprise ? {enterprise: 'enterprise'} : undefined,
+          team,
+        },
+        projection: {
+          seats: 0,
+          _id: 0,
+          __v: 0,
+        }
+      });
       res.status(200).json(adoptions);
     } catch (error) {
       res.status(500).json(error);
