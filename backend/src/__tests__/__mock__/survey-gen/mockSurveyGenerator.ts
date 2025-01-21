@@ -1,15 +1,17 @@
 import { addDays } from 'date-fns';
+import mongoose from 'mongoose';
 import { SurveyMockConfig } from '../types.js';
+import SequenceService from '../../../services/sequence.service.js';
+import surveyExample from './exampleSurvey.json' assert { type: 'json' };
+import { SurveyType } from 'models/survey.model.js';
 
 class MockSurveyGenerator {
   private config: SurveyMockConfig;
-  private baseData: any;  // The template data structure
+  private baseData: any = surveyExample;  // The template data structure
 
   constructor(config: SurveyMockConfig, templateData: any) {
     this.config = config;
     this.baseData = templateData;
-
-    
   }
 
   private getRandomUserId(): string {
@@ -44,10 +46,11 @@ class MockSurveyGenerator {
     return addDays(this.config.startDate, Math.floor(Math.random() * (this.config.endDate.getTime() - this.config.startDate.getTime()) / (1000 * 60 * 60 * 24)));
   }
 
-  public generateSurveys() {
+  public async generateSurveys() {
     const newData = JSON.parse(JSON.stringify(this.baseData));
 
-    newData.surveys = newData.surveys.map((survey: any) => {
+    newData.surveys = await Promise.all(newData.surveys.map(async (survey: SurveyType) => {
+      survey.id = await SequenceService.getNextSequenceValue('survey-sequence');
       survey.userId = this.getRandomUserId();
       survey.org = this.getRandomOrg();
       survey.repo = this.getRandomRepo();
@@ -59,7 +62,7 @@ class MockSurveyGenerator {
       survey.createdAt = this.getRandomDate();
       survey.updatedAt = this.getRandomDate();
       return survey;
-    });
+    }));
 
     return newData;
   }

@@ -12,7 +12,9 @@ import Database from '../../database.js';
 import 'dotenv/config';
 import seatsExample from '../__mock__/seats-gen/seatsExampleTest.json';
 
-let members: any[] = [];
+let membersOas: any[] = []; //octoaustenstone org
+let membersOcto: any[] = []; //octodemo org
+
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
 const database = new Database(process.env.MONGODB_URI);
 
@@ -91,12 +93,27 @@ const metricsMockConfig: MockConfig = {
       repositories: ['demo/repo1', 'demo/repo2']
     };
 
-    const seatsMockConfig: SeatsMockConfig = {
+    const seatsMockConfigOcto: SeatsMockConfig = {
       startDate: new Date('2024-11-01'),
       endDate: new Date('2024-11-07'),
       usagePattern: 'heavy',
       heavyUsers: ['nathos', 'arfon', 'kyanny'],
       specificUser: 'nathos',
+      editors: [
+        'copilot-chat-platform',
+        'vscode/1.96.2/copilot/1.254.0',
+        'GitHubGhostPilot/1.0.0/unknown',
+        'vscode/1.96.2/',
+        'vscode/1.97.0-insider/copilot-chat/0.24.2024122001'
+      ]
+    };
+
+    const seatsMockConfigOas: SeatsMockConfig = {
+      startDate: new Date('2024-11-01'),
+      endDate: new Date('2024-11-07'),
+      usagePattern: 'heavy',
+      heavyUsers: ['austenstone', 'mattg57', 'gomtimehta'],
+      specificUser: 'logan-porelle',
       editors: [
         'copilot-chat-platform',
         'vscode/1.96.2/copilot/1.254.0',
@@ -116,22 +133,31 @@ function generateMetricsData(datetime: Date) {
   return mockGenerator.generateMetrics(metricsMockConfig);
 }
 
-function generateSeatsData(datetime: Date, member: any) {
-      seatsMockConfig.startDate=datetime
-      seatsMockConfig.endDate=datetime
-      seatsMockConfig.heavyUsers = [member]
+function generateSeatsDataOcto(datetime: Date, member: any) {
+      seatsMockConfigOcto.startDate=datetime
+      seatsMockConfigOcto.endDate=datetime
+      seatsMockConfigOcto.heavyUsers = [member]
       //add other configuration as needed
-  const mockGenerator = new MockSeatsGenerator(seatsMockConfig, { seats: [] });
+  const mockGenerator = new MockSeatsGenerator(seatsMockConfigOcto, { seats: [] });
   return mockGenerator.generateMetrics();
 }
 
-function runSurveyGen(datetime: Date) {
+function generateSeatsDataOas(datetime: Date, member: any) {
+  seatsMockConfigOas.startDate=datetime
+  seatsMockConfigOas.endDate=datetime
+  seatsMockConfigOas.heavyUsers = [member]
+  //add other configuration as needed
+const mockGenerator = new MockSeatsGenerator(seatsMockConfigOas, { seats: [] });
+return mockGenerator.generateMetrics();
+}
+
+async function runSurveyGen(datetime: Date) {
   if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23) {
     if (Math.random() < 0.2) {
       console.log('Running Survey Generation...', datetime);
-      const surveys = generateSurveysForDate(datetime);
+      const surveys = await generateSurveysForDate(datetime);
       for (const survey of surveys.surveys) {
-         SurveyService.createSurvey(survey);
+        await SurveyService.createSurvey(survey);
       }
     }
   }
@@ -139,11 +165,18 @@ function runSurveyGen(datetime: Date) {
 
 async function runSeatsGen(datetime: Date) {
   console.log('Running Seats Generation...', datetime);
-  const org = 'octodemo';
-  //call generateSeatsData for each member of the team by looping through the members array
-members.forEach(async (member) => {
-  const seats = generateSeatsData(datetime, member);
-  await SeatService.insertSeats(org, datetime, seatsExample.seats);
+  const orgOcto = 'octodemo';
+  const orgOas = 'octodemo';
+  //call generateSeatsData for each member of the org by looping through the members array
+  membersOas.forEach(async (member) => {
+  const seats = generateSeatsDataOas(datetime, member);
+  await SeatService.insertSeats(orgOcto, datetime, seatsExample.seats);
+});
+
+//call generateSeatsData for each member of the org by looping through the members array
+membersOcto.forEach(async (member) => {
+  const seats = generateSeatsDataOcto(datetime, member);
+  await SeatService.insertSeats(orgOas, datetime, seatsExample.seats);
 });
 }
 
@@ -158,10 +191,13 @@ async function runMetricsGen(datetime: Date) {
 }
 
 async function calendarClock() {
-  let datetime = new Date('2024-08-11T00:00:00');
-  const endDate = new Date('2024-12-09T00:00:00');
-  members = await TeamsService.getAllMembers('octodemo');
-  console.log('count All members:', members.length);
+  let datetime = new Date('2024-11-07T00:00:00');
+  const endDate = new Date('2025-01-16T00:00:00');
+  membersOcto = await TeamsService.getAllMembers('octodemo');
+  membersOas = await TeamsService.getAllMembers('octoaustenstone');
+  console.log('count Octo members:', membersOcto.length);
+
+  console.log('count octoaustenstone members:', membersOas.length);
 
   while (datetime < endDate) {
     await runSurveyGen(datetime);
@@ -175,14 +211,59 @@ async function calendarClock() {
 }
 
 async function runClock() {
-  try {
-    await database.connect();
-    await calendarClock();
-    console.log('All Clock-Triggered Generations worked successfully.');
-  } catch (error) {
-    console.error('Test failed:', error);
-  } finally {
-    await database.disconnect();
+  let retryCount = 0;
+  const maxRetries = 5;
+  let connected = false;
+
+  while (retryCount < maxRetries) {
+    try {
+      if (!connected) {
+        await database.connect();
+        connected = true;
+      }
+
+      await calendarClock();
+      console.log('All Clock-Triggered Generations worked successfully.');
+      break;
+
+    } catch (error) {
+      retryCount++;
+      console.error(`Attempt ${retryCount}/${maxRetries} failed:`, error.message);
+
+      if (error.name === 'MongoServerSelectionError' || 
+          error.name === 'MongoNetworkError' ||
+          (error.code && error.code === 10107)) {  // Not Primary error code
+        
+        // Wait with exponential backoff before retrying
+        const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 30000);
+        console.log(`Primary failover detected. Waiting ${backoffTime/1000} seconds before retrying...`);
+        await new Promise(resolve => setTimeout(resolve, backoffTime));
+        
+        // Force reconnection
+        try {
+          await database.disconnect();
+          connected = false;
+        } catch (disconnectError) {
+          console.log('Disconnect error (can be ignored):', disconnectError.message);
+        }
+        
+        continue;
+      }
+
+      throw error;
+    }
+  }
+
+  if (retryCount === maxRetries) {
+    console.error('Max retries reached. Giving up.');
+  }
+
+  if (connected) {
+    try {
+      await database.disconnect();
+    } catch (disconnectError) {
+      console.error('Error during final disconnect:', disconnectError.message);
+    }
   }
 }
 runClock();

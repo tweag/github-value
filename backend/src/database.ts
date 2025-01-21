@@ -12,17 +12,29 @@ class Database {
   }
 
   async connect() {
+    //improve the logger message  @12:12
+    
     logger.info('Connecting to the database', this.mongodbUri);
     if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
       this.mongoose = await mongoose.connect(this.mongodbUri, {
-        //useNewUrlParser: true,
-        //useUnifiedTopology: true,
-        socketTimeoutMS: 60000,           // Set the socket timeout (e.g., 60 seconds)
-        connectTimeoutMS: 30000,          // Connection timeout (e.g., 30 seconds)
-        serverSelectionTimeoutMS: 30000,  // Server selection timeout
+        socketTimeoutMS: 90000,
+        connectTimeoutMS: 60000,
+        serverSelectionTimeoutMS: 30000,
+        retryWrites: true,
+        readPreference: 'primaryPreferred',
+        retryReads: true,
+        w: 'majority',
+        // Add these connection pool settings
+        maxPoolSize: 10,        // Limit maximum connections
+        minPoolSize: 5,         // Keep minimum connections ready
+        maxIdleTimeMS: 30000,   // Close idle connections after 30 seconds
+        heartbeatFrequencyMS: 10000,  // Check connection status every 10 seconds
+        // Add buffer commands setting
+        bufferCommands: true,   // Queue operations when connection is lost
+        // Add connection pool monitoring
+        monitorCommands: true
       });
-      // this.mongoose.set('debug', false);
       mongoose.set('debug', (collectionName: string, methodName: string, ...methodArgs: unknown[]) => {
         const msgMapper = (m: unknown) => {
           return util.inspect(m, false, 10, true)
@@ -286,7 +298,7 @@ class Database {
       timestamps: true
     }));
   }
-
+  
   async disconnect() {
     await this.mongoose?.disconnect();
   }

@@ -23,12 +23,12 @@ const mockConfig: SurveyMockConfig = {
 // Load template data from exampleSurvey.json
 const templateData: any = surveyExample;
 
-const generateSurveys = () => {
+const generateSurveys = async () => {
   console.log('Starting to generate surveys...');
   try {
     const generator = new MockSurveyGenerator(mockConfig, templateData);
-    const surveys = generator.generateSurveys();
-    console.log('Successfully generated surveys:', surveys.length);
+    const surveys = await generator.generateSurveys();
+    console.log('Successfully generated surveys:', surveys.surveys.length);
     return surveys;
   } catch (error) {
     console.error('Error generating surveys:', error);
@@ -36,15 +36,15 @@ const generateSurveys = () => {
   }
 }
 
-const generateSurveysForDate = (datetime: Date) => {
-  mockConfig.startDate=datetime
-  mockConfig.endDate=datetime
+const generateSurveysForDate = async (datetime: Date) => {
+  mockConfig.startDate = datetime;
+  mockConfig.endDate = datetime;
   //add other configuration as needed
   console.log('Starting to generate surveys...');
   try {
     const generator = new MockSurveyGenerator(mockConfig, templateData);
-    const surveys = generator.generateSurveys();
-    console.log('Successfully generated surveys:', surveys.length);
+    const surveys = await generator.generateSurveys();
+    console.log('Successfully generated surveys:', surveys.surveys.length);
     return surveys;
   } catch (error) {
     console.error('Error generating surveys:', error);
@@ -52,6 +52,5 @@ const generateSurveysForDate = (datetime: Date) => {
   }
 }
 
-
 // Export function
-export { generateSurveys,generateSurveysForDate };
+export { generateSurveys, generateSurveysForDate };

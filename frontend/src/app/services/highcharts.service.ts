@@ -640,6 +640,7 @@ export class HighchartsService {
       xAxis: {
         zoomEnabled: true,
         type: 'datetime',
+        //min: new Date().getTime(),
         min: new Date(seatActivity[0].last_activity_at || seatActivity[0].created_at).getTime(),
         max: new Date().getTime(),
       },
