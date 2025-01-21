@@ -4,7 +4,6 @@ import mongoose from 'mongoose';
 class SurveyService {
   async createSurvey(survey: SurveyType) {
     const Survey = mongoose.model('Survey');
-    console.log('Creating survey (service):', survey);
     return await Survey.create(survey);
   }
 

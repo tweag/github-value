@@ -1,6 +1,7 @@
 import App from './app.js';
 
-const app = new App(Number(process.env.PORT) || 80);
+const DEFAULT_PORT = 80;
+const app = new App(Number(process.env.PORT) || DEFAULT_PORT);
 
 ['SIGTERM', 'SIGINT', 'SIGQUIT'].forEach(signal => {
   process.on(signal, async () => {

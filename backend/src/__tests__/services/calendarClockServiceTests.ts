@@ -10,8 +10,7 @@ import type { MockConfig, SeatsMockConfig } from '../__mock__/types.js';
 import { MetricDailyResponseType } from '../../models/metrics.model.js';
 import Database from '../../database.js';
 import 'dotenv/config';
-import seatsExample from '../__mock__/seats-gen/seatsExampleTest.json'; type: 'json';
-
+import seatsExample from '../__mock__/seats-gen/seatsExampleTest.json';
 
 let members: any[] = [];
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');

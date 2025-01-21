@@ -4,6 +4,7 @@ import { components } from "@octokit/openapi-types";
 import mongoose from 'mongoose';
 import { MemberActivityType, MemberType } from 'models/teams.model.js';
 import fs from 'fs';
+import adoptionService from './adoption.service.js';
 
 type _Seat = any;// NonNullable<Endpoints["GET /orgs/{org}/copilot"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
@@ -34,12 +35,16 @@ class SeatsService {
       .sort({ queryAt: -1 })  // -1 for descending order
       .select('queryAt');
 
+    console.log(`Latest query at: ${latestQuery?.queryAt}`);
+
     const seats = await Seats.find({
       ...(org ? { org } : {}),
       queryAt: latestQuery?.queryAt
     })
       .populate('assignee')
       .sort({ last_activity_at: -1 });  // DESC ordering ⬇️
+
+    console.log(`Found ${seats.length} seats for ${org || 'all orgs'} at ${latestQuery?.queryAt}`);
     return seats;
   }
 
@@ -51,7 +56,7 @@ class SeatsService {
     if (!member) {
       throw `Member with id ${id} not found`
     }
-  
+
     return Seats.find({
       assignee: member._id
     })
@@ -86,82 +91,78 @@ class SeatsService {
   async insertSeats(org: string, queryAt: Date, data: SeatEntry[], team?: string) {
     const Members = mongoose.model('Member');
     const Seats = mongoose.model('Seats');
-    const seatIds = [];
-    for (const seat of data) {
-      const member = await Members.findOneAndUpdate(
-        { org, id: seat.assignee.id },
-        {
-          ...team ? { team } : undefined,
-          org,
-          id: seat.assignee.id,
-          login: seat.assignee.login,
-          node_id: seat.assignee.node_id,
-          avatar_url: seat.assignee.avatar_url,
-          gravatar_id: seat.assignee.gravatar_id || '',
-          url: seat.assignee.url,
-          html_url: seat.assignee.html_url,
-          followers_url: seat.assignee.followers_url,
-          following_url: seat.assignee.following_url,
-          gists_url: seat.assignee.gists_url,
-          starred_url: seat.assignee.starred_url,
-          subscriptions_url: seat.assignee.subscriptions_url,
-          organizations_url: seat.assignee.organizations_url,
-          repos_url: seat.assignee.repos_url,
-          events_url: seat.assignee.events_url,
-          received_events_url: seat.assignee.received_events_url,
-          type: seat.assignee.type,
-          site_admin: seat.assignee.site_admin,
+
+    const memberUpdates = data.map(seat => ({
+      updateOne: {
+        filter: { org, id: seat.assignee.id },
+        update: {
+          $set: {
+            ...team ? { team } : undefined,
+            org,
+            id: seat.assignee.id,
+            login: seat.assignee.login,
+            node_id: seat.assignee.node_id,
+            avatar_url: seat.assignee.avatar_url,
+            gravatar_id: seat.assignee.gravatar_id || '',
+            url: seat.assignee.url,
+            html_url: seat.assignee.html_url,
+            followers_url: seat.assignee.followers_url,
+            following_url: seat.assignee.following_url,
+            gists_url: seat.assignee.gists_url,
+            starred_url: seat.assignee.starred_url,
+            subscriptions_url: seat.assignee.subscriptions_url,
+            organizations_url: seat.assignee.organizations_url,
+            repos_url: seat.assignee.repos_url,
+            events_url: seat.assignee.events_url,
+            received_events_url: seat.assignee.received_events_url,
+            type: seat.assignee.type,
+            site_admin: seat.assignee.site_admin,
+          }
         },
-        { upsert: false }
-      );
-
-      // const [assigningTeam] = seat.assigning_team ? await Team.findOrCreate({
-      //   where: { id: seat.assigning_team.id },
-      //   defaults: {
-      //     org,
-      //     id: seat.assigning_team.id,
-      //     node_id: seat.assigning_team.node_id,
-      //     url: seat.assigning_team.url,
-      //     html_url: seat.assigning_team.html_url,
-      //     name: seat.assigning_team.name,
-      //     slug: seat.assigning_team.slug,
-      //     description: seat.assigning_team.description,
-      //     privacy: seat.assigning_team.privacy,
-      //     notification_setting: seat.assigning_team.notification_setting,
-      //     permission: seat.assigning_team.permission,
-      //     members_url: seat.assigning_team.members_url,
-      //     repositories_url: seat.assigning_team.repositories_url
-      //   }
-      // }) : [null];
-
-      if (member._id) {
-        const _seat = await Seats.create({
-          queryAt,
-          org,
-          team,
-          ...seat,
-          assignee: member._id,
-          // assigning_team_id: assigningTeam?.id
-        });  
-        seatIds.push(_seat._id);
+        upsert: true,
       }
+    }));
+    await Members.bulkWrite(memberUpdates);
+    
+    const updatedMembers = await Members.find({
+      org,
+      id: { $in: data.map(seat => seat.assignee.id) }
+    });
 
-      // await Seat.create({
-      //   queryAt,
-      //   org,
-      //   team,
-      //   created_at: seat.created_at,
-      //   updated_at: seat.updated_at,
-      //   pending_cancellation_date: seat.pending_cancellation_date,
-      //   last_activity_at: seat.last_activity_at,
-      //   last_activity_editor: seat.last_activity_editor,
-      //   plan_type: seat.plan_type,
-      //   assignee_id: assignee.id,
-      //   assigning_team_id: assigningTeam?.id
-      // });
+    const seatsData = data.map((seat) => ({
+      queryAt,
+      org,
+      team,
+      ...seat,
+      assignee_id: seat.assignee.id,
+      assignee_login: seat.assignee.login,
+      assignee: updatedMembers.find(m => m.id === seat.assignee.id)?._id
+    }));
+    const seatResults = await Seats.insertMany(seatsData);
+    console.log(`Inserted ${seatResults.length} seats for ${org} at ${queryAt}`);
+
+    const adoptionData = {
+      enterprise: null,
+      org: org,
+      team: null,
+      date: queryAt,
+      ...adoptionService.calculateAdoptionTotals(queryAt, data),
+      seats: seatResults.map(seat => ({
+        login: seat.assignee_login,
+        last_activity_at: seat.last_activity_at,
+        last_activity_editor: seat.last_activity_editor,
+        _assignee: seat.assignee,
+        _seat: seat._id,
+      }))
     }
 
-    return seatIds;
+    await adoptionService.createAdoption(adoptionData);
+
+    return {
+      seats: seatResults,
+      members: updatedMembers,
+      adoption: adoptionData
+    }
   }
 
   async getMembersActivity(params: {
@@ -171,8 +172,11 @@ class SeatsService {
     since?: string;
     until?: string;
   } = {}): Promise<any> { // Promise<MemberDailyActivity> {
-    console.log('getMembersActivity', params);
     const Seats = mongoose.model('Seats');
+    // const seats = await Seats.find({})
+    // return seats.length;
+
+    // return;
     // const Member = mongoose.model('Member');
     const { org, daysInactive = 30, precision = 'day', since, until } = params;
     const assignees: MemberActivityType[] = await Seats.aggregate([
@@ -213,8 +217,6 @@ class SeatsService {
     // .hint({ org: 1, createdAt: 1 })
     // .allowDiskUse(true)
     // .explain('executionStats');
-
-    console.log('assignees', assignees.length);
 
     const activityDays: MemberDailyActivity = {};
     assignees.forEach((assignee) => {
@@ -261,8 +263,6 @@ class SeatsService {
         .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
     );
 
-    console.log('sortedActivityDays done');
-
     fs.writeFileSync('sortedActivityDays.json', JSON.stringify(sortedActivityDays, null, 2), 'utf-8');
 
     return sortedActivityDays;
@@ -277,18 +277,17 @@ class SeatsService {
     const Member = mongoose.model('Member');
 
     const assignees: MemberType[] = await Member
-    .aggregate([
-      {
-        $lookup: {
-          from: 'seats',          // MongoDB collection name (lowercase)
-          localField: '_id',      // Member model field
-          foreignField: 'assignee', // Seats model field
-          as: 'activity'            // Name for the array of seats
+      .aggregate([
+        {
+          $lookup: {
+            from: 'seats',          // MongoDB collection name (lowercase)
+            localField: '_id',      // Member model field
+            foreignField: 'assignee', // Seats model field
+            as: 'activity'            // Name for the array of seats
+          }
         }
-      }
-    ]);
+      ]);
 
-      console.log('assignees', assignees);
     const activityTotals = assignees.reduce((totals, assignee) => {
       if (assignee.activity) {
         totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {
@@ -309,7 +308,6 @@ class SeatsService {
       return totals;
     }, {} as { [assignee: string]: number });
 
-    console.log('activityTotals done');
     return Object.entries(activityTotals).sort((a: any, b: any) => b[1] - a[1]);
   }
 }

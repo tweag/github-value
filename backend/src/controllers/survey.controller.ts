@@ -55,7 +55,6 @@ class SurveyController {
      const Survey = mongoose.model('Survey');
      const survey = await Survey.create(req.body);
       surveyService.createSurvey(req.body);
-      console.log('Creating survey (controller):', survey);
       res.status(201).json(survey);
     } catch (error) {
       res.status(500).json(error);

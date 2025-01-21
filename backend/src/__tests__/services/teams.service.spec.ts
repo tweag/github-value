@@ -27,7 +27,7 @@ describe('team.service.spec.ts test', () => {
     const bulkOps = members.map((member: any) => ({
       updateOne: {
         filter: { org, id: member.id },
-        update: member,
+        update: { $set: member },
         upsert: true
       }
     }));

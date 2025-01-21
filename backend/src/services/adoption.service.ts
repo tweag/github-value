@@ -1,24 +1,16 @@
 import mongoose from 'mongoose';
 import logger from './logger.js';
+import { SeatEntry } from './copilot.seats.service.js';
 
-interface AdoptionType {
-  date: Date;
-  totalSeats: number;
-  totalActive: number;
-  totalInactive: number;
-  seats: mongoose.Schema.Types.ObjectId[];
-}
 
 export class AdoptionService {
   constructor() {
   }
 
-  async createAdoption(adoptionData: Partial<AdoptionType>): Promise<AdoptionType> {
-    const adoptionModel = mongoose.model<AdoptionType>('Adoption');
-    // console.log('adoptionData', adoptionData)
+  async createAdoption(adoptionData: any): Promise<AdoptionType> {
+    const adoptionModel = mongoose.model('Adoption');
     try {
-      const adoption = new adoptionModel(adoptionData);
-      return await adoption.save();
+      await adoptionModel.create(adoptionData);
     } catch (error) {
       logger.error('Error creating adoption:', error);
       throw error;
@@ -70,6 +62,55 @@ export class AdoptionService {
       logger.error('Error fetching all adoptions:', error);
       throw error;
     }
+  }
+
+  async getAllAdoptions2(options: {
+    filter?: {
+      org?: string,
+      enterprise?: string,
+      team?: string,
+    },
+    projection?: any
+  }): Promise<AdoptionType[]> {
+    const adoptionModel = mongoose.model<AdoptionType>('Adoption');
+    try {
+      return await adoptionModel
+        .find(
+          options.filter || {},
+          options.projection || { _id: 0, __v: 0 }
+        )
+        .populate('seats')
+        .sort({ date: -1 });
+    } catch (error) {
+      logger.error('Error fetching all adoptions:', error);
+      throw error;
+    }
+  }
+
+  calculateAdoptionTotals(queryAt: Date, data: SeatEntry[], daysInactive = 30) {
+    return data.reduce((acc, activity) => {
+      if (!activity.last_activity_at) {
+        acc.totalInactive++;
+        return acc;
+      }
+      const fromTime = (new Date(activity.last_activity_at)).getTime() || 0;
+      const toTime = queryAt.getTime();
+      const diff = Math.floor((toTime - fromTime) / 86400000);
+      const dateIndex = new Date(queryAt);
+      dateIndex.setUTCMinutes(0, 0, 0);
+      if (activity.last_activity_at && activity.last_activity_editor) {
+        if (diff > daysInactive) {
+          acc.totalActive++;
+        } else {
+          acc.totalInactive++;
+        }
+      }
+      return acc;
+    }, {
+      totalSeats: data.length,
+      totalActive: 0,
+      totalInactive: 0,
+    });
   }
 }
 

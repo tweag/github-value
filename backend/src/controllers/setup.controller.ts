@@ -69,7 +69,6 @@ class SetupController {
         isSetup: app.github.app !== undefined,
         installations: app.github.installations.map(i => ({
           installation: i.installation,
-          ...i.queryService.status
         }))
       };
       return res.json(status);
