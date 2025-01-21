@@ -12,6 +12,7 @@ import GitHub from './github.js';
 import SettingsService from './services/settings.service.js';
 import apiRoutes from "./routes/index.js"
 import WebhookService from './services/smee.js';
+import { log } from 'console';
 
 class App {
   e: Express;
@@ -27,6 +28,7 @@ class App {
     this.baseUrl = process.env.BASE_URL || 'http://localhost:' + port;
     this.e = express();
     this.port = port;
+    logger.info(`Starting application on port ${this.port}`);
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI must be set');
     }
@@ -63,6 +65,7 @@ class App {
 
   public async start() {
     try {
+      logger.info(`Starting application on port ${this.port}`);
       logger.info('Starting application');
 
       logger.info('Express setup...');
@@ -123,6 +126,7 @@ class App {
     );
 
     this.eListener = this.e.listen(this.port, '0.0.0.0');
+    logger.info(`eListener on port ${this.port}`);
 
   }
 

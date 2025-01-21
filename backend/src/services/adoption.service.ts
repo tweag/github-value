@@ -64,7 +64,7 @@ export class AdoptionService {
     const adoptionModel = mongoose.model<AdoptionType>('Adoption');
     try {
       return await adoptionModel
-        .find({}, { _id: 0, __v: 0, seats: 0 })
+        .find({}, { totalActive:1 })
         .sort({ date: -1 });
     } catch (error) {
       logger.error('Error fetching all adoptions:', error);
