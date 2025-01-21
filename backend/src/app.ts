@@ -26,7 +26,8 @@ class App {
   ) {
     this.baseUrl = process.env.BASE_URL || 'http://localhost:' + port;
     this.e = express();
-    this.port = port;
+    this.port = Number(process.env.PORT); //bugfix?
+    logger.info('port number found');
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI must be set');
     }
