@@ -56,7 +56,7 @@ export const setupWebhookListeners = (github: App) => {
   });
 
   github.webhooks.on("membership", async ({ payload }) => {
-    const queryService = app.github.installations.find(i => i.installation.id === payload.installation?.id)?.queryService;
+    const queryService = app.github.queryService;
     if (!queryService) throw new Error('No query service found');
     try {
       if (payload.member) {

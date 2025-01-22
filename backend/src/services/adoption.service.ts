@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import logger from './logger.js';
 import { SeatEntry } from './copilot.seats.service.js';
 
+type AdoptionType = any;
 
 export class AdoptionService {
   constructor() {
