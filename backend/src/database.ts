@@ -18,8 +18,6 @@ class Database {
     if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
       this.mongoose = await mongoose.connect(this.mongodbUri, {
-        //useNewUrlParser: true,  // 12:08 could be used later
-        //useUnifiedTopology: true,
         socketTimeoutMS: 90000,
         connectTimeoutMS: 60000,
         serverSelectionTimeoutMS: 30000,
@@ -27,17 +25,13 @@ class Database {
         readPreference: 'primaryPreferred',
         retryReads: true,
         w: 'majority',
-        // Add these connection pool settings
         maxPoolSize: 10,        // Limit maximum connections
         minPoolSize: 5,         // Keep minimum connections ready
         maxIdleTimeMS: 30000,   // Close idle connections after 30 seconds
         heartbeatFrequencyMS: 10000,  // Check connection status every 10 seconds
-        // Add buffer commands setting
         bufferCommands: true,   // Queue operations when connection is lost
-        // Add connection pool monitoring
-        monitorCommands: true
-     });
-    //  this.mongoose.set('debug', false);
+        monitorCommands: true // Add connection pool monitoring
+      });
       mongoose.set('debug', (collectionName: string, methodName: string, ...methodArgs: unknown[]) => {
         const msgMapper = (m: unknown) => {
           return util.inspect(m, false, 10, true)
@@ -161,7 +155,7 @@ class Database {
         repositories: [RepositorySchema]
       }
     }));
-    // Team Schema 🏢
+    
     const teamSchema = new Schema({
       org: { type: String, required: true },
       team: String,
@@ -182,11 +176,10 @@ class Database {
       timestamps: true
     });
 
-    // Member Schema 👥
     const memberSchema = new Schema({
       org: { type: String, required: true },
       login: { type: String, required: true },
-      id: { type: Number, required: true, unique: true }, // renamed from id
+      id: { type: Number, required: true },
       node_id: String,
       avatar_url: String,
       gravatar_id: String,
@@ -210,32 +203,24 @@ class Database {
     }, {
       timestamps: true,
     });
-
+    memberSchema.index({ org: 1, login: 1, id: 1 }, { unique: true });
     memberSchema.virtual('seats', {
       ref: 'Seats',
       localField: '_id',
       foreignField: 'assignee'
     });
-    
-    memberSchema.index({ _id: 1, login: 1, id: 1 });
 
-    // TeamMember Association Schema 🤝
     const teamMemberSchema = new Schema({
       team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
       member: { type: Schema.Types.ObjectId, ref: 'Member', required: true }
     }, {
       timestamps: false
     });
-
-    const counterSchema = new Schema({
-      _id: { type: String, required: true }, // Ensure _id is of type String
-      seq: { type: Number, default: 0 }
-    });
-
-    // Create indexes for faster queries 🔍
     teamMemberSchema.index({ team: 1, member: 1 }, { unique: true });
 
-   
+    mongoose.model('Team', teamSchema);
+    mongoose.model('Member', memberSchema);
+    mongoose.model('TeamMember', teamMemberSchema);
 
     const seatsSchema = new mongoose.Schema({
       org: String,
@@ -246,6 +231,7 @@ class Database {
       last_activity_editor: String,
       queryAt: Date,
       assignee_id: Number,
+      assignee_login: String,
       assignee: {
         type: Schema.Types.ObjectId,
         ref: 'Member'
@@ -260,13 +246,40 @@ class Database {
 
     mongoose.model('Seats', seatsSchema);
 
-     // Create models 📦
-     mongoose.model('Team', teamSchema);
-     mongoose.model('Member', memberSchema);
-     mongoose.model('TeamMember', teamMemberSchema);
-     mongoose.model('Counter', counterSchema); // Ensure Counter model is registered here
-    console.log('Created Counter model');
-     mongoose.model('Seats', seatsSchema);
+    const adoptionSchema = new Schema({
+      enterprise: String,
+      org: String,
+      team: String,
+      date: {
+        type: Date,
+        required: true
+      },
+      totalSeats: Number,
+      totalActive: Number,
+      totalInactive: Number,
+      seats: [{
+        login: String,
+        last_activity_at: Date,
+        last_activity_editor: String,
+        _assignee: {
+          required: true,
+          type: Schema.Types.ObjectId,
+          ref: 'Member'
+        },
+        _seat: {
+          required: true,
+          type: Schema.Types.ObjectId,
+          ref: 'Seats'
+        }
+      }]
+    }, {
+      timestamps: true
+    });
+
+    // Create indexes
+    adoptionSchema.index({ enterprise: 1, org: 1, team: 1, date: 1 }, { unique: true });
+
+    mongoose.model('Adoption', adoptionSchema);
 
     mongoose.model('Survey', new mongoose.Schema({
       id: Number,
@@ -281,29 +294,6 @@ class Database {
     }, {
       timestamps: true
     }));
-
-    
-    const adoptionSchema = new Schema({
-      date: {
-      type: Date,
-      required: true,
-      unique: true
-      },
-      totalSeats: Number,
-      totalActive: Number,
-      totalInactive: Number,
-      seats: [{
-        type: Schema.Types.ObjectId,
-        ref: 'Seats'
-      }]
-    }, {
-      timestamps: true
-    });
-
-    // Create indexes
-    adoptionSchema.index({ date: 1 });
-
-    mongoose.model('Adoption', adoptionSchema);
   }
   
   async disconnect() {
