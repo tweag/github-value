@@ -4,19 +4,18 @@ import adoptionService from '../services/adoption.service.js';
 
 class AdoptionController {
   async getAdoptions(req: Request, res: Response): Promise<void> {
-    const org = req.query.org?.toString();
-    const enterprise = req.query.enterprise?.toString();
-    const team = req.query.team?.toString();
-    // const { daysInactive, precision } = req.query;
+    const { enterprise, org, team, since, until, seats } = req.query as { [key: string]: string | undefined };;
     try {
       const adoptions = await adoptionService.getAllAdoptions2({
         filter: {
           org,
           ...enterprise ? {enterprise: 'enterprise'} : undefined,
           team,
+          ...since ? { date: { $gte: new Date(since) } } : undefined,
+          ...until ? { date: { $lte: new Date(until) } } : undefined,
         },
         projection: {
-          seats: 0,
+          ...seats === '1' ? {} : { seats: 0 },
           _id: 0,
           __v: 0,
         }
