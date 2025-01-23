@@ -40,10 +40,14 @@ class SettingsService {
   async getAllSettings() {
     try {
       const Setting = mongoose.model('Settings');
-      return await Setting.find<{
+      const settingsArray = await Setting.find<{
         name: string;
         value: string;
       }>({});
+      return settingsArray.reduce((acc, setting) => {
+        acc[setting.name] = setting.value;
+        return acc;
+      }, {} as any);
     } catch (error) {
       console.error('Failed to get all settings:', error);
       throw error;
