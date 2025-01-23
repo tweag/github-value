@@ -13,6 +13,8 @@ import { MetricsService } from '../../../services/api/metrics.service';
 import { MembersService } from '../../../services/api/members.service';
 import { CopilotSurveyService } from '../../../services/api/copilot-survey.service';
 import { Adoption, AdoptionService } from '../../../services/api/adoption.service';
+import { lastValueFrom } from 'rxjs';
+import { SettingsHttpService } from '../../../services/api/settings.service';
 
 @Component({
   selector: 'app-value-modeling',
@@ -162,6 +164,13 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
   gridObject: GridObject = initializeGridObject();
   gridObjectSaved: GridObject = initializeGridObject();
   disableInputs = false;
+  clickCounter = 0; // when this changes we need to call queryCurrentValues again
+
+  devCostPerYear: number = 0;
+  developerCount: number = 0;
+  hoursPerYear: number = 0;
+  percentCoding: number = 0;
+  percentTimeSaved: number = 0;
 
   constructor(
     private decimalPipe: DecimalPipe,
@@ -171,51 +180,62 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     private metricsService: MetricsService,
     private seatService: SeatService,
     private adoptionService: AdoptionService,
-    private router: Router
+    private router: Router,
+    private settingsService: SettingsHttpService
 
   ) {}
 
   ngOnInit() {
-    //delay execution 1 second
-    //setTimeout(() => {  
-    console.log('ngOnInit: Initializing component');
-    console.log('Initial Grid Lifecycle:');
-    this.execGridLifecycle();
-    console.log('UpdateCurrent gridObject:', this.gridObject);
-    //this.execGridLifecycle();
+    console.log('Value Modeling Component initialized');
+  
+    
+    // Call asynchronous logic
+    this.initializeComponent();
+  
+    // Subscribe to form value changes
     this.form.valueChanges.subscribe((values) => {
       console.log('1*. Form value changed:', values);
-     
     });
-  } 
-
-  async execGridLifecycle() {
-    console.log('execGridLifecycle: Executing grid lifecycle');
-    
-    try {
-        //this.updateGridObjectFromForm();  //problematic to the lifecycle!!!
-        
-        // Step 1: Update current values (await API requests)
-        await this.updateCurrentValues();
-
-        // Step 2: Perform calculations on the updated gridObject
-        this.modelCalc();
-
-        // Step 3: Update the form from the recalculated gridObject
-        this.updateFormFromGridObject();
-
-        // Optionally update chart data if necessary
-        // this.updateChartData();
-
-        console.log('execGridLifecycle: Completed successfully');
-    } catch (error) {
-        console.error('execGridLifecycle: Error encountered', error);
-    }
-
-    console.log('Total Seats:', this.gridObject.current.seats);
-    console.log('Adopted Devs:', this.gridObject.current.adoptedDevs);
+  }
   
-}
+  // Helper method to handle async calls
+  private async initializeComponent() {
+    try {
+      // Update form value correctly
+      // this.form.get('current.seats')?.setValue('100'); // Use the proper FormControl path
+      this.gridObject.current.asOfDate = new Date("2025-01-22T01:06:00.001Z").getTime();
+      const currentAsStrings = this.convertMetricStateToString(this.gridObject.current);
+      //console.log('AsOfDate as string:', currentAsStrings.asOfDate);
+  
+      console.log('Initial Grid Lifecycle:');
+      await this.execGridLifecycle(); // Execute grid lifecycle
+      console.log('0. Update Current gridObject:', this.gridObject);
+    } catch (error) {
+      console.error('Error during initialization:', error);
+    }
+  }
+  
+
+  async execGridLifecycle(): Promise<void> {
+    console.log('XXX execGridLifecycle: Executing grid lifecycle');
+  
+    try {
+      // Step 1: Update current values from API
+      await this.queryCurrentAndMaxValues();
+  
+      // Step 2: Perform calculations on the updated gridObject
+      this.modelCalc();
+  
+      // Step 3: Synchronize the form with gridObject
+      this.updateFormFromGridObject();
+  
+      console.log('execGridLifecycle: Lifecycle completed successfully');
+    } catch (error) {
+      console.error('execGridLifecycle: Error encountered', error);
+    }
+  
+    console.log('GridObject after lifecycle:', this.gridObject);
+  }
 
 
   ngAfterViewInit() {
@@ -228,7 +248,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     elements.forEach(element => {
       element.addEventListener('touchstart', () => {}, { passive: true });
     });
-    console.log('0. makeEventListenersPassive: Event listeners set to passive');
+    console.log('-1. makeEventListenersPassive: Event listeners set to passive');
   }
 
   onBlur(event: Event, level: 'current' | 'target' | 'max', field: keyof MetricState) {
@@ -281,18 +301,22 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     console.log('6. Updated gridObject from form:', this.gridObject);
   }
 
-  private convertMetricStateToString(metricState: MetricState): { [key: string]: string } {
+  convertMetricStateToString(metricState: MetricState): { [key: string]: string } {
     const result: { [key: string]: string } = {};
     for (const key in metricState) {
       if (metricState.hasOwnProperty(key)) {
-        result[key] = this.decimalPipe.transform(metricState[key], '1.0-0') || '0';
-        console.log('called convertMetricStateToString:', key.toString);
+        if (key === 'asOfDate') {
+          result[key] = new Date(metricState.asOfDate).toDateString();
+        } else {
+          result[key] = this.decimalPipe.transform(metricState[key], '1.0-0') || '0';
+          //console.log('called convertMetricStateToString:', key.toString);
+        }
       }
     }
     return result;
   }
 
-  private convertMetricStateToNumber(metricState: { [key: string]: string }): MetricState {
+  convertMetricStateToNumber(metricState: { [key: string]: string }): MetricState {
     const result: MetricState = {
       seats: 0,
       adoptedDevs: 0,
@@ -306,7 +330,8 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       weeklyTimeSaved: 0,
       monthlyTimeSavings: 0,
       annualTimeSavingsDollars: 0,
-      productivityBoost: 0
+      productivityBoost: 0,
+      asOfDate: 0
     };
     for (const key in metricState) {
       if (metricState.hasOwnProperty(key)) {
@@ -383,31 +408,100 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.disableInputs = false;
     }
   }
+    
+   
+  async queryCurrentAndMaxValues(): Promise<void> {
+    const gridObject = this.gridObject;
+    
+    console.log('updateCurrentAndMaxValues: Fetching values');
 
- // create a  function that takes a gridObject and returns a gridObject called queryCurrentValues() {
-  async updateCurrentValues() {
 
-    // Make API calls to get the current values
-    // this.seatService.getAllSeats().subscribe(seats => {
-    //   const count = 0;
-    //   for (const seat in seats) {
-    //   this.gridObject.current.seats = count+1
-    // }   
-    // console.log('Seats:', this.gridObject.current.seats);
-    // });
+    try {
+       // get settings data
+       this.settingsService.getAllSettings().subscribe((settings) => {
+        this.devCostPerYear = settings.devCostPerYear || 0;
+        this.developerCount = settings.developerCount || 0;
+        this.hoursPerYear = settings.hoursPerYear || 0;
+        this.percentCoding = settings.percentCoding || 0;
+        this.percentTimeSaved = settings.percentTimeSaved || 0;
+      });
 
-    this.adoptionService.getAdoptions({daysInactive: 30}).subscribe(adoptions => {
-      for (const adoption of adoptions) {
-        this.gridObject.current.seats = adoption.totalSeats;
-        this.gridObject.current.adoptedDevs = adoption.totalActive;
-        //exit the loop after the first record
-        break;
+      gridObject.max.seats = this.developerCount; 
+      gridObject.max.adoptedDevs = this.developerCount;
+      gridObject.max.monthlyDevsReportingTimeSavings  = this.developerCount; 
+      gridObject.max.dailySuggestions = 150;
+      gridObject.max.dailyChatTurns = 50;
+      gridObject.max.weeklyPRSummaries = 5;
+
+      // Get adoptions data
+      const adoptions$ = this.adoptionService.getAdoptions({ daysInactive: 30 });
+      const adoptions = await lastValueFrom(adoptions$);
+      //console.log('Adoption data:', adoptions);
+
+      // Process adoptions
+      if (adoptions && adoptions.length > 0) {
+        const bestRecord = adoptions.reduce((acc, item) => {
+          const itemDate = typeof item.date === 'string' || typeof item.date === 'number' ? new Date(item.date) : new Date();
+        if (itemDate.getTime() < (Date.now() - (this.clickCounter * 1000 * 60 * 60 * 24))) { // Get adoption records that are n days old, where n is the number of times the buttons have been clicked
+            console.log(item.date.toString())
+          if (item.totalActive > acc.totalActive) { // Find the highest number of active developers within 36 hrs of the clickcounter date
+            return item;
+          } 
+        }
+          return acc;
+        }, adoptions[0]);
+
+        gridObject.current.seats = bestRecord.totalSeats;
+        gridObject.current.adoptedDevs = bestRecord.totalActive;
+        gridObject.current.asOfDate = new Date(bestRecord.createdAt.toString()).getTime();
+
+        // TO DO: get current information about the developer estimate surveys
+        
       }
-    });
-    // gridObject.current.monthlyDevsReportingTimeSavings = [copilotSurveyService.getAllSurveys()].length;  // Stubbed value
 
-    // Set the gridObject.current values to the API values
-    // Return the gridObject with the updated current values
+      // Get survey data
+      const surveys$ = this.copilotSurveyService.getAllSurveys();
+      const surveys = await lastValueFrom(surveys$);
+      //console.log('Survey data:', surveys);
+
+
+      // Process surveys
+      if (surveys && surveys.length > 0) {
+        const recentSurveys = surveys.filter(survey => {
+          const surveyDate = survey.createdAt ? new Date(survey.createdAt.toString()) : new Date(); // Default to current date
+          return surveyDate.getTime() > (Date.now() - (300 * 24 * 60 * 60 * 1000)); // Last 10 days
+        });
+
+        let avgWeeklyTimeSaved = 0;
+
+        if (recentSurveys.length > 0) {
+          // Calculate average time savings reported and developers reporting time savings
+          avgWeeklyTimeSaved = recentSurveys.reduce((acc, survey) => {
+            console.log('Indiv recent survey data:', survey.userId, survey.percentTimeSaved);
+            return acc + (survey.percentTimeSaved || 0);
+          }, 0) * 12 * 0.01 / recentSurveys.length; //need to change "12" once I get the setup data
+        }
+        gridObject.current.weeklyTimeSaved = avgWeeklyTimeSaved;
+        gridObject.current.monthlyDevsReportingTimeSavings = recentSurveys.length;
+      }
+      
+
+      console.log('update Current Values2: Updated gridObject.current:', gridObject);
+      this.gridObject = gridObject;
+    } catch (error) {
+      console.error('updateCurrentValues: Error fetching values', error);
+      throw error;
+    }
+  }
+
+  incrementCounter() {
+    this.clickCounter++;
+    this.queryCurrentAndMaxValues();
+  }
+
+  decrementCounter() {
+    this.clickCounter--;
+    this.queryCurrentAndMaxValues();
   }
 
 }

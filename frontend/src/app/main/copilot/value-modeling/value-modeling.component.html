@@ -51,6 +51,17 @@
           <thead>
             <tr>
               <th></th>
+              <th>
+                As Of : {{ gridObject?.current ? convertMetricStateToString(gridObject.current)['asOfDate'] : 'N/A' }}
+                <a style="cursor: pointer;" (click)="incrementCounter()"> &lt; </a>
+                {{ clickCounter }}
+                <a style="cursor: pointer;" (click)="decrementCounter()"> &gt; </a>
+              </th>
+              <th></th>
+              <th></th>
+            </tr>
+            <tr>
+              <th></th>
               <th>Current Level</th>
               <th>Target Level</th>
               <th>Max Level</th>

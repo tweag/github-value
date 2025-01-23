@@ -14,6 +14,7 @@
       monthlyTimeSavings: number;
       annualTimeSavingsDollars: number;
       productivityBoost: number;
+      asOfDate: number;   // myDate = new Date("2025-01-22T01:06:00.001Z"); Convert it to a Unix timestamp with date.getTime() to store it as a number in milliseconds since the epoch.
       [key: string]: number; // Index signature
     }
     
@@ -37,7 +38,8 @@
         weeklyTimeSaved: 0,
         monthlyTimeSavings: 0,
         annualTimeSavingsDollars: 0,
-        productivityBoost: 0
+        productivityBoost: 0,
+        asOfDate: 0
       };
     
       return {
