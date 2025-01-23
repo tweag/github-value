@@ -52,8 +52,8 @@ router.get('/setup/status', setupController.setupStatus);
 
 router.get('/status', setupController.getStatus);
 
-router.get('/predictive-modeling/targets', targetValuesController.getTargetValues);
-router.post('/predictive-modeling/targets', targetValuesController.updateTargetValues);
+router.get('/targets', targetValuesController.getTargetValues);
+router.post('/targets', targetValuesController.updateTargetValues);
 
 router.get('*', (req: Request, res: Response) => {
   res.status(404).send('Route not found');

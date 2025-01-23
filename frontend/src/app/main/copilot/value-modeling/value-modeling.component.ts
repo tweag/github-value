@@ -1,5 +1,4 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
-import { Router } from '@angular/router';
 import { FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../material.module';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -7,14 +6,12 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { SharedModule } from '../../../shared/shared.module';
 import * as Highcharts from 'highcharts';
-import { GridObject, MetricState, initializeGridObject } from './grid-object-model';
-import { SeatService } from '../../../services/api/seat.service';
-import { MetricsService } from '../../../services/api/metrics.service';
-import { MembersService } from '../../../services/api/members.service';
+import { initializeGridObject } from './grid-object-model';
 import { CopilotSurveyService } from '../../../services/api/copilot-survey.service';
-import { Adoption, AdoptionService } from '../../../services/api/adoption.service';
+import { AdoptionService } from '../../../services/api/adoption.service';
 import { lastValueFrom } from 'rxjs';
 import { SettingsHttpService } from '../../../services/api/settings.service';
+import { TargetsDetailType, TargetsService, TargetsType } from '../../../services/api/targets.service';
 
 @Component({
   selector: 'app-value-modeling',
@@ -161,8 +158,8 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     })
   });
 
-  gridObject: GridObject = initializeGridObject();
-  gridObjectSaved: GridObject = initializeGridObject();
+  gridObject: TargetsType = initializeGridObject();
+  gridObjectSaved: TargetsType = initializeGridObject();
   disableInputs = false;
   clickCounter = 0; // when this changes we need to call queryCurrentValues again
 
@@ -174,15 +171,10 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   constructor(
     private decimalPipe: DecimalPipe,
-    // Initialize service variables
     private copilotSurveyService: CopilotSurveyService,
-    private membersService: MembersService,
-    private metricsService: MetricsService,
-    private seatService: SeatService,
     private adoptionService: AdoptionService,
-    private router: Router,
-    private settingsService: SettingsHttpService
-
+    private settingsService: SettingsHttpService,
+    private targetService: TargetsService,
   ) {}
 
   ngOnInit() {
@@ -204,7 +196,6 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       // Update form value correctly
       // this.form.get('current.seats')?.setValue('100'); // Use the proper FormControl path
       this.gridObject.current.asOfDate = new Date("2025-01-22T01:06:00.001Z").getTime();
-      const currentAsStrings = this.convertMetricStateToString(this.gridObject.current);
       //console.log('AsOfDate as string:', currentAsStrings.asOfDate);
   
       console.log('Initial Grid Lifecycle:');
@@ -251,11 +242,11 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     console.log('-1. makeEventListenersPassive: Event listeners set to passive');
   }
 
-  onBlur(event: Event, level: 'current' | 'target' | 'max', field: keyof MetricState) {
+  onBlur(event: Event, level: 'current' | 'target' | 'max', field: keyof TargetsDetailType) {
     const input = event.target as HTMLInputElement;
     const value = parseFloat(input.value.replace(/,/g, '').replace(/[^0-9.-]+/g, ''));
     this.gridObject[level][field] = isNaN(value) ? 0 : value;
-    console.log(`2. onBlur: Updated gridObject[${level}][${field}] to`, this.gridObject[level][field]);
+    // console.log(`2. onBlur: Updated gridObject[${level}][${field}] to`, this.gridObject[level][field]);
     this.execGridLifecycle();
     // print out gridObject for debugging
    // console.log('Updated gridObject:', this.gridObject);
@@ -276,16 +267,15 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     //This needs to be a deep copy. If we do a shallow copy, the gridObjectSaved will be updated whenever the gridObject is updated.
     this.gridObjectSaved = JSON.parse(JSON.stringify(this.gridObject));
     console.log('7. Saved gridObject:', this.gridObjectSaved);
+    this.targetService.saveTargets(this.gridObject).subscribe();
   }
 
   private updateFormFromGridObject() {
     //console.log('updateFormFromGridObject: Updating form from gridObject');
-    this.form.patchValue({
-      current: this.convertMetricStateToString(this.gridObject.current),
-      target: this.convertMetricStateToString(this.gridObject.target),
-      max: this.convertMetricStateToString(this.gridObject.max)
+    this.targetService.getTargets().subscribe((targets) => {
+      this.form.patchValue(targets as any);
     });
-    console.log('6. Updated form values:', this.form.value);
+    console.log('6. Updated form values:', JSON.stringify(this.form.value, null, 2));
   }
 
   private updateGridObjectFromForm() {
@@ -301,14 +291,14 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     console.log('6. Updated gridObject from form:', this.gridObject);
   }
 
-  convertMetricStateToString(metricState: MetricState): { [key: string]: string } {
+  convertMetricStateToString(metricState: TargetsDetailType): { [key: string]: string } {
     const result: { [key: string]: string } = {};
     for (const key in metricState) {
       if (metricState.hasOwnProperty(key)) {
         if (key === 'asOfDate') {
-          result[key] = new Date(metricState.asOfDate).toDateString();
+          result[key] = metricState.asOfDate ? new Date(metricState.asOfDate).toDateString() : '';
         } else {
-          result[key] = this.decimalPipe.transform(metricState[key], '1.0-0') || '0';
+          result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';
           //console.log('called convertMetricStateToString:', key.toString);
         }
       }
@@ -316,8 +306,8 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     return result;
   }
 
-  convertMetricStateToNumber(metricState: { [key: string]: string }): MetricState {
-    const result: MetricState = {
+  convertMetricStateToNumber(metricState: { [key: string]: string }): TargetsDetailType {
+    const result: TargetsDetailType = {
       seats: 0,
       adoptedDevs: 0,
       monthlyDevsReportingTimeSavings: 0,
@@ -336,7 +326,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     for (const key in metricState) {
       if (metricState.hasOwnProperty(key)) {
         const value = parseFloat(metricState[key].replace(/,/g, '').replace(/[^0-9.-]+/g, ''));
-        result[key as keyof MetricState] = isNaN(value) ? 0 : value;
+        result[key as keyof TargetsDetailType] = isNaN(value) ? 0 : value;
       }
     }
     return result;
@@ -346,30 +336,30 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     try {
       console.log('3. modelCalc: Calculating model');
       // 1. Calculate Max column percentages and then Impacts
-      this.gridObject.max.percentSeatsAdopted = this.calculatePercentage(this.gridObject.max.adoptedDevs, this.gridObject.max.seats);
-      this.gridObject.max.percentSeatsReportingTimeSavings = this.calculatePercentage(this.gridObject.max.monthlyDevsReportingTimeSavings, this.gridObject.max.seats);
-      this.gridObject.max.percentMaxAdopted = this.calculatePercentage(this.gridObject.max.adoptedDevs, this.gridObject.max.seats);
-      this.gridObject.max.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.max.weeklyTimeSaved, this.gridObject.max.adoptedDevs);
-      this.gridObject.max.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.max.adoptedDevs, this.gridObject.max.weeklyTimeSaved);
-      this.gridObject.max.productivityBoost = this.calculateProductivityBoost(this.gridObject.max.dailySuggestions, this.gridObject.max.dailyChatTurns);
+      this.gridObject.max.percentSeatsAdopted = this.calculatePercentage(this.gridObject.max.adoptedDevs as number, this.gridObject.max.seats as number);
+      this.gridObject.max.percentSeatsReportingTimeSavings = this.calculatePercentage(this.gridObject.max.monthlyDevsReportingTimeSavings as number, this.gridObject.max.seats as number);
+      this.gridObject.max.percentMaxAdopted = this.calculatePercentage(this.gridObject.max.adoptedDevs as number, this.gridObject.max.seats as number);
+      this.gridObject.max.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.max.weeklyTimeSaved as number, this.gridObject.max.adoptedDevs as number);
+      this.gridObject.max.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.max.adoptedDevs as number, this.gridObject.max.weeklyTimeSaved as number);
+      this.gridObject.max.productivityBoost = this.calculateProductivityBoost(this.gridObject.max.dailySuggestions as number, this.gridObject.max.dailyChatTurns as number);
 
       // 2. Calculate Current column percentages and then Impacts
-      this.gridObject.current.percentSeatsAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs, this.gridObject.current.seats);
-      this.gridObject.current.percentSeatsReportingTimeSavings = this.calculatePercentage(this.gridObject.current.monthlyDevsReportingTimeSavings, this.gridObject.current.seats);
-      this.gridObject.current.percentMaxAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs, this.gridObject.current.seats);
-      this.gridObject.current.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.current.weeklyTimeSaved, this.gridObject.current.adoptedDevs);
-      this.gridObject.current.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.current.adoptedDevs, this.gridObject.current.weeklyTimeSaved);
-      this.gridObject.current.productivityBoost = this.calculateProductivityBoost(this.gridObject.current.dailySuggestions, this.gridObject.current.dailyChatTurns);
+      this.gridObject.current.percentSeatsAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.current.seats as number);
+      this.gridObject.current.percentSeatsReportingTimeSavings = this.calculatePercentage(this.gridObject.current.monthlyDevsReportingTimeSavings as number, this.gridObject.current.seats as number);
+      this.gridObject.current.percentMaxAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.current.seats as number);
+      this.gridObject.current.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.current.weeklyTimeSaved as number, this.gridObject.current.adoptedDevs as number);
+      this.gridObject.current.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.current.adoptedDevs as number, this.gridObject.current.weeklyTimeSaved as number);
+      this.gridObject.current.productivityBoost = this.calculateProductivityBoost(this.gridObject.current.dailySuggestions as number, this.gridObject.current.dailyChatTurns as number);
 
       // 3. Calculate Target column values (percentages and then impacts)
-      this.gridObject.target.percentSeatsAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs, this.gridObject.target.seats);
-      this.gridObject.target.percentSeatsReportingTimeSavings = this.calculatePercentage(this.gridObject.target.monthlyDevsReportingTimeSavings, this.gridObject.target.seats);
-      this.gridObject.target.percentMaxAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs, this.gridObject.target.seats);
-      this.gridObject.target.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.target.weeklyTimeSaved, this.gridObject.target.adoptedDevs);
-      this.gridObject.target.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.target.adoptedDevs, this.gridObject.target.weeklyTimeSaved);
-      this.gridObject.target.productivityBoost = this.calculateProductivityBoost(this.gridObject.target.dailySuggestions, this.gridObject.target.dailyChatTurns);
-// 4. Update the form values
-     
+      this.gridObject.target.percentSeatsAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.target.seats as number);
+      this.gridObject.target.percentSeatsReportingTimeSavings = this.calculatePercentage(this.gridObject.target.monthlyDevsReportingTimeSavings as number, this.gridObject.target.seats as number);
+      this.gridObject.target.percentMaxAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.target.seats as number);
+      this.gridObject.target.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.adoptedDevs as number);
+      this.gridObject.target.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.target.adoptedDevs as number, this.gridObject.target.weeklyTimeSaved as number);
+      this.gridObject.target.productivityBoost = this.calculateProductivityBoost(this.gridObject.target.dailySuggestions as number, this.gridObject.target.dailyChatTurns as number);
+      
+      // 4. Update the form values
       console.log('4. modelCalc: Updated gridObject:', this.gridObject);
       
     } catch (error) {

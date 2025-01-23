@@ -100,6 +100,8 @@ class Database {
       total_pr_summaries_created: Number
     });
 
+
+
     // Editor Schema 🖥️
     const EditorSchema = new mongoose.Schema({
       name: String,
@@ -294,6 +296,30 @@ class Database {
     }, {
       timestamps: true
     }));
+
+    const TargetsDetailSchema = new mongoose.Schema({
+      seats: String,
+      adoptedDevs: String,
+      monthlyDevsReportingTimeSavings: String,
+      percentSeatsReportingTimeSavings: String,
+      percentSeatsAdopted: String,
+      percentMaxAdopted: String,
+      dailySuggestions: String,
+      dailyChatTurns: String,
+      weeklyPRSummaries: String,
+      weeklyTimeSaved: String,
+      monthlyTimeSavings: String,
+      annualTimeSavingsDollars: String,
+      productivityBoost: String
+    });
+    
+    const TargetsSchema = new mongoose.Schema({
+      current: TargetsDetailSchema,
+      target: TargetsDetailSchema,
+      max: TargetsDetailSchema
+    });
+
+    mongoose.model('Targets', TargetsSchema);
   }
   
   async disconnect() {
