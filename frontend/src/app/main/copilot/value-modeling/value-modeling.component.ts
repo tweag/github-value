@@ -413,6 +413,9 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
    
   async queryCurrentAndMaxValues(): Promise<void> {
     const gridObject = this.gridObject;
+    const thirtyDaysAgo = new Date(utcStart - 30);
+    
+
     
     console.log('updateCurrentAndMaxValues: Fetching values');
 
@@ -439,8 +442,12 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       gridObject.max.weeklyTimeSaved = (this.hoursPerYear * this.percentCoding/100 * this.percentTimeSaved/100)/50;
       console.log('Max values set to developer count:', gridObject.max);
 
-      const metrics$ = this.metricsService.getMetrics();
-      const metrics = await lastValueFrom(metrics$);
+      const metricsTotals$ = this.metricsService.getMetricsTotals({
+        org: this.installation?.account?.login,
+        since: .toISOString()});
+      const metricsTotals = await lastValueFrom(metricsTotals$);
+
+      console.log('Metrics data:', metricsTotals);
 
       // Get adoptions data
       const adoptions$ = this.adoptionService.getAdoptions({ daysInactive: 30 });
