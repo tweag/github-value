@@ -195,7 +195,8 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     try {
       // Update form value correctly
       // this.form.get('current.seats')?.setValue('100'); // Use the proper FormControl path
-      this.gridObject.current.asOfDate = new Date("2025-01-22T01:06:00.001Z").getTime();
+      this.gridObject.current.asOfDate = new Date().getTime();
+      // const currentAsStrings = this.convertMetricStateToString(this.gridObject.current);
       //console.log('AsOfDate as string:', currentAsStrings.asOfDate);
   
       console.log('Initial Grid Lifecycle:');
@@ -408,13 +409,16 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
     try {
        // get settings data
-       this.settingsService.getAllSettings().subscribe((settings) => {
+        const settings$ = this.settingsService.getAllSettings();
+        const settings = await lastValueFrom(settings$);
+
+        console.log('Settings data:', settings);
         this.devCostPerYear = settings.devCostPerYear || 0;
         this.developerCount = settings.developerCount || 0;
         this.hoursPerYear = settings.hoursPerYear || 0;
         this.percentCoding = settings.percentCoding || 0;
         this.percentTimeSaved = settings.percentTimeSaved || 0;
-      });
+      
 
       gridObject.max.seats = this.developerCount; 
       gridObject.max.adoptedDevs = this.developerCount;
@@ -422,6 +426,11 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       gridObject.max.dailySuggestions = 150;
       gridObject.max.dailyChatTurns = 50;
       gridObject.max.weeklyPRSummaries = 5;
+      gridObject.max.weeklyTimeSaved = (this.hoursPerYear * this.percentCoding/100 * this.percentTimeSaved/100)/50;
+      console.log('Max values set to developer count:', gridObject.max);
+
+      const metrics$ = this.metricsService.getMetrics();
+      const metrics = await lastValueFrom(metrics$);
 
       // Get adoptions data
       const adoptions$ = this.adoptionService.getAdoptions({ daysInactive: 30 });
@@ -433,7 +442,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
         const bestRecord = adoptions.reduce((acc, item) => {
           const itemDate = typeof item.date === 'string' || typeof item.date === 'number' ? new Date(item.date) : new Date();
         if (itemDate.getTime() < (Date.now() - (this.clickCounter * 1000 * 60 * 60 * 24))) { // Get adoption records that are n days old, where n is the number of times the buttons have been clicked
-            console.log(item.date.toString())
+           // console.log(item.date.toString())
           if (item.totalActive > acc.totalActive) { // Find the highest number of active developers within 36 hrs of the clickcounter date
             return item;
           } 
@@ -476,7 +485,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       }
       
 
-      console.log('update Current Values2: Updated gridObject.current:', gridObject);
+      console.log('update Current and Max Values: Updated gridObject', gridObject);
       this.gridObject = gridObject;
     } catch (error) {
       console.error('updateCurrentValues: Error fetching values', error);
