@@ -245,6 +245,9 @@ class Database {
     seatsSchema.index({ org: 1, createdAt: 1 });
     seatsSchema.index({ assignee: 1, last_activity_at: 1 });
     seatsSchema.index({ last_activity_at: 1, createdAt: 1 });
+    seatsSchema.index({ team: 1, member: 1 }, { unique: true });
+    seatsSchema.index({ createdAt: 1 });
+    seatsSchema.index({ queryAt: 1 });
 
     mongoose.model('Seats', seatsSchema);
 
