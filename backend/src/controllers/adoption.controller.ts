@@ -4,22 +4,28 @@ import adoptionService from '../services/adoption.service.js';
 
 class AdoptionController {
   async getAdoptions(req: Request, res: Response): Promise<void> {
-    const { enterprise, org, team, since, until, seats } = req.query as { [key: string]: string | undefined };;
+    const {  enterprise, daysInactive, org, team, precision, since, until, seats } = req.query as { [key: string]: string | undefined };;
     try {
-      const adoptions = await adoptionService.getAllAdoptions2({
+      const dateFilter = {
+        ...(since && { $gte: new Date(since) }),
+        ...(until && { $lte: new Date(until) })
+      };
+      
+      const query = { 
         filter: {
-          org,
-          ...enterprise ? {enterprise: 'enterprise'} : undefined,
-          team,
-          ...since ? { date: { $gte: new Date(since) } } : undefined,
-          ...until ? { date: { $lte: new Date(until) } } : undefined,
-        },
-        projection: {
-          ...seats === '1' ? {} : { seats: 0 },
-          _id: 0,
-          __v: 0,
-        }
-      });
+        ...enterprise ? {enterprise: 'enterprise'} : undefined,
+        ...org ? { org } : undefined,
+        ...team ? { team } : undefined,
+        ...precision ? { precision } : undefined,
+        ...(Object.keys(dateFilter).length && { date: dateFilter }),
+      },
+      projection: {
+        ...seats === '1' ? {} : { seats: 0 },
+        _id: 0,
+        __v: 0,
+      }
+    }
+      const adoptions = await adoptionService.getAllAdoptions2(query);
       res.status(200).json(adoptions);
     } catch (error) {
       res.status(500).json(error);

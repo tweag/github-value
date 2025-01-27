@@ -37,9 +37,35 @@ export class CopilotSurveyService {
 
   getAllSurveys(params?: {
     org?: string;
+    team?: string;
     reasonLength?: number;
+    since?: string;
+    until?: string;
+    status?: 'pending' | 'completed';
   }) {
-    if (!params?.org) delete params?.org;
+    if (!params) {
+      return this.http.get<Survey[]>(this.apiUrl);
+    }
+      
+    let httpParams = new HttpParams().set('org', params.org ? params.org.toString() : '');
+
+    if (params.team) {
+      httpParams = httpParams.set('team', params.team);
+    }
+
+    if (params?.reasonLength) {
+      httpParams = httpParams.set('reasonLength', params.reasonLength.toString());
+    }
+    if (params.since) {
+      httpParams = httpParams.set('since', params.since);
+    } 
+    if (params.until) {
+      httpParams = httpParams.set('until', params.until);
+    } 
+    if (params.status) {
+      httpParams = httpParams.set('status', params.status);
+    } 
+    // TODO probably deletable?
     return this.http.get<Survey[]>(this.apiUrl, {
       params
     });

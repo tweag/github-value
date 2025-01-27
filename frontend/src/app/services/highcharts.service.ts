@@ -435,28 +435,28 @@ export class HighchartsService {
       if (currentMetrics?.copilot_ide_code_completions) {
         (dailyActiveIdeCompletionsSeries.data).push({
           x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_ide_code_completions.total_code_suggestions / dateData.totalActive),
+          y: (currentMetrics.copilot_ide_code_completions.total_code_suggestions / (dateData.totalActive || 1)),
           raw: date
         });
       }
       if (currentMetrics?.copilot_ide_chat) {
         (dailyActiveIdeChatSeries.data).push({
           x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_ide_chat.total_chats / dateData.totalActive),
+          y: (currentMetrics.copilot_ide_chat.total_chats / dateData.totalActive || 1),
           raw: date
         });
       }
       if (currentMetrics?.copilot_dotcom_chat) {
         (dailyActiveDotcomChatSeries.data).push({
           x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_dotcom_chat.total_chats / dateData.totalActive),
+          y: (currentMetrics.copilot_dotcom_chat.total_chats / dateData.totalActive || 1),
           raw: date
         });
       }
       if (currentMetrics?.copilot_dotcom_pull_requests) {
         (dailyActiveDotcomPrSeries.data).push({
           x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_dotcom_pull_requests.total_pr_summaries_created / dateData.totalActive),
+          y: (currentMetrics.copilot_dotcom_pull_requests.total_pr_summaries_created / dateData.totalActive || 1),
           raw: date
         });
       }

@@ -63,15 +63,34 @@ class SurveyController {
   }
 
   async getAllSurveys(req: Request, res: Response): Promise<void> {
-    try {
-      const { org, reasonLength } = req.query;
+      const { org, team, reasonLength, since, until, status } = req.query as { [key: string]: string | undefined };;
+      try {
+        const dateFilter: any = {};
+        if (since) {
+          dateFilter.$gte = new Date(since);
+        }
+        if (until) {
+          dateFilter.$lte = new Date(until);
+        }
+      
+        const query = { 
+          filter: {
+            ...(org ? { org: String(org) } : {}),
+            ...(team ? { team: String(team) } : {}),
+            ...(reasonLength ? { $expr: { $and: [{ $gt: [{ $strLenCP: { $ifNull: ['$reason', ''] } }, 40] }, { $ne: ['$reason', null] }] } } : {}),
+            ...(Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {}),
+            ...(status ? { status } : {}),
+          },
+          projection: {
+            _id: 0,
+            __v: 0,
+          }
+        };
+      
       const Survey = mongoose.model('Survey');
-
-      const surveys = await Survey.find({
-        ...org ? { org: org as string } : {},
-        ...reasonLength ? { $expr: { $and: [{ $gt: [{ $strLenCP: { $ifNull: ['$reason', ''] } }, 40] }, { $ne: ['$reason', null] }] } } : {}
-      });
+      const surveys = await Survey.find(query.filter, query.projection);
       res.status(200).json(surveys);
+    
     } catch (error) {
       res.status(500).json(error);
     }

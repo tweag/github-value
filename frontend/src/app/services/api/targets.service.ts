@@ -20,7 +20,7 @@ export interface TargetsDetailType {
   [key: string]: string | number | undefined;
 };
 
-export interface TargetsType {
+export interface TargetsGridType {
   current: TargetsDetailType;
   target: TargetsDetailType;
   max: TargetsDetailType;
@@ -37,10 +37,34 @@ export class TargetsService {
   ) {}
 
   getTargets() {
-    return this.http.get<TargetsType>(`${this.apiUrl}`);
+    return this.http.get<TargetsGridType>(`${this.apiUrl}`);
   }
 
-  saveTargets(targets: TargetsType) {
-    return this.http.post<TargetsType>(`${this.apiUrl}`, targets);
+  saveTargets(targets: TargetsGridType) {
+    return this.http.post<TargetsGridType>(`${this.apiUrl}`, targets);
   }
+}
+
+export function initializeGridObject(): TargetsGridType {
+  const defaultValueState: TargetsDetailType = {
+    seats: 0,
+    adoptedDevs: 0,
+    monthlyDevsReportingTimeSavings: 0,
+    percentSeatsReportingTimeSavings: 0,
+    percentSeatsAdopted: 0,
+    percentMaxAdopted: 0,
+    dailySuggestions: 0,
+    dailyChatTurns: 0,
+    weeklyPRSummaries: 0,
+    weeklyTimeSaved: 0,
+    monthlyTimeSavings: 0,
+    annualTimeSavingsDollars: 0,
+    productivityBoost: 0,
+    asOfDate: 0
+  };
+  return {
+    current: { ...defaultValueState },
+    target: { ...defaultValueState },
+    max: { ...defaultValueState }
+  };
 }

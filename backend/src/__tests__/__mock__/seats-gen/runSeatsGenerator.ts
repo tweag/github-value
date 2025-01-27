@@ -2,14 +2,15 @@
 //runSeatsGenerator.ts - a script to run the seats generator and output the generated data via "npx tsx src/__tests__/__mock__/seats-gen/runSeatsGenerator.ts"
 import { MockSeatsGenerator as MockSeatsGenerator } from './mockSeatsGenerator.js';
 import { SeatsMockConfig } from '../types.js';
-import seatsExample from './seatsExample.json'; type: 'json';
+import seatsExample from './seats.json'; type: 'json';
 
 
 const mockConfig: SeatsMockConfig = {
-  startDate: new Date('2024-01-01'),
+  startDate: new Date('2024-11-01'),
   endDate: new Date('2024-12-31'),
   usagePattern: 'heavy',
   heavyUsers: ['nathos', 'arfon', 'kyanny'],
+  specificUser: 'nathos',
   editors: [
     'copilot-chat-platform',
     'vscode/1.96.2/copilot/1.254.0',

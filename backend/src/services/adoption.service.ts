@@ -5,6 +5,17 @@ import { SeatEntry } from './copilot.seats.service.js';
 
 type AdoptionType = any;
 
+export interface GetAdoptionsParams {
+  enterprise?: string;
+  daysInactive?: number;
+  org?: string;
+  team
+  precision?: string;
+  since?: string;
+  until?: string;
+  seats?: number;
+}
+
 export class AdoptionService {
   constructor() {
   }
@@ -23,7 +34,8 @@ export class AdoptionService {
       if (error.code === 11000) {
         // Handle duplicate key error explicitly
         logger.error('Duplicate key error creating adoption:', error);
-        throw new Error('An adoption with the same date already exists.');
+        //throw new Error('An adoption with the same date already exists.'); 
+        // TODO
       }
       logger.error('Error creating adoption:', error);
       throw error; // Rethrow other errors
@@ -78,22 +90,11 @@ export class AdoptionService {
     }
   }
 
-  async getAllAdoptions2(options: {
-    filter?: {
-      org?: string,
-      enterprise?: string,
-      team?: string,
-    },
-    projection?: any
-  }): Promise<AdoptionType[]> {
+  async getAllAdoptions2(params: any): Promise<AdoptionType[]> {
     const adoptionModel = mongoose.model<AdoptionType>('Adoption');
+
     try {
-      return await adoptionModel
-        .find(
-          options.filter || {},
-          options.projection || { _id: 0, __v: 0 }
-        )
-        .populate('seats')
+      return await adoptionModel.find(params.filter, params.projection)
         .sort({ date: -1 });
     } catch (error) {
       logger.error('Error fetching all adoptions:', error);
@@ -110,10 +111,8 @@ export class AdoptionService {
       const fromTime = (new Date(activity.last_activity_at)).getTime() || 0;
       const toTime = queryAt.getTime();
       const diff = Math.floor((toTime - fromTime) / 86400000);
-      const dateIndex = new Date(queryAt);
-      dateIndex.setUTCMinutes(0, 0, 0);
       if (activity.last_activity_at && activity.last_activity_editor) {
-        if (diff > daysInactive) {
+        if (diff < daysInactive) {
           acc.totalActive++;
         } else {
           acc.totalInactive++;

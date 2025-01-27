@@ -90,10 +90,11 @@ export class CopilotValueComponent implements OnInit {
       
       this.subscriptions.push(
         combineLatest([
-          this.daysInactive.valueChanges.pipe(startWith(this.daysInactive.value || 30)),
-          this.adoptionFidelity.valueChanges.pipe(startWith(this.adoptionFidelity.value || 'day'))
-        ]).subscribe(([days, fidelity]) => {
-          this.seatService.getActivity(installation?.account?.login, days || 30, fidelity || 'day').subscribe(data => {
+          this.daysInactive.valueChanges.pipe(startWith(30)),
+          this.adoptionFidelity.valueChanges.pipe(startWith('day'))
+          //TODO remove this
+        ]).subscribe(() => {
+          this.seatService.getActivity(installation?.account?.login).subscribe(data => {
             this.activityData = data;
             this.cdr.detectChanges();
           });

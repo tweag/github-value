@@ -52,10 +52,10 @@
             <tr>
               <th></th>
               <th>
-                As Of : {{ gridObject?.current ? convertMetricStateToString(gridObject.current)['asOfDate'] : 'N/A' }}
-                <a style="cursor: pointer;" (click)="incrementCounter()"> &lt; </a>
-                {{ clickCounter }}
-                <a style="cursor: pointer;" (click)="decrementCounter()"> &gt; </a>
+                <p>Max near...{{ asOfDate | date: 'EEE MMM dd' }}</p>
+                <span class="nav-arrow" (click)="incrementCounter()">&lt;</span>
+                <span>&nbsp; &nbsp;</span>
+                <span class="nav-arrow" (click)="decrementCounter()">&gt;</span>
               </th>
               <th></th>
               <th></th>
@@ -199,6 +199,17 @@
           <thead>
             <tr>
               <th></th>
+              <th>
+                <p>Max near...{{ asOfDate | date: 'EEE MMM dd' }}</p>
+                <span class="nav-arrow" (click)="incrementCounter()">&lt;</span>
+                <span>&nbsp; &nbsp;</span>
+                <span class="nav-arrow" (click)="decrementCounter()">&gt;</span>
+              </th>
+              <th></th>
+              <th></th>
+            </tr>
+            <tr>
+              <th></th>
               <th>Current Level</th>
               <th>Target Level</th>
               <th>Max Level</th>
@@ -209,17 +220,17 @@
               <td>Daily Suggestions</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'dailySuggestions')" [value]="form.get('current.dailySuggestions')?.value | number:'1.0-1'" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'dailySuggestions')" [value]="form.get('current.dailySuggestions')?.value" [attr.disabled]="disableInputs ? true : null">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'target'">
-                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'dailySuggestions')" [value]="form.get('target.dailySuggestions')?.value | number:'1.0-1'" matTooltip="Typical Range: 50-90">
+                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'dailySuggestions')" [value]="form.get('target.dailySuggestions')?.value " matTooltip="Typical Range: 50-90">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'dailySuggestions')" [value]="form.get('max.dailySuggestions')?.value | number:'1.0-1'" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'dailySuggestions')" [value]="form.get('max.dailySuggestions')?.value " [attr.disabled]="disableInputs ? true : null">
                 </mat-form-field>
               </td>
             </tr>
@@ -227,17 +238,17 @@
               <td>Daily Chat Turns</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'dailyChatTurns')" [value]="form.get('current.dailyChatTurns')?.value | number:'1.0-1'" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'dailyChatTurns')" [value]="form.get('current.dailyChatTurns')?.value " [attr.disabled]="disableInputs ? true : null">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'target'">
-                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'dailyChatTurns')" [value]="form.get('target.dailyChatTurns')?.value | number:'1.0-1'" matTooltip="Typical Range: 20-40">
+                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'dailyChatTurns')" [value]="form.get('target.dailyChatTurns')?.value " matTooltip="Typical Range: 20-40">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'dailyChatTurns')" [value]="form.get('max.dailyChatTurns')?.value | number:'1.0-1'" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'dailyChatTurns')" [value]="form.get('max.dailyChatTurns')?.value " [attr.disabled]="disableInputs ? true : null">
                 </mat-form-field>
               </td>
             </tr>
@@ -245,17 +256,17 @@
               <td>Weekly PR Summaries</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'weeklyPRSummaries')" [value]="form.get('current.weeklyPRSummaries')?.value | number:'1.0-1'" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'weeklyPRSummaries')" [value]="form.get('current.weeklyPRSummaries')?.value " [attr.disabled]="disableInputs ? true : null">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'target'">
-                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'weeklyPRSummaries')" [value]="form.get('target.weeklyPRSummaries')?.value | number:'1.0-1'">
+                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'weeklyPRSummaries')" [value]="form.get('target.weeklyPRSummaries')?.value ">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'weeklyPRSummaries')" [value]="form.get('max.weeklyPRSummaries')?.value | number:'1.0-1'" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'weeklyPRSummaries')" [value]="form.get('max.weeklyPRSummaries')?.value " [attr.disabled]="disableInputs ? true : null">
                 </mat-form-field>
               </td>
             </tr>
@@ -292,6 +303,17 @@
       <mat-card-content>
         <table>
           <thead>
+            <tr>
+              <th></th>
+              <th>
+                <p>Max near...{{ asOfDate | date: 'EEE MMM dd' }}</p>
+                <span class="nav-arrow" (click)="incrementCounter()">&lt;</span>
+                <span>&nbsp; &nbsp;</span>
+                <span class="nav-arrow" (click)="decrementCounter()">&gt;</span>
+              </th>
+              <th></th>
+              <th></th>
+            </tr>
             <tr>
               <th></th>
               <th>Current Level</th>

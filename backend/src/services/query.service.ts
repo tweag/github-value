@@ -44,7 +44,7 @@ class QueryService {
     this.cronJob.stop();
   }
 
-  private async task() {
+  private async task() { //enterprise level
     const queryAt = new Date();
     const tasks = [];
     for await (const { octokit, installation } of this.app.eachInstallation.iterator()) {

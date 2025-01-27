@@ -42,12 +42,10 @@ export class SeatService {
     return this.http.get<Seat[]>(`${this.apiUrl}/${id}`);
   }
 
-  getActivity(org?: string, daysInactive = 30, precision: 'hour' | 'day' = 'day') {
+  getActivity(org?: string) {
     return this.http.get<ActivityResponse2[]>(`${this.apiUrl}/activity`,
       {
         params: {
-          precision,
-          daysInactive: daysInactive.toString(),
           ...org ? { org } : undefined
         }
       }

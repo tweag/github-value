@@ -10,10 +10,14 @@ import type { MockConfig, SeatsMockConfig } from '../__mock__/types.js';
 import { MetricDailyResponseType } from '../../models/metrics.model.js';
 import Database from '../../database.js';
 import 'dotenv/config';
-import seatsExample from '../__mock__/seats-gen/seatsExampleTest.json';
+import seatsExample from '../__mock__/seats-gen/seats.json';
+import seatsExample2 from '../__mock__/seats-gen/seats2.json';
+import { randomInt } from 'crypto';
 
 let membersOas: any[] = []; //octoaustenstone org
 let membersOcto: any[] = []; //octodemo org
+let seatsInitialized: boolean = false;
+let scaleupDate: any;
 
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
 const database = new Database(process.env.MONGODB_URI);
@@ -24,63 +28,63 @@ const metricsMockConfig: MockConfig = {
       updateFrequency: 'daily',
       metrics: {
         total_active_users: {
-          baseValue: 24,
+          baseValue: 100,
           range: { min: 14, max: 240 },
-          trend: 'fixed'
+          trend: 'stable'
         },
         total_engaged_users: {
-          baseValue: 20,
+          baseValue: 80,
           range: { min: 10, max: 200 },
-          trend: 'fixed'
+          trend: 'grow'
         },
         code_suggestions: {
-          baseValue: 49,
-          range: { min: 49, max: 99 },
-          trend: 'fixed'
+          baseValue: 1000,
+          range: { min: 150, max: 1200 },
+          trend: 'grow'
         },
         code_acceptances: {
-          baseValue: 30,
-          range: { min: 23, max: 60 },
-          trend: 'fixed'
+          baseValue: 300,
+          range: { min: 200, max: 450 },
+          trend: 'stable'
         },
         code_lines_suggested: {
-          baseValue: 225,
-          range: { min: 225, max: 500 },
-          trend: 'fixed'
+          baseValue: 2250,
+          range: { min: 2250, max: 5000 },
+          trend: 'stable'
         },
         code_lines_accepted: {
-          baseValue: 90,
-          range: { min: 50, max: 155 },
-          trend: 'fixed'
+          baseValue: 900,
+          range: { min: 750, max: 955 },
+          trend: 'stable'
         },
         chats: {
           baseValue: 45,
           range: { min: 35, max: 75 },
-          trend: 'fixed'
+          trend: 'grow'
         },
         chat_insertions: {
-          baseValue: 12,
-          range: { min: 12, max: 30 },
-          trend: 'fixed'
+          baseValue: 120,
+          range: { min: 120, max: 300 },
+          trend: 'stable'
         },
         chat_copies: {
-          baseValue: 16,
-          range: { min: 16, max: 46 },
-          trend: 'fixed'
+          baseValue: 160,
+          range: { min: 160, max: 460 },
+          trend: 'stable'
         },
         pr_summaries: {
-          baseValue: 6,
-          range: { min: 6, max: 16 },
-          trend: 'fixed'
+          baseValue: 60,
+          range: { min: 60, max: 160 },
+          trend: 'grow'
         },
         total_code_reviews: {
-          baseValue: 10,
-          range: { min: 5, max: 10 },
-          trend: 'fixed'
+          baseValue: 100,
+          range: { min: 50, max: 100 },
+          trend: 'grow'
         },
         total_code_review_comments: {
-          baseValue: 3,
-          range: { min: 3, max: 6 },
+          baseValue: 30,
+          range: { min: 30, max: 60 },
           trend: 'fixed'
         }
       },
@@ -95,10 +99,11 @@ const metricsMockConfig: MockConfig = {
 
     const seatsMockConfigOcto: SeatsMockConfig = {
       startDate: new Date('2024-11-01'),
-      endDate: new Date('2024-11-07'),
-      usagePattern: 'heavy',
+      endDate: new Date('2025-01-07'),
+      usagePattern: 'moderate',
       heavyUsers: ['nathos', 'arfon', 'kyanny'],
       specificUser: 'nathos',
+      org: 'octodemo',
       editors: [
         'copilot-chat-platform',
         'vscode/1.96.2/copilot/1.254.0',
@@ -110,10 +115,11 @@ const metricsMockConfig: MockConfig = {
 
     const seatsMockConfigOas: SeatsMockConfig = {
       startDate: new Date('2024-11-01'),
-      endDate: new Date('2024-11-07'),
+      endDate: new Date('2025-01-07'),
       usagePattern: 'heavy',
       heavyUsers: ['austenstone', 'mattg57', 'gomtimehta'],
       specificUser: 'logan-porelle',
+      org: 'octoaustenstone',
       editors: [
         'copilot-chat-platform',
         'vscode/1.96.2/copilot/1.254.0',
@@ -133,27 +139,47 @@ function generateMetricsData(datetime: Date) {
   return mockGenerator.generateMetrics(metricsMockConfig);
 }
 
-function generateSeatsDataOcto(datetime: Date, member: any) {
+function generateSeatsDataOcto(datetime: Date) {
       seatsMockConfigOcto.startDate=datetime
       seatsMockConfigOcto.endDate=datetime
-      seatsMockConfigOcto.heavyUsers = [member]
+      seatsMockConfigOcto.org='octodemo'
       //add other configuration as needed
-  const mockGenerator = new MockSeatsGenerator(seatsMockConfigOcto, { seats: [] });
+      let seatsTemplate
+      if (datetime < scaleupDate) {
+        seatsTemplate = seatsExample;
+      } else {
+        seatsTemplate = seatsExample2;
+      }
+      const mockGenerator = new MockSeatsGenerator(seatsMockConfigOcto, seatsTemplate);
+  if (seatsInitialized == false) {
+    seatsInitialized = true;
+    return mockGenerator.initializeAllSeats();
+  }
   return mockGenerator.generateMetrics();
 }
 
-function generateSeatsDataOas(datetime: Date, member: any) {
+function generateSeatsDataOas(datetime: Date) {
   seatsMockConfigOas.startDate=datetime
   seatsMockConfigOas.endDate=datetime
-  seatsMockConfigOas.heavyUsers = [member]
+  seatsMockConfigOas.org='octoaustenstone'
   //add other configuration as needed
-const mockGenerator = new MockSeatsGenerator(seatsMockConfigOas, { seats: [] });
+  let seatsTemplate
+  if (datetime < scaleupDate) {
+    seatsTemplate = seatsExample;
+  } else {
+    seatsTemplate = seatsExample2;
+  }
+  const mockGenerator = new MockSeatsGenerator(seatsMockConfigOas, seatsTemplate);
+if (seatsInitialized == false) {
+  seatsInitialized = true;
+  return mockGenerator.initializeAllSeats();
+}
 return mockGenerator.generateMetrics();
 }
 
 async function runSurveyGen(datetime: Date) {
-  if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23) {
-    if (Math.random() < 0.2) {
+  if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23 && Math.random()< 0.5) {
+    if (Math.random() < 0.5) {
       console.log('Running Survey Generation...', datetime);
       const surveys = await generateSurveysForDate(datetime);
       for (const survey of surveys.surveys) {
@@ -165,19 +191,17 @@ async function runSurveyGen(datetime: Date) {
 
 async function runSeatsGen(datetime: Date) {
   console.log('Running Seats Generation...', datetime);
+  
   const orgOcto = 'octodemo';
-  const orgOas = 'octodemo';
+  const orgOas = 'octoaustenstone';
   //call generateSeatsData for each member of the org by looping through the members array
-  membersOas.forEach(async (member) => {
-  const seats = generateSeatsDataOas(datetime, member);
-  await SeatService.insertSeats(orgOcto, datetime, seatsExample.seats);
-});
+  let newSeats = generateSeatsDataOas(datetime);
+  await SeatService.insertSeats(orgOas, datetime, newSeats);
+
 
 //call generateSeatsData for each member of the org by looping through the members array
-membersOcto.forEach(async (member) => {
-  const seats = generateSeatsDataOcto(datetime, member);
-  await SeatService.insertSeats(orgOas, datetime, seatsExample.seats);
-});
+  let newSeats2 = generateSeatsDataOcto(datetime);
+  await SeatService.insertSeats(orgOcto, datetime, newSeats2);
 }
 
 async function runMetricsGen(datetime: Date) {
@@ -185,14 +209,16 @@ async function runMetricsGen(datetime: Date) {
     console.log('Running Metrics Generation...', datetime);
     const exampleData: MetricDailyResponseType[] = generateMetricsData(datetime);
     for (const metric of exampleData) {
-      await metricsService.insertMetrics("octodemo", [metric], null);
+      await metricsService.insertMetrics("octodemo", exampleData);
     }
   }
 }
 
 async function calendarClock() {
-  let datetime = new Date('2024-11-07T00:00:00');
-  const endDate = new Date('2025-01-16T00:00:00');
+  let datetime = new Date('2024-11-27T00:00:00');
+  scaleupDate = new Date('2024-11-11T00:00:00');
+  const endDate = new Date('2025-01-27T00:00:00');
+  console.log
   membersOcto = await TeamsService.getAllMembers('octodemo');
   membersOas = await TeamsService.getAllMembers('octoaustenstone');
   console.log('count Octo members:', membersOcto.length);
@@ -205,6 +231,7 @@ async function calendarClock() {
     await runMetricsGen(datetime);
 
     datetime.setHours(datetime.getHours() + 1);
+    console.log('datetime:', datetime);
   }
 
   
@@ -214,6 +241,9 @@ async function runClock() {
   let retryCount = 0;
   const maxRetries = 5;
   let connected = false;
+  seatsInitialized = false;
+  console.log('Starting clock...');
+  console.log('seats', seatsExample2.seats.length);
 
   while (retryCount < maxRetries) {
     try {

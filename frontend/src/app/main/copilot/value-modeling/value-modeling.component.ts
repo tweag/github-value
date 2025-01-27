@@ -6,12 +6,14 @@ import { CommonModule, DecimalPipe } from '@angular/common';
 import { HighchartsChartModule } from 'highcharts-angular';
 import { SharedModule } from '../../../shared/shared.module';
 import * as Highcharts from 'highcharts';
-import { initializeGridObject } from './grid-object-model';
 import { CopilotSurveyService } from '../../../services/api/copilot-survey.service';
 import { AdoptionService } from '../../../services/api/adoption.service';
-import { lastValueFrom } from 'rxjs';
+import { MetricsService } from '../../../services/api/metrics.service';
+import { lastValueFrom, Subject, takeUntil } from 'rxjs';
 import { SettingsHttpService } from '../../../services/api/settings.service';
-import { TargetsDetailType, TargetsService, TargetsType } from '../../../services/api/targets.service';
+import { TargetsDetailType, TargetsService, TargetsGridType, initializeGridObject } from '../../../services/api/targets.service';
+import { InstallationsService } from '../../../services/api/installations.service';
+import { forkJoin, catchError, tap, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-value-modeling',
@@ -33,26 +35,44 @@ import { TargetsDetailType, TargetsService, TargetsType } from '../../../service
 export class ValueModelingComponent implements OnInit, AfterViewInit {
   Highcharts: typeof Highcharts = Highcharts;
   // chartOptions: Highcharts.Options;
+
+  private readonly _destroy$ = new Subject<void>();
+
+  gridObject: TargetsGridType = initializeGridObject();
+  gridObjectSaved: TargetsGridType = initializeGridObject();
+  disableInputs = true;
+  clickCounter = 0; // when this changes we need to call queryCurrentValues again
+  asOfDate: Date = new Date();
+
+
+  devCostPerYear: number = 0;
+  developerCount: number = 0;
+  hoursPerYear: number = 0;
+  percentCoding: number = 0;
+  percentTimeSaved: number = 0;
+  //metricsTotals: CopilotMetrics; // Add this line to declare the metricsTotals property
+  installation: any; // Add this line to declare the installation property
+
   adoptionChartOption: Highcharts.Options = {
     series: [
       {
         name: 'Current',
         type: 'bar',
-        data: []
+        data: [this.gridObject.current.seats, this.gridObject.current.adoptedDevs, this.gridObject.current.monthlyDevsReportingTimeSavings, this.gridObject.current.percentSeatsAdopted]
       },
       {
         name: 'Target',
         type: 'bar',
-        data: []
+        data: [this.gridObject.target.seats, this.gridObject.target.adoptedDevs, this.gridObject.target.monthlyDevsReportingTimeSavings, this.gridObject.target.percentSeatsAdopted]
       },
       {
         name: 'Max',
         type: 'bar',
-        data: []
+        data: [this.gridObject.max.seats, this.gridObject.max.adoptedDevs, this.gridObject.max.monthlyDevsReportingTimeSavings, this.gridObject.max.percentSeatsAdopted]
       }
     ],
     xAxis: {
-      categories: ['Adoption']
+      categories: ['Seats', 'Adopted Devs', 'Monthly Devs Reporting Time Savings']
     },
     yAxis: {
       title: {
@@ -70,10 +90,23 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     }
   }
   activityChartOptions: Highcharts.Options = {
-    series: [{
-      type: 'bar',
-      data: []
-    }],
+    series: [
+      {
+        name: 'Current',
+        type: 'bar',
+        data: [this.gridObject.current.dailySuggestions, this.gridObject.current.dailyChatTurns, this.gridObject.current.percentSeatsReportingTimeSavings, this.gridObject.current.weeklyTimeSaved]
+      },
+      {
+        name: 'Target',
+        type: 'bar',
+        data: [this.gridObject.target.dailySuggestions, this.gridObject.target.dailyChatTurns, this.gridObject.target.percentSeatsReportingTimeSavings, this.gridObject.target.weeklyTimeSaved]
+      },
+      {
+        name: 'Max',
+        type: 'bar',
+        data: [this.gridObject.max.dailySuggestions, this.gridObject.max.dailyChatTurns, this.gridObject.max.percentSeatsReportingTimeSavings, this.gridObject.max.weeklyTimeSaved]
+      }
+    ],
     xAxis: {
       categories: ['Current', 'Target', 'Max']
     }
@@ -91,9 +124,9 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     series: [{
       type: 'bar',
       data: [
-       // this.calculateOverallImpact('current'),
-      //  this.calculateOverallImpact('target'),
-       // this.calculateOverallImpact('max')
+        // this.calculateOverallImpact('current'),
+        //  this.calculateOverallImpact('target'),
+        // this.calculateOverallImpact('max')
       ]
     }],
     xAxis: {
@@ -109,7 +142,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
   //get 7 day moving average time savings (current time saved)
 
   // set up the initial model values based on the above and the settings from the API
-  
+
   form = new FormGroup({
     current: new FormGroup({
       seats: new FormControl('0', [Validators.required, Validators.min(0)]),
@@ -158,16 +191,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     })
   });
 
-  gridObject: TargetsType = initializeGridObject();
-  gridObjectSaved: TargetsType = initializeGridObject();
-  disableInputs = false;
-  clickCounter = 0; // when this changes we need to call queryCurrentValues again
 
-  devCostPerYear: number = 0;
-  developerCount: number = 0;
-  hoursPerYear: number = 0;
-  percentCoding: number = 0;
-  percentTimeSaved: number = 0;
 
   constructor(
     private decimalPipe: DecimalPipe,
@@ -175,57 +199,70 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     private adoptionService: AdoptionService,
     private settingsService: SettingsHttpService,
     private targetService: TargetsService,
-  ) {}
+    private installationsService: InstallationsService,
+    private metricsService: MetricsService
+    //private metricsTotals: CopilotMetrics
+  ) { }
 
   ngOnInit() {
     console.log('Value Modeling Component initialized');
-  
-    
+
+
     // Call asynchronous logic
     this.initializeComponent();
-  
+
     // Subscribe to form value changes
     this.form.valueChanges.subscribe((values) => {
       console.log('1*. Form value changed:', values);
     });
   }
-  
+
   // Helper method to handle async calls
   private async initializeComponent() {
-    try {
-      // Update form value correctly
-      // this.form.get('current.seats')?.setValue('100'); // Use the proper FormControl path
-      this.gridObject.current.asOfDate = new Date().getTime();
-      // const currentAsStrings = this.convertMetricStateToString(this.gridObject.current);
-      //console.log('AsOfDate as string:', currentAsStrings.asOfDate);
-  
-      console.log('Initial Grid Lifecycle:');
-      await this.execGridLifecycle(); // Execute grid lifecycle
-      console.log('0. Update Current gridObject:', this.gridObject);
-    } catch (error) {
-      console.error('Error during initialization:', error);
-    }
+    this.installationsService.currentInstallation.pipe(
+      takeUntil(this._destroy$.asObservable())
+    ).subscribe(installation => {
+      installation?.account?.login;
+      try {
+        // Update form value correctly
+        // this.form.get('current.seats')?.setValue('100'); // Use the proper FormControl path
+        this.gridObject.current.asOfDate = new Date().getTime();
+        // const currentAsStrings = this.convertMetricStateToString(this.gridObject.current);
+        //console.log('AsOfDate as string:', currentAsStrings.asOfDate);
+
+        this.loadGridObject();
+        console.log('0. Update Current gridObject:', this.gridObject);
+      } catch (error) {
+        console.error('Error during initialization:', error);
+      }
+    });
   }
-  
+
 
   async execGridLifecycle(): Promise<void> {
     console.log('XXX execGridLifecycle: Executing grid lifecycle');
-  
+
     try {
       // Step 1: Update current values from API
       await this.queryCurrentAndMaxValues();
-  
+
       // Step 2: Perform calculations on the updated gridObject
       this.modelCalc();
-  
+
       // Step 3: Synchronize the form with gridObject
       this.updateFormFromGridObject();
-  
+
+      // Step 4: refresh the chart 
+      Highcharts.charts.forEach(chart => {
+        chart?.update({});
+      }
+      );
       console.log('execGridLifecycle: Lifecycle completed successfully');
-    } catch (error) {
+    }
+    catch (error) {
       console.error('execGridLifecycle: Error encountered', error);
     }
-  
+
     console.log('GridObject after lifecycle:', this.gridObject);
   }
 
@@ -238,7 +275,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
   private makeEventListenersPassive() {
     const elements = document.querySelectorAll('.highcharts-container');
     elements.forEach(element => {
-      element.addEventListener('touchstart', () => {}, { passive: true });
+      element.addEventListener('touchstart', () => { }, { passive: true });
     });
     console.log('-1. makeEventListenersPassive: Event listeners set to passive');
   }
@@ -250,20 +287,24 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     // console.log(`2. onBlur: Updated gridObject[${level}][${field}] to`, this.gridObject[level][field]);
     this.execGridLifecycle();
     // print out gridObject for debugging
-   // console.log('Updated gridObject:', this.gridObject);
+    // console.log('Updated gridObject:', this.gridObject);
   }
 
   loadGridObject() {
     // Stub: Load the gridObject from a data source
-    console.log('loadGridObject: Loading saved gridObject',this.gridObjectSaved);
-    this.gridObject = this.gridObjectSaved;
-    this.execGridLifecycle();
-    console.log('Loaded gridObject:', this.gridObject);
+    console.log('loadGridObject: Loading saved gridObject', this.gridObjectSaved);
+    this.targetService.getTargets().subscribe((targetGrid) => {
+      if (targetGrid) {
+        this.gridObject = targetGrid;
+      }
+      this.execGridLifecycle();
+    });
+    // console.log('Loaded gridObject:', this.gridObject);
   }
 
   saveGridObject() {
     // Stub: Save the gridObject to a data source
-   
+
     this.updateGridObjectFromForm();
     //This needs to be a deep copy. If we do a shallow copy, the gridObjectSaved will be updated whenever the gridObject is updated.
     this.gridObjectSaved = JSON.parse(JSON.stringify(this.gridObject));
@@ -273,10 +314,12 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   private updateFormFromGridObject() {
     //console.log('updateFormFromGridObject: Updating form from gridObject');
-    this.targetService.getTargets().subscribe((targets) => {
-      this.form.patchValue(targets as any);
+    this.form.patchValue({
+      current: this.convertMetricStateToString(this.gridObject.current),
+      target: this.convertMetricStateToString(this.gridObject.target),
+      max: this.convertMetricStateToString(this.gridObject.max)
     });
-    console.log('6. Updated form values:', JSON.stringify(this.form.value, null, 2));
+    console.log('6. Updated form values:', this.form.value);
   }
 
   private updateGridObjectFromForm() {
@@ -294,15 +337,19 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   convertMetricStateToString(metricState: TargetsDetailType): { [key: string]: string } {
     const result: { [key: string]: string } = {};
-    for (const key in metricState) {
-      if (metricState.hasOwnProperty(key)) {
-        if (key === 'asOfDate') {
-          result[key] = metricState.asOfDate ? new Date(metricState.asOfDate).toDateString() : '';
-        } else {
-          result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';
-          //console.log('called convertMetricStateToString:', key.toString);
+    try {
+      for (const key in metricState) {
+        if (metricState.hasOwnProperty(key) && key !== '_id') {
+          if (key === 'asOfDate') {
+            result[key] = metricState.asOfDate ? new Date(metricState.asOfDate).toDateString() : '';
+          } else {
+            result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';
+
+          }
         }
       }
+    } catch (error) {
+      console.error('Error in convertMetricStateToString:', error);
     }
     return result;
   }
@@ -325,7 +372,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       asOfDate: 0
     };
     for (const key in metricState) {
-      if (metricState.hasOwnProperty(key)) {
+      if (metricState.hasOwnProperty(key) && key !== '_id') {
         const value = parseFloat(metricState[key].replace(/,/g, '').replace(/[^0-9.-]+/g, ''));
         result[key as keyof TargetsDetailType] = isNaN(value) ? 0 : value;
       }
@@ -347,7 +394,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       // 2. Calculate Current column percentages and then Impacts
       this.gridObject.current.percentSeatsAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.current.seats as number);
       this.gridObject.current.percentSeatsReportingTimeSavings = this.calculatePercentage(this.gridObject.current.monthlyDevsReportingTimeSavings as number, this.gridObject.current.seats as number);
-      this.gridObject.current.percentMaxAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.current.seats as number);
+      this.gridObject.current.percentMaxAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.max.seats as number);
       this.gridObject.current.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.current.weeklyTimeSaved as number, this.gridObject.current.adoptedDevs as number);
       this.gridObject.current.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.current.adoptedDevs as number, this.gridObject.current.weeklyTimeSaved as number);
       this.gridObject.current.productivityBoost = this.calculateProductivityBoost(this.gridObject.current.dailySuggestions as number, this.gridObject.current.dailyChatTurns as number);
@@ -359,10 +406,10 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.gridObject.target.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.adoptedDevs as number);
       this.gridObject.target.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.target.adoptedDevs as number, this.gridObject.target.weeklyTimeSaved as number);
       this.gridObject.target.productivityBoost = this.calculateProductivityBoost(this.gridObject.target.dailySuggestions as number, this.gridObject.target.dailyChatTurns as number);
-      
+
       // 4. Update the form values
       console.log('4. modelCalc: Updated gridObject:', this.gridObject);
-      
+
     } catch (error) {
       const errorMessage = (error instanceof Error) ? error.message : 'An unknown error occurred';
       console.error(`5. Error in ModelCalc: ${errorMessage}`);
@@ -399,115 +446,162 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.disableInputs = false;
     }
   }
-    
-   
+
+
   async queryCurrentAndMaxValues(): Promise<void> {
-    const gridObject = this.gridObject;
-    const thirtyDaysAgo = new Date(utcStart - 30);
-    
-
-    
     console.log('updateCurrentAndMaxValues: Fetching values');
+    const now = new Date();
+    const utcNow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0);
+    const xDaysAgoUTC = new Date(utcNow - this.clickCounter * 24 * 60 * 60 * 1000);
+    const xPlus1DaysAgoUTC = new Date(utcNow - (this.clickCounter + .9) * 24 * 60 * 60 * 1000);
+    const xPlus7DaysAgoUTC = new Date(utcNow - (this.clickCounter + 6) * 24 * 60 * 60 * 1000);
+    const xPlus30DaysAgoUTC = new Date(utcNow - (this.clickCounter + 30) * 24 * 60 * 60 * 1000);
+    console.log('xDaysAgo:', xDaysAgoUTC);
+
+    let dayAtaTimeMetricsCounter = 0;
+    let weekAtaTimeMetricsCounter = 0;
+    let dayAtaTimeAdoptionsCounter = 0; //monthly by default, counting hourly entries
+    let weekAtaTimeSurveysCounter = 0;
+    let monthAtaTimeSurveysCounter = 0;
+
+    const gridObject = this.gridObject;
 
 
-    try {
-       // get settings data
-        const settings$ = this.settingsService.getAllSettings();
-        const settings = await lastValueFrom(settings$);
-
-        console.log('Settings data:', settings);
+    // Combine all service calls using forkJoin for parallel execution
+    forkJoin({
+      settings: this.settingsService.getAllSettings(),
+      dayAtaTimeMetrics: this.metricsService.getMetricsTotals({
+        org: this.installation?.account?.login,
+        since: xPlus1DaysAgoUTC.toISOString(),
+        until: xDaysAgoUTC.toISOString()
+      }),
+      weekAtaTimeMetrics: this.metricsService.getMetricsTotals({
+        org: this.installation?.account?.login,
+        since: xPlus7DaysAgoUTC.toISOString(),
+        until: xDaysAgoUTC.toISOString()
+      }),
+      dayAtaTimeAdoptions: this.adoptionService.getAdoptions({
+        org: this.installation?.account?.login,
+        since: xPlus1DaysAgoUTC.toISOString(),
+        until: xDaysAgoUTC.toISOString(),
+        daysInactive: 30
+      }),
+      weekAtaTimeSurveys: this.copilotSurveyService.getAllSurveys({ // org: this.installation?.account?.login, TBD
+        since: xPlus7DaysAgoUTC.toISOString(),
+        until: xDaysAgoUTC.toISOString()
+      }),
+      monthAtaTimeSurveys: this.copilotSurveyService.getAllSurveys({ // org: this.installation?.account?.login, TBD
+        since: xPlus30DaysAgoUTC.toISOString(),
+        until: xDaysAgoUTC.toISOString()
+      })
+    }).pipe(
+      catchError(error => {
+        console.error('Service call failed:', error);
+        throw error;
+      }),
+      tap(({ settings }) => {
+        // Process settings
         this.devCostPerYear = settings.devCostPerYear || 0;
         this.developerCount = settings.developerCount || 0;
         this.hoursPerYear = settings.hoursPerYear || 0;
         this.percentCoding = settings.percentCoding || 0;
         this.percentTimeSaved = settings.percentTimeSaved || 0;
-      
 
-      gridObject.max.seats = this.developerCount; 
-      gridObject.max.adoptedDevs = this.developerCount;
-      gridObject.max.monthlyDevsReportingTimeSavings  = this.developerCount; 
-      gridObject.max.dailySuggestions = 150;
-      gridObject.max.dailyChatTurns = 50;
-      gridObject.max.weeklyPRSummaries = 5;
-      gridObject.max.weeklyTimeSaved = (this.hoursPerYear * this.percentCoding/100 * this.percentTimeSaved/100)/50;
-      console.log('Max values set to developer count:', gridObject.max);
-
-      const metricsTotals$ = this.metricsService.getMetricsTotals({
-        org: this.installation?.account?.login,
-        since: .toISOString()});
-      const metricsTotals = await lastValueFrom(metricsTotals$);
-
-      console.log('Metrics data:', metricsTotals);
-
-      // Get adoptions data
-      const adoptions$ = this.adoptionService.getAdoptions({ daysInactive: 30 });
-      const adoptions = await lastValueFrom(adoptions$);
-      //console.log('Adoption data:', adoptions);
-
-      // Process adoptions
-      if (adoptions && adoptions.length > 0) {
-        const bestRecord = adoptions.reduce((acc, item) => {
-          const itemDate = typeof item.date === 'string' || typeof item.date === 'number' ? new Date(item.date) : new Date();
-        if (itemDate.getTime() < (Date.now() - (this.clickCounter * 1000 * 60 * 60 * 24))) { // Get adoption records that are n days old, where n is the number of times the buttons have been clicked
-           // console.log(item.date.toString())
-          if (item.totalActive > acc.totalActive) { // Find the highest number of active developers within 36 hrs of the clickcounter date
-            return item;
-          } 
+        // Set max values
+        gridObject.max.seats = this.developerCount;
+        gridObject.max.adoptedDevs = this.developerCount;
+        gridObject.max.monthlyDevsReportingTimeSavings = this.developerCount;
+        gridObject.max.dailySuggestions = 150;
+        gridObject.max.dailyChatTurns = 50;
+        gridObject.max.weeklyPRSummaries = 5;
+        gridObject.max.weeklyTimeSaved = (this.hoursPerYear * this.percentCoding / 100 * this.percentTimeSaved / 100) / 50;
+      }),
+      tap(({ dayAtaTimeAdoptions }) => {
+        dayAtaTimeAdoptionsCounter = (dayAtaTimeAdoptions || []).length;
+        console.log('Adoption records:', dayAtaTimeAdoptionsCounter);
+        // Process adoptions
+        for (const adoption of dayAtaTimeAdoptions) {
+          //console.log('Adoption data:', adoption.date, adoption.totalActive);
+          if (adoption.totalActive > Number(gridObject.current.adoptedDevs || 0) && (gridObject.current.asOfDate != (new Date(adoption.date.$date)).getTime())) {
+            gridObject.current.seats = adoption.totalSeats;
+            gridObject.current.adoptedDevs = adoption.totalActive;
+            gridObject.current.asOfDate = new Date(adoption.date.toString()).getTime();
+          }
         }
+      }),
+      tap(({ dayAtaTimeMetrics }) => {
+        dayAtaTimeMetricsCounter = 1
+        console.log('Day metrics records:', dayAtaTimeMetricsCounter);
+        // Process metrics
+
+        gridObject.current.dailySuggestions = (Number(dayAtaTimeMetrics.copilot_ide_code_completions?.total_code_suggestions) || 0) / (Number(gridObject.current.adoptedDevs) || 1) || 0;
+        gridObject.current.dailyChatTurns = (dayAtaTimeMetrics.copilot_ide_chat?.total_chats || 0) / (dayAtaTimeMetrics.total_active_users || 1) || 0;
+
+      }),
+      tap(({ weekAtaTimeMetrics }) => {
+        weekAtaTimeMetricsCounter = 1;
+        console.log('Week metrics records:', weekAtaTimeMetricsCounter);
+        // Process metrics
+
+        gridObject.current.weeklyPRSummaries = (weekAtaTimeMetrics.copilot_dotcom_pull_requests?.total_pr_summaries_created || 0) / (Number(gridObject.current.adoptedDevs) || 1) || 0;
+      }),
+      tap(({ weekAtaTimeSurveys }) => {
+        weekAtaTimeSurveysCounter = (weekAtaTimeSurveys || []).length;
+        console.log('Week survey records:', weekAtaTimeSurveysCounter);
+
+        // Get distinct devs who submitted surveys
+        const distinctUsers = weekAtaTimeSurveys.reduce((acc, survey) => {
+          if (survey.userId && !acc.includes(survey.userId)) {
+            acc.push(survey.userId);
+          }
           return acc;
-        }, adoptions[0]);
+        }, [] as string[]);
+        console.log('Distinct Devs in week:', distinctUsers.length);
 
-        gridObject.current.seats = bestRecord.totalSeats;
-        gridObject.current.adoptedDevs = bestRecord.totalActive;
-        gridObject.current.asOfDate = new Date(bestRecord.createdAt.toString()).getTime();
+        if (weekAtaTimeSurveys?.length) {
+          const avgWeeklyTimeSaved = weekAtaTimeSurveys.reduce((acc, survey) =>
+            acc + (survey.percentTimeSaved || 0), 0) * 12 * 0.01 / (weekAtaTimeSurveys.length * distinctUsers.length);
 
-        // TO DO: get current information about the developer estimate surveys
-        
-      }
-
-      // Get survey data
-      const surveys$ = this.copilotSurveyService.getAllSurveys();
-      const surveys = await lastValueFrom(surveys$);
-      //console.log('Survey data:', surveys);
-
-
-      // Process surveys
-      if (surveys && surveys.length > 0) {
-        const recentSurveys = surveys.filter(survey => {
-          const surveyDate = survey.createdAt ? new Date(survey.createdAt.toString()) : new Date(); // Default to current date
-          return surveyDate.getTime() > (Date.now() - (300 * 24 * 60 * 60 * 1000)); // Last 10 days
-        });
-
-        let avgWeeklyTimeSaved = 0;
-
-        if (recentSurveys.length > 0) {
-          // Calculate average time savings reported and developers reporting time savings
-          avgWeeklyTimeSaved = recentSurveys.reduce((acc, survey) => {
-            console.log('Indiv recent survey data:', survey.userId, survey.percentTimeSaved);
-            return acc + (survey.percentTimeSaved || 0);
-          }, 0) * 12 * 0.01 / recentSurveys.length; //need to change "12" once I get the setup data
+          gridObject.current.weeklyTimeSaved = avgWeeklyTimeSaved;  //per developer per week
         }
-        gridObject.current.weeklyTimeSaved = avgWeeklyTimeSaved;
-        gridObject.current.monthlyDevsReportingTimeSavings = recentSurveys.length;
-      }
-      
-
-      console.log('update Current and Max Values: Updated gridObject', gridObject);
-      this.gridObject = gridObject;
-    } catch (error) {
-      console.error('updateCurrentValues: Error fetching values', error);
-      throw error;
-    }
+      }),
+      tap(({ monthAtaTimeSurveys }) => {
+        monthAtaTimeSurveysCounter = (monthAtaTimeSurveys || []).length;
+        console.log('Month survey records:', monthAtaTimeSurveysCounter);
+        // Get distinct devs who submitted surveys
+        const distinctUsers = monthAtaTimeSurveys.reduce((acc, survey) => {
+          if (survey.userId && !acc.includes(survey.userId)) {
+            acc.push(survey.userId);
+          }
+          return acc;
+        }, [] as string[]);
+        console.log('Distinct Devs in month:', distinctUsers.length);
+        gridObject.current.monthlyDevsReportingTimeSavings = distinctUsers.length; // Use distinct users count
+      }),
+      finalize(() => {
+        console.log('Final record counts:', {
+          dayMetrics: dayAtaTimeMetricsCounter,
+          weekMetrics: weekAtaTimeMetricsCounter,
+          adoptions: dayAtaTimeAdoptionsCounter,
+          weekSurveys: weekAtaTimeSurveysCounter,
+          monthSurveys: monthAtaTimeSurveysCounter
+        });
+        this.gridObject = gridObject;
+        console.log('601 updateCurrentAndMaxValues: Updated gridObject', gridObject);
+      })
+    ).subscribe();
   }
 
   incrementCounter() {
     this.clickCounter++;
-    this.queryCurrentAndMaxValues();
+    this.asOfDate = new Date(Date.now() - this.clickCounter * 24 * 60 * 60 * 1000);
+    this.execGridLifecycle();
   }
 
   decrementCounter() {
     this.clickCounter--;
-    this.queryCurrentAndMaxValues();
+    this.asOfDate = new Date(Date.now() - this.clickCounter * 24 * 60 * 60 * 1000);
+    this.execGridLifecycle();
   }
 
 }

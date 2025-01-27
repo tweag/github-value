@@ -49,6 +49,7 @@ export interface SeatsMockConfig {
   endDate: Date;
   usagePattern: UsagePattern;
   heavyUsers: string[];  // List of user logins who are heavy users
+  org: string;           // Organization to generate data for
   specificUser: string; // Specific user to generate data for
   editors: string[];     // List of possible editors
 }
