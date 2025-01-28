@@ -47,7 +47,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   devCostPerYear: number = 0;
   developerCount: number = 0;
-  hoursPerYear: number = 0;
+  hoursPerYear: number = 1000;
   percentCoding: number = 0;
   percentTimeSaved: number = 0;
   //metricsTotals: CopilotMetrics; // Add this line to declare the metricsTotals property
@@ -256,6 +256,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       Highcharts.charts.forEach(chart => {
         chart?.update({});
       }
+      
       );
       console.log('execGridLifecycle: Lifecycle completed successfully');
     }
@@ -320,6 +321,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       max: this.convertMetricStateToString(this.gridObject.max)
     });
     console.log('6. Updated form values:', this.form.value);
+    this.form.markAsTouched();
   }
 
   private updateGridObjectFromForm() {
@@ -340,12 +342,13 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     try {
       for (const key in metricState) {
         if (metricState.hasOwnProperty(key) && key !== '_id') {
-          if (key === 'asOfDate') {
+            if (key === 'asOfDate') {
             result[key] = metricState.asOfDate ? new Date(metricState.asOfDate).toDateString() : '';
-          } else {
+            } else if (key === 'productivityBoost') {
+            result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-2') || '0.00';
+            } else {
             result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';
-
-          }
+            }
         }
       }
     } catch (error) {
@@ -389,7 +392,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.gridObject.max.percentMaxAdopted = this.calculatePercentage(this.gridObject.max.adoptedDevs as number, this.gridObject.max.seats as number);
       this.gridObject.max.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.max.weeklyTimeSaved as number, this.gridObject.max.adoptedDevs as number);
       this.gridObject.max.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.max.adoptedDevs as number, this.gridObject.max.weeklyTimeSaved as number);
-      this.gridObject.max.productivityBoost = this.calculateProductivityBoost(this.gridObject.max.weeklyTimeSaved as number, this.gridObject.max.seats as number, this.gridObject.max.adoptedDevs as number);
+      this.gridObject.max.productivityBoost = this.calculateProductivityBoost(this.gridObject.max.weeklyTimeSaved as number, this.gridObject.max.adoptedDevs as number, this.gridObject.max.seats as number) * 100;
 
       // 2. Calculate Current column percentages and then Impacts
       this.gridObject.current.percentSeatsAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.current.seats as number);
@@ -397,7 +400,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.gridObject.current.percentMaxAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.max.seats as number);
       this.gridObject.current.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.current.weeklyTimeSaved as number, this.gridObject.current.adoptedDevs as number);
       this.gridObject.current.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.current.adoptedDevs as number, this.gridObject.current.weeklyTimeSaved as number);
-      this.gridObject.current.productivityBoost = this.calculateProductivityBoost(this.gridObject.current.weeklyTimeSaved as number, this.gridObject.current.seats as number, this.gridObject.current.adoptedDevs as number);
+      this.gridObject.current.productivityBoost = this.calculateProductivityBoost(this.gridObject.current.weeklyTimeSaved as number, this.gridObject.current.adoptedDevs as number, this.gridObject.max.seats as number) * 100;
 
       // 3. Calculate Target column values (percentages and then impacts)
       this.gridObject.target.percentSeatsAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.target.seats as number);
@@ -405,7 +408,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.gridObject.target.percentMaxAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.target.seats as number);
       this.gridObject.target.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.adoptedDevs as number);
       this.gridObject.target.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.target.adoptedDevs as number, this.gridObject.target.weeklyTimeSaved as number);
-      this.gridObject.target.productivityBoost = this.calculateProductivityBoost(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.seats as number, this.gridObject.target.adoptedDevs as number);
+      this.gridObject.target.productivityBoost = this.calculateProductivityBoost(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.adoptedDevs as number, this.gridObject.max.seats as number) * 100;
 
       // 4. Update the form values
       console.log('4. modelCalc: Updated gridObject:', this.gridObject);
@@ -426,21 +429,23 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   private calculateAnnualTimeSavingsDollars(weeklyTimeSaved: number, adoptedDevs: number): number {
     const weeksInYear = 50; 
-    const hoursPerWeek = this.hoursPerYear / weeksInYear; 
-    const hourlyRate = this.devCostPerYear / this.hoursPerYear; 
+    const hourlyRate = this.devCostPerYear / (this.hoursPerYear || 1); 
     return weeklyTimeSaved * weeksInYear * hourlyRate * adoptedDevs;
   }
 
   private calculateProductivityBoost(weeklyTimeSaved: number, adoptedDevs: number, maxDevs: number): number {
-
-      return weeklyTimeSaved * adoptedDevs * 50 / (this.hoursPerYear * maxDevs || 1);
+      console.log('weeklyTimeSaved:', weeklyTimeSaved);
+      console.log('adoptedDevs:', adoptedDevs);
+      console.log('maxDevs:', maxDevs);
+      console.log('this.hoursPerYear:', this.hoursPerYear);
+      return  weeklyTimeSaved * adoptedDevs * 50  / (this.hoursPerYear * maxDevs ) || 1;
     }
 
   private calculateMonthlyTimeSavings(adoptedDevs: number, weeklyTimeSaved: number): number {
     const weeksInYear = 50; 
     const weeksInMonth = 4;
     const hoursPerWeek = this.hoursPerYear / weeksInYear; 
-    return weeklyTimeSaved * weeksInMonth * adoptedDevs;
+    return weeklyTimeSaved * weeksInMonth * adoptedDevs ;
   }
 
   toggleInputs(disable: boolean) {
@@ -454,7 +459,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
 
   async queryCurrentAndMaxValues(): Promise<void> {
-    console.log('updateCurrentAndMaxValues: Fetching values');
+    
     const now = new Date();
     const utcNow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0);
     const xDaysAgoUTC = new Date(utcNow - this.clickCounter * 24 * 60 * 60 * 1000);
@@ -506,11 +511,12 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       }),
       tap(({ settings }) => {
         // Process settings
-        this.devCostPerYear = settings.devCostPerYear || 0;
-        this.developerCount = settings.developerCount || 0;
-        this.hoursPerYear = settings.hoursPerYear || 0;
-        this.percentCoding = settings.percentCoding || 0;
-        this.percentTimeSaved = settings.percentTimeSaved || 0;
+        console.log('Settings:', settings);
+        this.devCostPerYear = settings.devCostPerYear as number || 0;
+        this.developerCount = settings.developerCount as number || 0;
+        this.hoursPerYear = settings.hoursPerYear as number || 0;
+        this.percentCoding = settings.percentCoding as number || 0;
+        this.percentTimeSaved = settings.percentTimeSaved as number || 0;
 
         // Set max values
         gridObject.max.seats = this.developerCount;
@@ -564,6 +570,9 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
         console.log('Distinct Devs in week:', distinctUsers.length);
 
         if (weekAtaTimeSurveys?.length) {
+          weekAtaTimeSurveys.forEach(survey => {
+            console.log('Survey data:', survey);
+          });
           const avgWeeklyTimeSaved = weekAtaTimeSurveys.reduce((acc, survey) =>
             acc + (survey.percentTimeSaved || 0), 0) * 12 * 0.01 / (weekAtaTimeSurveys.length * distinctUsers.length);
 
@@ -592,7 +601,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
           monthSurveys: monthAtaTimeSurveysCounter
         });
         this.gridObject = gridObject;
-        console.log('601 updateCurrentAndMaxValues: Updated gridObject', gridObject);
+        //console.log('601 updateCurrentAndMaxValues: Updated gridObject', gridObject);
       })
     ).subscribe();
   }
