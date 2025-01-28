@@ -69,7 +69,7 @@ import { randomInt } from 'crypto';
         
         
 
-        if (  Math.random() < (0.05 + Math.random() * .15 )) {
+        if (  Math.random() < (0.08 + Math.random() * .15 )) {
           seat.last_activity_editor = this.getRandomEditor();
          
           console.log('last_activity_at \n', seat.last_activity_at);

@@ -389,7 +389,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.gridObject.max.percentMaxAdopted = this.calculatePercentage(this.gridObject.max.adoptedDevs as number, this.gridObject.max.seats as number);
       this.gridObject.max.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.max.weeklyTimeSaved as number, this.gridObject.max.adoptedDevs as number);
       this.gridObject.max.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.max.adoptedDevs as number, this.gridObject.max.weeklyTimeSaved as number);
-      this.gridObject.max.productivityBoost = this.calculateProductivityBoost(this.gridObject.max.dailySuggestions as number, this.gridObject.max.dailyChatTurns as number);
+      this.gridObject.max.productivityBoost = this.calculateProductivityBoost(this.gridObject.max.weeklyTimeSaved as number, this.gridObject.max.seats as number, this.gridObject.max.adoptedDevs as number);
 
       // 2. Calculate Current column percentages and then Impacts
       this.gridObject.current.percentSeatsAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.current.seats as number);
@@ -397,7 +397,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.gridObject.current.percentMaxAdopted = this.calculatePercentage(this.gridObject.current.adoptedDevs as number, this.gridObject.max.seats as number);
       this.gridObject.current.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.current.weeklyTimeSaved as number, this.gridObject.current.adoptedDevs as number);
       this.gridObject.current.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.current.adoptedDevs as number, this.gridObject.current.weeklyTimeSaved as number);
-      this.gridObject.current.productivityBoost = this.calculateProductivityBoost(this.gridObject.current.dailySuggestions as number, this.gridObject.current.dailyChatTurns as number);
+      this.gridObject.current.productivityBoost = this.calculateProductivityBoost(this.gridObject.current.weeklyTimeSaved as number, this.gridObject.current.seats as number, this.gridObject.current.adoptedDevs as number);
 
       // 3. Calculate Target column values (percentages and then impacts)
       this.gridObject.target.percentSeatsAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.target.seats as number);
@@ -405,7 +405,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       this.gridObject.target.percentMaxAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.target.seats as number);
       this.gridObject.target.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.adoptedDevs as number);
       this.gridObject.target.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.target.adoptedDevs as number, this.gridObject.target.weeklyTimeSaved as number);
-      this.gridObject.target.productivityBoost = this.calculateProductivityBoost(this.gridObject.target.dailySuggestions as number, this.gridObject.target.dailyChatTurns as number);
+      this.gridObject.target.productivityBoost = this.calculateProductivityBoost(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.seats as number, this.gridObject.target.adoptedDevs as number);
 
       // 4. Update the form values
       console.log('4. modelCalc: Updated gridObject:', this.gridObject);
@@ -425,17 +425,22 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
   }
 
   private calculateAnnualTimeSavingsDollars(weeklyTimeSaved: number, adoptedDevs: number): number {
-    const weeksInYear = 50; // TO DO: needs to come from settings
-    const hourlyRate = 50; // TO DO: needs to come from settings
+    const weeksInYear = 50; 
+    const hoursPerWeek = this.hoursPerYear / weeksInYear; 
+    const hourlyRate = this.devCostPerYear / this.hoursPerYear; 
     return weeklyTimeSaved * weeksInYear * hourlyRate * adoptedDevs;
   }
 
-  private calculateProductivityBoost(dailySuggestions: number, dailyChatTurns: number): number {
-    return dailySuggestions + dailyChatTurns; // Example calculation
-  }
+  private calculateProductivityBoost(weeklyTimeSaved: number, adoptedDevs: number, maxDevs: number): number {
+
+      return weeklyTimeSaved * adoptedDevs * 50 / (this.hoursPerYear * maxDevs || 1);
+    }
 
   private calculateMonthlyTimeSavings(adoptedDevs: number, weeklyTimeSaved: number): number {
-    return adoptedDevs * weeklyTimeSaved * 4;
+    const weeksInYear = 50; 
+    const weeksInMonth = 4;
+    const hoursPerWeek = this.hoursPerYear / weeksInYear; 
+    return weeklyTimeSaved * weeksInMonth * adoptedDevs;
   }
 
   toggleInputs(disable: boolean) {

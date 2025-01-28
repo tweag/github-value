@@ -41,8 +41,8 @@ const metricsMockConfig: MockConfig = {
       trend: 'grow'
     },
     code_suggestions: {
-      baseValue: 1000,
-      range: { min: 150, max: 1200 },
+      baseValue: 700,
+      range: { min: 150, max: 1000 },
       trend: 'grow'
     },
     code_acceptances: {
@@ -56,8 +56,8 @@ const metricsMockConfig: MockConfig = {
       trend: 'stable'
     },
     code_lines_accepted: {
-      baseValue: 900,
-      range: { min: 750, max: 955 },
+      baseValue: 1200,
+      range: { min: 750, max: 1955 },
       trend: 'stable'
     },
     chats: {
@@ -81,8 +81,8 @@ const metricsMockConfig: MockConfig = {
       trend: 'grow'
     },
     total_code_reviews: {
-      baseValue: 100,
-      range: { min: 50, max: 100 },
+      baseValue: 50,
+      range: { min: 25, max: 100 },
       trend: 'grow'
     },
     total_code_review_comments: {
