@@ -43,7 +43,7 @@ class Database {
     } catch (error) {
       logger.debug(error);
       if (error instanceof Error) {
-        logger.error(error.message);
+        logger.error(`Database connection error: ${error.message}`);
       }
       throw error;
     }
@@ -99,8 +99,6 @@ class Database {
       total_chat_insertion_events: Number,
       total_pr_summaries_created: Number
     });
-
-
 
     // Editor Schema 🖥️
     const EditorSchema = new mongoose.Schema({
