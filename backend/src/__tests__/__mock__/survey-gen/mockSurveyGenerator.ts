@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { SurveyMockConfig } from '../types.js';
 import SequenceService from '../../../services/sequence.service.js';
 import surveyExample from './exampleSurvey.json' assert { type: 'json' };
-import { SurveyType } from 'models/survey.model.js';
+import { SurveyType } from '../../../database.js';
 
 class MockSurveyGenerator {
   private config: SurveyMockConfig;
@@ -53,7 +53,7 @@ class MockSurveyGenerator {
       survey.id = await SequenceService.getNextSequenceValue('survey-sequence');
       survey.userId = this.getRandomUserId();
       survey.org = this.getRandomOrg();
-      survey.repo = this.getRandomRepo();
+      //survey.repo = this.getRandomRepo();
       survey.prNumber = this.getRandomPrNumber();
       survey.usedCopilot = Math.random() > 0.5;
       survey.percentTimeSaved = this.getRandomPercentTimeSaved();

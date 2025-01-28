@@ -25,15 +25,7 @@ import { randomInt } from 'crypto';
     return this.editors[Math.floor(Math.random() * this.editors.length)];
   }
 
-   initializeAllSeats() {
-    // Initialize last activity times for all users
-    this.baseData.seats.forEach((seat: any) => {
-      // Use lastActivityAt as needed
-      seat.last_activity_at = new Date(this.config.startDate.getTime() - 1000 * 60 * 60 * 24 * 30);
-      seat.last_activity_editor = this.getRandomEditor();
-    });
-    return this.baseData.seats;
-  }
+   
 
   private getNextActivityIncrement(login: string): number {
     const isHeavyUser = this.config.heavyUsers.includes(login);
@@ -48,14 +40,15 @@ import { randomInt } from 'crypto';
       case 'light':
         return 168;  // 7 days
     }
+    return 24;  // Default to moderate
   }
 
   private updateActivity(login: string, lastActivity: Date): Date {
-    const currentActivity : Date = lastActivity!;
+    const currentActivity : Date = lastActivity;
    
     const incrementHours = this.getNextActivityIncrement(login);
     
-    const newActivity : Date = addHours(currentActivity, incrementHours);
+    const newActivity : Date = addHours(currentActivity, 100);
 
     // Don't go beyond end date
     if (newActivity > this.config.endDate) {
@@ -65,7 +58,7 @@ import { randomInt } from 'crypto';
     return newActivity;
   }
 
-   public generateMetrics() {
+   public generateSeats() {
     const newSeatsTemplate = JSON.parse(JSON.stringify(this.baseData));
     const newSeatsResponse : any = newSeatsTemplate;
     newSeatsResponse.seats = newSeatsTemplate.seats.map((seat: any) => {
@@ -74,15 +67,19 @@ import { randomInt } from 'crypto';
         seat.updated_at = this.config.endDate;
         //seat.specificUser = this.config.specificUser;
         
-        if (Math.random()< 0.05) {
-        seat.last_activity_at = this.updateActivity(seat.assignee.login, seat.last_activity_at);
-        if (seat.last_activity_at == this.config.endDate) {
-          seat.last_activity_editor = this.getRandomEditor();
-        }
-      }
-        return seat;
-    });
+        
 
+        if (  Math.random() < (0.05 + Math.random() * .15 )) {
+          seat.last_activity_editor = this.getRandomEditor();
+         
+          console.log('last_activity_at \n', seat.last_activity_at);
+          console.log('config.startDate \n', this.config.startDate);
+          seat.last_activity_at = this.config.endDate ;
+          console.log('user \n', seat.assignee.login);
+         }
+      
+        return seat;
+      });
     return newSeatsResponse.seats;
   }
 }

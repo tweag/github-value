@@ -37,9 +37,9 @@ class Database {
           return util.inspect(m, false, 10, true)
             .replace(/\n/g, '').replace(/\s{2,}/g, ' ');
         };
-        logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
+        logger.info(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
       });
-      //logger.info('Database setup completed successfully');
+
     } catch (error) {
       logger.debug(error);
       if (error instanceof Error) {
@@ -242,12 +242,8 @@ class Database {
       timestamps: true
     });
 
-    seatsSchema.index({ org: 1, createdAt: 1 });
-    seatsSchema.index({ assignee: 1, last_activity_at: 1 });
-    seatsSchema.index({ last_activity_at: 1, createdAt: 1 });
-    seatsSchema.index({ team: 1, member: 1 }, { unique: true });
-    seatsSchema.index({ createdAt: 1 });
-    seatsSchema.index({ queryAt: 1 });
+    
+    //seatsSchema.index({ assignee_id: 1, queryAt: 1, org: 1 }, { unique: true });
 
     mongoose.model('Seats', seatsSchema);
 
