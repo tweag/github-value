@@ -8,7 +8,6 @@ import mongoose from 'mongoose';
 import metricsService from './metrics.service.js';
 import teamsService from './teams.service.js';
 import adoptionService from './adoption.service.js';
-import { time } from 'console';
 
 const DEFAULT_CRON_EXPRESSION = '0 * * * *';
 class QueryService {
@@ -44,7 +43,7 @@ class QueryService {
     this.cronJob.stop();
   }
 
-  private async task() { //enterprise level
+  private async task() {
     const queryAt = new Date();
     const tasks = [];
     for await (const { octokit, installation } of this.app.eachInstallation.iterator()) {

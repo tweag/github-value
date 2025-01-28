@@ -95,7 +95,7 @@ export class AdoptionService {
 
     try {
       return await adoptionModel.find(params.filter, params.projection)
-        .sort({ date: -1 });
+        .sort({ date: 1 });
     } catch (error) {
       logger.error('Error fetching all adoptions:', error);
       throw error;
