@@ -1,9 +1,12 @@
-import { Request, Response } from 'express';
+import { application, Request, Response } from 'express';
 import { SurveyType } from '../models/survey.model.js';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
 import mongoose from 'mongoose';
+
+
+
 
 class SurveyController {
   async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
@@ -52,9 +55,13 @@ class SurveyController {
 
   async createSurvey(req: Request, res: Response): Promise<void> {
     try {
-     const Survey = mongoose.model('Survey');
-     const survey = await Survey.create(req.body);
-      surveyService.createSurvey(req.body);
+      const newSurvey = req.body;
+      this.getMemberByLogin(newSurvey.userId);
+      const Survey = mongoose.model('Survey');
+      const survey = await Survey.create(req.body);
+      // surveyService.createSurvey(req.body);
+      //TODO refactor db code to service layer
+
       res.status(201).json(survey);
     } catch (error) {
       res.status(500).json(error);
@@ -63,34 +70,34 @@ class SurveyController {
   }
 
   async getAllSurveys(req: Request, res: Response): Promise<void> {
-      const { org, team, reasonLength, since, until, status } = req.query as { [key: string]: string | undefined };;
-      try {
-        const dateFilter: any = {};
-        if (since) {
-          dateFilter.$gte = new Date(since);
+    const { org, team, reasonLength, since, until, status } = req.query as { [key: string]: string | undefined };;
+    try {
+      const dateFilter: any = {};
+      if (since) {
+        dateFilter.$gte = new Date(since);
+      }
+      if (until) {
+        dateFilter.$lte = new Date(until);
+      }
+
+      const query = {
+        filter: {
+          ...(org ? { org: String(org) } : {}),
+          ...(team ? { team: String(team) } : {}),
+          ...(reasonLength ? { $expr: { $and: [{ $gt: [{ $strLenCP: { $ifNull: ['$reason', ''] } }, 40] }, { $ne: ['$reason', null] }] } } : {}),
+          ...(Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {}),
+          ...(status ? { status } : {}),
+        },
+        projection: {
+          _id: 0,
+          __v: 0,
         }
-        if (until) {
-          dateFilter.$lte = new Date(until);
-        }
-      
-        const query = { 
-          filter: {
-            ...(org ? { org: String(org) } : {}),
-            ...(team ? { team: String(team) } : {}),
-            ...(reasonLength ? { $expr: { $and: [{ $gt: [{ $strLenCP: { $ifNull: ['$reason', ''] } }, 40] }, { $ne: ['$reason', null] }] } } : {}),
-            ...(Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {}),
-            ...(status ? { status } : {}),
-          },
-          projection: {
-            _id: 0,
-            __v: 0,
-          }
-        };
-      
+      };
+
       const Survey = mongoose.model('Survey');
       const surveys = await Survey.find(query.filter, query.projection);
       res.status(200).json(surveys);
-    
+
     } catch (error) {
       res.status(500).json(error);
     }
@@ -139,7 +146,28 @@ class SurveyController {
     } catch (error) {
       res.status(500).json(error);
     }
+    //create a helper function that calls this api
+    //router.get('/members/:login', teamsController.getMemberByLogin);
+  }
+
+  async getMemberByLogin(loginToFind: any): Promise<void> {
+    const Member = mongoose.model('Member');
+        try {
+          const { login } = loginToFind;
+          const member = await Member.findOne({ login })
+            .select('login name url avatar_url')
+            .exec();
+    
+          if (member) {
+            return member
+          } else {
+            throw new Error('User not found');
+          }
+        } catch (error) {
+          throw new Error('Member lookup failed with', error.message);
+        }
   }
 }
+
 
 export default new SurveyController();
