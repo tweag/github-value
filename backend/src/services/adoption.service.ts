@@ -7,9 +7,9 @@ type AdoptionType = any;
 
 export interface GetAdoptionsParams {
   enterprise?: string;
-  daysInactive?: number;
   org?: string;
-  team
+  team?: string;
+  daysInactive?: number;
   precision?: string;
   since?: string;
   until?: string;
