@@ -164,7 +164,7 @@ class SurveyController {
             throw new Error('User not found');
           }
         } catch (error) {
-          throw new Error('Member lookup failed with', error.message);
+          throw new Error('Member lookup failed with: ' + (error as any).message);
         }
   }
 }

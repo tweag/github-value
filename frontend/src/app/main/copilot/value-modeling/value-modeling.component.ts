@@ -405,7 +405,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       // 3. Calculate Target column values (percentages and then impacts)
       this.gridObject.target.percentSeatsAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.target.seats as number);
       this.gridObject.target.percentSeatsReportingTimeSavings = this.calculatePercentage(this.gridObject.target.monthlyDevsReportingTimeSavings as number, this.gridObject.target.seats as number);
-      this.gridObject.target.percentMaxAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.target.seats as number);
+      this.gridObject.target.percentMaxAdopted = this.calculatePercentage(this.gridObject.target.adoptedDevs as number, this.gridObject.max.seats as number);
       this.gridObject.target.annualTimeSavingsDollars = this.calculateAnnualTimeSavingsDollars(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.adoptedDevs as number);
       this.gridObject.target.monthlyTimeSavings = this.calculateMonthlyTimeSavings(this.gridObject.target.adoptedDevs as number, this.gridObject.target.weeklyTimeSaved as number);
       this.gridObject.target.productivityBoost = this.calculateProductivityBoost(this.gridObject.target.weeklyTimeSaved as number, this.gridObject.target.adoptedDevs as number, this.gridObject.max.seats as number) * 100;
@@ -442,9 +442,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     }
 
   private calculateMonthlyTimeSavings(adoptedDevs: number, weeklyTimeSaved: number): number {
-    const weeksInYear = 50; 
     const weeksInMonth = 4;
-    const hoursPerWeek = this.hoursPerYear / weeksInYear; 
     return weeklyTimeSaved * weeksInMonth * adoptedDevs ;
   }
 
@@ -546,7 +544,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
         // Process metrics
 
         gridObject.current.dailySuggestions = (Number(dayAtaTimeMetrics.copilot_ide_code_completions?.total_code_suggestions) || 0) / (Number(gridObject.current.adoptedDevs) || 1) || 0;
-        gridObject.current.dailyChatTurns = (dayAtaTimeMetrics.copilot_ide_chat?.total_chats || 0) / (dayAtaTimeMetrics.total_active_users || 1) || 0;
+        gridObject.current.dailyChatTurns = (Number(dayAtaTimeMetrics.copilot_ide_chat?.total_chats || 0)) / (dayAtaTimeMetrics.total_active_users || 1) || 0;
 
       }),
       tap(({ weekAtaTimeMetrics }) => {

@@ -37,7 +37,7 @@ class Database {
           return util.inspect(m, false, 10, true)
             .replace(/\n/g, '').replace(/\s{2,}/g, ' ');
         };
-        logger.info(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
+        logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
       });
 
     } catch (error) {

@@ -17,10 +17,8 @@ import seatsExample from '../__mock__/seats-gen/seats2.json'; //100 users
 let membersOas: any[] = []; //octoaustenstone org
 let membersOcto: any[] = []; //octodemo org
 let seatsInitialized: boolean = false;
-let scaleupDate: any;
 let seatsExampleInitialized: any;
-let seatsExample2Initialized: any;
-let simTime: Date;
+let counter = 0;
 
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
 const database = new Database(process.env.MONGODB_URI);
@@ -104,7 +102,7 @@ const seatsMockConfig: SeatsMockConfig = {
   startDate: new Date('2024-11-01'),
   endDate: new Date('2025-01-07'),
   usagePattern: 'moderate',
-  heavyUsers: ['nathos', 'arfon', 'kyanny'],
+  heavyUsers: ['nathos', 'arfon', 'kyanny', 'amandahmt', 'jefeish', 'sdehm', 'dgreif', 'matthewisabel', '2percentsilk', 'mariorod'],
   specificUser: 'nathos',
   editors: [
     'copilot-chat-platform',
@@ -129,7 +127,7 @@ function initializeAllSeats(templateData: any, simTime: Date) {
   // Initialize last activity times for all users
   templateData.seats.forEach((seat: any) => {
     // Use lastActivityAt as needed
-    seat.last_activity_at = new Date(new Date(simTime).getTime() - 1000 * 60 * 60 * 24 * 1 * templateData.seats.indexOf(seat));
+    seat.last_activity_at = new Date(new Date(simTime).getTime() - 1000 * 60 * 60 * 24 * 2 * templateData.seats.indexOf(seat));
   });
   return templateData;
 }
@@ -141,14 +139,14 @@ function generateSeatsData(datetime: Date) {
   let seatsTemplate = JSON.parse(JSON.stringify(seatsExample));
 
   const mockGenerator = new MockSeatsGenerator(seatsMockConfig, seatsTemplate);
-  seatsTemplate = mockGenerator.generateSeats();
+  seatsTemplate = mockGenerator.generateSeats(counter);
 
   return seatsTemplate
 }
 
 async function runSurveyGen(datetime: Date) {
   if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23 && Math.random() < 0.5) {
-    if (Math.random() < 0.5) {
+    if (Math.random() < 0.7 +counter/7000) {
       console.log('Running Survey Generation...', datetime);
       const surveys = await runSurveysForDate(datetime);
       for (const survey of surveys.surveys) {
@@ -191,7 +189,7 @@ async function runMetricsGen(datetime: Date) {
 }
 
 async function calendarClock() {
-  let datetime = new Date('2024-12-01T00:00:00');
+  let datetime = new Date('2024-11-01T00:00:00');
   const endDate = new Date('2025-01-28T00:00:00');
   console.log('datetime:', datetime);
   membersOcto = await TeamsService.getAllMembers('octodemo');
@@ -206,6 +204,7 @@ async function calendarClock() {
     await runMetricsGen(datetime);
 
     datetime.setHours(datetime.getHours() + 1);
+    counter+=1;
     console.log('datetime:', datetime);
   }
 

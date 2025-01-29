@@ -14,7 +14,7 @@ const __dirname = dirname(__filename);
 const mockConfig: SurveyMockConfig = {
   startDate: new Date('2024-12-30'),
   endDate: new Date('2024-12-31'),
-  userIds: ['nathos', 'mattg57', '04Surf','azizshamim','beardofedu','austenstone','arfon', 'kyanny'],
+  userIds: ['nathos', 'mattg57', '04Surf','azizshamim','beardofedu','austenstone','arfon', 'kyanny', 'amandahmt', 'jefeish', 'sdehm', 'dgreif', 'matthewisabel', '2percentsilk', 'mariorod','bekahwhittle','AdamTheCreator','bevns'],
   orgs: ['octodemo'],
   repos: ['github-value', 'github-value-chart'],
   reasons: ['Prefilled code blocks for me', 'Helped me generate test data', 'I was able to build a new feature without learning the framework'],

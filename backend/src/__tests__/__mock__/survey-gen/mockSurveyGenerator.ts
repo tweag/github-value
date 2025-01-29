@@ -12,6 +12,7 @@ class MockSurveyGenerator {
   constructor(config: SurveyMockConfig, templateData: any) {
     this.config = config;
     this.baseData = templateData;
+    return Math.floor(Math.random() * 100);
   }
 
   private getRandomUserId(): string {
@@ -31,7 +32,11 @@ class MockSurveyGenerator {
   }
 
   private getRandomPercentTimeSaved(): number {
-    return Math.floor(Math.random() * 100);
+    const x = Math.floor(Math.random() * 100);
+    if ( x < 50 ){
+      return Math.floor(Math.random() * 100) || 100;
+    }
+    return 100;
   }
 
   private getRandomReason(): string {

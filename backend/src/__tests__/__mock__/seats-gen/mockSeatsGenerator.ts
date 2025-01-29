@@ -58,7 +58,7 @@ import { randomInt } from 'crypto';
     return newActivity;
   }
 
-   public generateSeats() {
+   public generateSeats(counter) {
     const newSeatsTemplate = JSON.parse(JSON.stringify(this.baseData));
     const newSeatsResponse : any = newSeatsTemplate;
     newSeatsResponse.seats = newSeatsTemplate.seats.map((seat: any) => {
@@ -69,13 +69,15 @@ import { randomInt } from 'crypto';
         
         
 
-        if (  Math.random() < (0.08 + Math.random() * .15 )) {
+        if (  Math.random() < (0.35 * Math.random() * 2 + counter/2000)  ) {
           seat.last_activity_editor = this.getRandomEditor();
          
           console.log('last_activity_at \n', seat.last_activity_at);
           console.log('config.startDate \n', this.config.startDate);
           seat.last_activity_at = this.config.endDate ;
-          console.log('user \n', seat.assignee.login);
+          seat.created_at = this.config.startDate;
+          seat.updated_at = this.config.endDate;
+          
          }
       
         return seat;
