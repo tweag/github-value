@@ -91,6 +91,7 @@ class SeatsService {
   async insertSeats(org: string, queryAt: Date, data: SeatEntry[], team?: string) {
     const Members = mongoose.model('Member');
     const Seats = mongoose.model('Seats');
+    const ActivityTotals = mongoose.model('ActivityTotals');
 
     const memberUpdates = data.map(seat => ({
       updateOne: {
@@ -157,6 +158,38 @@ class SeatsService {
     }
 
     await adoptionService.createAdoption(adoptionData);
+
+    const today = new Date(queryAt);
+    today.setUTCHours(0,0,0,0);
+    const activityUpdates = seatResults.map(seat => {
+      if (!seat.last_activity_at) return null;
+  
+      return {
+        updateOne: {
+          filter: {
+            org,
+            member_id: seat.assignee,
+            date: today,
+            $or: [
+              { last_activity_at: { $lt: seat.last_activity_at } },
+              { last_activity_at: { $exists: false } }
+            ]
+          },
+          update: {
+            $inc: { total_active_time_ms: 30 * 60 * 1000 }, // 30 min per activity
+            $set: {
+              last_activity_at: seat.last_activity_at,
+              last_activity_editor: seat.last_activity_editor
+            }
+          },
+          upsert: true
+        }
+      };
+    }).filter(update => update !== null);
+  
+    if (activityUpdates.length > 0) {
+      await ActivityTotals.bulkWrite(activityUpdates);
+    }
 
     return {
       seats: seatResults,
@@ -309,6 +342,49 @@ class SeatsService {
     }, {} as { [assignee: string]: number });
 
     return Object.entries(activityTotals).sort((a: any, b: any) => b[1] - a[1]);
+  }
+
+  async getMembersActivityTotals2(params: {
+    org?: string;
+    since?: string;
+    until?: string;
+  }) {
+    const ActivityTotals = mongoose.model('ActivityTotals');
+    const { org, since, until } = params;
+  
+    const match: any = {};
+    if (org) match.org = org;
+    if (since) match.date = { $gte: new Date(since) };
+    if (until) match.date = { ...match.date, $lte: new Date(until) };
+  
+    const totals = await ActivityTotals.aggregate([
+      { $match: match },
+      {
+        $group: {
+          _id: "$member_id",
+          total_time: { $sum: "$total_active_time_ms" }
+        }
+      },
+      {
+        $lookup: {
+          from: 'members',
+          localField: '_id',
+          foreignField: '_id',
+          as: 'member'
+        }
+      },
+      { $unwind: '$member' },
+      { $sort: { total_time: -1 } },
+      {
+        $project: {
+          _id: 0,
+          login: '$member.login',
+          total_time: 1
+        }
+      }
+    ]);
+  
+    return totals.map(t => [t.login, t.total_time]);
   }
 }
 

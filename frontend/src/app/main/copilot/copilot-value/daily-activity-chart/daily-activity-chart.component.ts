@@ -4,6 +4,7 @@ import { HighchartsChartModule } from 'highcharts-angular';
 import { ActivityResponse } from '../../../../services/api/seat.service';
 import { CopilotMetrics } from '../../../../services/api/metrics.service.interfaces';
 import { HighchartsService } from '../../../../services/highcharts.service';
+import { TargetsGridType } from '../../../../services/api/targets.service';
 
 @Component({
   selector: 'app-daily-activity-chart',
@@ -18,6 +19,7 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
   Highcharts: typeof Highcharts = Highcharts;
   updateFlag = false;
   @Input() activity?: ActivityResponse;
+  @Input() targets?: TargetsGridType;
   @Input() metrics?: CopilotMetrics[];
   @Input() chartOptions?: Highcharts.Options;
   @Output() chartInstanceChange = new EventEmitter<Highcharts.Chart>();
