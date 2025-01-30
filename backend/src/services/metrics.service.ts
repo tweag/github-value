@@ -27,7 +27,7 @@ class MetricsService {
 
     const types = type ? type.split(/[ ,]+/) : [];
 
-    const metrics = await mongoose.model('Metrics').find(query).lean();
+    const metrics = await mongoose.model('Metrics').find(query).sort({date:1}).lean();
 
     if (editor || language || model) {
       metrics.forEach(metric => {
