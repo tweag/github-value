@@ -240,8 +240,12 @@ class Database {
       timestamps: true
     });
 
-    
-    //seatsSchema.index({ assignee_id: 1, queryAt: 1, org: 1 }, { unique: true });
+    seatsSchema.index({ org: 1, queryAt: 1, last_activity_at: -1 });
+    seatsSchema.index({ team: 1, member: 1 }, { unique: true });
+    seatsSchema.index({ createdAt: 1 });
+    seatsSchema.index({ queryAt: 1 });
+    seatsSchema.index({ assignee: 1 });
+    seatsSchema.index({ assignee_id: 1 });
 
     mongoose.model('Seats', seatsSchema);
 
@@ -279,6 +283,25 @@ class Database {
     adoptionSchema.index({ enterprise: 1, org: 1, team: 1, date: 1 }, { unique: true });
 
     mongoose.model('Adoption', adoptionSchema);
+
+    const activityTotalsSchema = new mongoose.Schema({
+      org: String,
+      member_id: {
+        type: Schema.Types.ObjectId,
+        ref: 'Member'
+      },
+      date: Date,
+      total_active_time_ms: Number,
+      last_activity_at: Date,
+      last_activity_editor: String
+    }, {
+      timestamps: true
+    });
+    
+    activityTotalsSchema.index({ org: 1, date: 1, member_id: 1 }, { unique: true });
+    activityTotalsSchema.index({ date: 1 }); // For date range queries
+    
+    mongoose.model('ActivityTotals', activityTotalsSchema);
 
     mongoose.model('Survey', new mongoose.Schema({
       id: Number,
