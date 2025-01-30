@@ -35,7 +35,7 @@ class SeatsService {
       .sort({ queryAt: -1 })  // -1 for descending order
       .select('queryAt');
 
-    console.log(`Latest query at: ${latestQuery?.queryAt}`);
+    //console.log(`Latest query at: ${latestQuery?.queryAt}`);
 
     const seats = await Seats.find({
       ...(org ? { org } : {}),

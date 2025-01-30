@@ -3,185 +3,152 @@ import SurveyService from '../../services/survey.service.js';
 import SeatService from '../../services/copilot.seats.service.js';
 import metricsService from '../../services/metrics.service.js';
 import TeamsService from '../../services/teams.service.js';
-import { generateSurveysForDate } from '../__mock__/survey-gen/runSurveyGenerator.js';
+import { runSurveysForDate } from '../__mock__/survey-gen/runSurveyGenerator.js';
 import { MockSeatsGenerator } from '../__mock__/seats-gen/mockSeatsGenerator.js';
 import { MockMetricsGenerator } from '../__mock__/metrics-gen/mockGenerator.js';
 import type { MockConfig, SeatsMockConfig } from '../__mock__/types.js';
 import { MetricDailyResponseType } from '../../models/metrics.model.js';
 import Database from '../../database.js';
 import 'dotenv/config';
-import seatsExample from '../__mock__/seats-gen/seats.json';
-import seatsExample2 from '../__mock__/seats-gen/seats2.json';
-import { randomInt } from 'crypto';
+//import seatsExample from '../__mock__/seats-gen/seats.json'; //50 users
+import seatsExample from '../__mock__/seats-gen/seats2.json'; //100 users
+
 
 let membersOas: any[] = []; //octoaustenstone org
 let membersOcto: any[] = []; //octodemo org
 let seatsInitialized: boolean = false;
-let scaleupDate: any;
+let seatsExampleInitialized: any;
+let counter = 0;
 
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
 const database = new Database(process.env.MONGODB_URI);
 
 const metricsMockConfig: MockConfig = {
-      startDate: new Date('2024-11-01'),
-      endDate: new Date('2024-11-02'),
-      updateFrequency: 'daily',
-      metrics: {
-        total_active_users: {
-          baseValue: 100,
-          range: { min: 14, max: 240 },
-          trend: 'stable'
-        },
-        total_engaged_users: {
-          baseValue: 80,
-          range: { min: 10, max: 200 },
-          trend: 'grow'
-        },
-        code_suggestions: {
-          baseValue: 1000,
-          range: { min: 150, max: 1200 },
-          trend: 'grow'
-        },
-        code_acceptances: {
-          baseValue: 300,
-          range: { min: 200, max: 450 },
-          trend: 'stable'
-        },
-        code_lines_suggested: {
-          baseValue: 2250,
-          range: { min: 2250, max: 5000 },
-          trend: 'stable'
-        },
-        code_lines_accepted: {
-          baseValue: 900,
-          range: { min: 750, max: 955 },
-          trend: 'stable'
-        },
-        chats: {
-          baseValue: 45,
-          range: { min: 35, max: 75 },
-          trend: 'grow'
-        },
-        chat_insertions: {
-          baseValue: 120,
-          range: { min: 120, max: 300 },
-          trend: 'stable'
-        },
-        chat_copies: {
-          baseValue: 160,
-          range: { min: 160, max: 460 },
-          trend: 'stable'
-        },
-        pr_summaries: {
-          baseValue: 60,
-          range: { min: 60, max: 160 },
-          trend: 'grow'
-        },
-        total_code_reviews: {
-          baseValue: 100,
-          range: { min: 50, max: 100 },
-          trend: 'grow'
-        },
-        total_code_review_comments: {
-          baseValue: 30,
-          range: { min: 30, max: 60 },
-          trend: 'fixed'
-        }
-      },
-      models: [
-        { name: 'default', is_custom_model: false, custom_model_training_date: null },
-        { name: 'a-custom-model', is_custom_model: true, custom_model_training_date: '2024-02-01' }
-      ],
-      languages: ['python', 'ruby', 'typescript', 'go'],
-      editors: ['vscode', 'neovim'],
-      repositories: ['demo/repo1', 'demo/repo2']
-    };
+  startDate: new Date('2024-11-01'),
+  endDate: new Date('2024-11-02'),
+  updateFrequency: 'daily',
+  metrics: {
+    total_active_users: {
+      baseValue: 100,
+      range: { min: 14, max: 240 },
+      trend: 'stable'
+    },
+    total_engaged_users: {
+      baseValue: 80,
+      range: { min: 10, max: 200 },
+      trend: 'grow'
+    },
+    code_suggestions: {
+      baseValue: 700,
+      range: { min: 150, max: 1000 },
+      trend: 'grow'
+    },
+    code_acceptances: {
+      baseValue: 150,
+      range: { min: 40, max: 250 },
+      trend: 'stable'
+    },
+    code_lines_suggested: {
+      baseValue: 2250,
+      range: { min: 2250, max: 5000 },
+      trend: 'stable'
+    },
+    code_lines_accepted: {
+      baseValue: 1200,
+      range: { min: 750, max: 1955 },
+      trend: 'stable'
+    },
+    chats: {
+      baseValue: 45,
+      range: { min: 35, max: 75 },
+      trend: 'grow'
+    },
+    chat_insertions: {
+      baseValue: 120,
+      range: { min: 120, max: 300 },
+      trend: 'stable'
+    },
+    chat_copies: {
+      baseValue: 160,
+      range: { min: 160, max: 460 },
+      trend: 'stable'
+    },
+    pr_summaries: {
+      baseValue: 60,
+      range: { min: 60, max: 160 },
+      trend: 'grow'
+    },
+    total_code_reviews: {
+      baseValue: 50,
+      range: { min: 25, max: 100 },
+      trend: 'grow'
+    },
+    total_code_review_comments: {
+      baseValue: 30,
+      range: { min: 30, max: 60 },
+      trend: 'fixed'
+    }
+  },
+  models: [
+    { name: 'default', is_custom_model: false, custom_model_training_date: null },
+    { name: 'a-custom-model', is_custom_model: true, custom_model_training_date: '2024-02-01' }
+  ],
+  languages: ['python', 'ruby', 'typescript', 'go'],
+  editors: ['vscode', 'neovim'],
+  repositories: ['demo/repo1', 'demo/repo2']
+};
 
-    const seatsMockConfigOcto: SeatsMockConfig = {
-      startDate: new Date('2024-11-01'),
-      endDate: new Date('2025-01-07'),
-      usagePattern: 'moderate',
-      heavyUsers: ['nathos', 'arfon', 'kyanny'],
-      specificUser: 'nathos',
-      org: 'octodemo',
-      editors: [
-        'copilot-chat-platform',
-        'vscode/1.96.2/copilot/1.254.0',
-        'GitHubGhostPilot/1.0.0/unknown',
-        'vscode/1.96.2/',
-        'vscode/1.97.0-insider/copilot-chat/0.24.2024122001'
-      ]
-    };
-
-    const seatsMockConfigOas: SeatsMockConfig = {
-      startDate: new Date('2024-11-01'),
-      endDate: new Date('2025-01-07'),
-      usagePattern: 'heavy',
-      heavyUsers: ['austenstone', 'mattg57', 'gomtimehta'],
-      specificUser: 'logan-porelle',
-      org: 'octoaustenstone',
-      editors: [
-        'copilot-chat-platform',
-        'vscode/1.96.2/copilot/1.254.0',
-        'GitHubGhostPilot/1.0.0/unknown',
-        'vscode/1.96.2/',
-        'vscode/1.97.0-insider/copilot-chat/0.24.2024122001'
-      ]
-    };
+const seatsMockConfig: SeatsMockConfig = {
+  startDate: new Date('2024-11-01'),
+  endDate: new Date('2025-01-07'),
+  usagePattern: 'moderate',
+  heavyUsers: ['nathos', 'arfon', 'kyanny', 'amandahmt', 'jefeish', 'sdehm', 'dgreif', 'matthewisabel', '2percentsilk', 'mariorod'],
+  specificUser: 'nathos',
+  editors: [
+    'copilot-chat-platform',
+    'vscode/1.96.2/copilot/1.254.0',
+    'GitHubGhostPilot/1.0.0/unknown',
+    'vscode/1.96.2/',
+    'vscode/1.97.0-insider/copilot-chat/0.24.2024122001'
+  ]
+};
 
 function generateMetricsData(datetime: Date) {
-      metricsMockConfig.startDate=datetime
-      metricsMockConfig.endDate=datetime
-      //add other configuration as needed
+  metricsMockConfig.startDate = datetime
+  metricsMockConfig.endDate = datetime
+  //add other configuration as needed
 
-      console.log('Generating example metrics data...', metricsMockConfig.startDate, metricsMockConfig.endDate);
+  console.log('Generating example metrics data...', metricsMockConfig.startDate, metricsMockConfig.endDate);
   const mockGenerator = new MockMetricsGenerator(metricsMockConfig);
   return mockGenerator.generateMetrics(metricsMockConfig);
 }
 
-function generateSeatsDataOcto(datetime: Date) {
-      seatsMockConfigOcto.startDate=datetime
-      seatsMockConfigOcto.endDate=datetime
-      seatsMockConfigOcto.org='octodemo'
-      //add other configuration as needed
-      let seatsTemplate
-      if (datetime < scaleupDate) {
-        seatsTemplate = seatsExample;
-      } else {
-        seatsTemplate = seatsExample2;
-      }
-      const mockGenerator = new MockSeatsGenerator(seatsMockConfigOcto, seatsTemplate);
-  if (seatsInitialized == false) {
-    seatsInitialized = true;
-    return mockGenerator.initializeAllSeats();
-  }
-  return mockGenerator.generateMetrics();
+function initializeAllSeats(templateData: any, simTime: Date) {
+  // Initialize last activity times for all users
+  templateData.seats.forEach((seat: any) => {
+    // Use lastActivityAt as needed
+    seat.last_activity_at = new Date(new Date(simTime).getTime() - 1000 * 60 * 60 * 24 * 2 * templateData.seats.indexOf(seat));
+  });
+  return templateData;
 }
 
-function generateSeatsDataOas(datetime: Date) {
-  seatsMockConfigOas.startDate=datetime
-  seatsMockConfigOas.endDate=datetime
-  seatsMockConfigOas.org='octoaustenstone'
+function generateSeatsData(datetime: Date) {
+  seatsMockConfig.startDate = datetime
+  seatsMockConfig.endDate = datetime
   //add other configuration as needed
-  let seatsTemplate
-  if (datetime < scaleupDate) {
-    seatsTemplate = seatsExample;
-  } else {
-    seatsTemplate = seatsExample2;
-  }
-  const mockGenerator = new MockSeatsGenerator(seatsMockConfigOas, seatsTemplate);
-if (seatsInitialized == false) {
-  seatsInitialized = true;
-  return mockGenerator.initializeAllSeats();
-}
-return mockGenerator.generateMetrics();
+  let seatsTemplate = JSON.parse(JSON.stringify(seatsExample));
+
+  const mockGenerator = new MockSeatsGenerator(seatsMockConfig, seatsTemplate);
+  seatsTemplate = mockGenerator.generateSeats(counter);
+
+  return seatsTemplate
 }
 
 async function runSurveyGen(datetime: Date) {
-  if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23 && Math.random()< 0.5) {
-    if (Math.random() < 0.5) {
+  if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23 && Math.random() < 0.5) {
+    if (Math.random() < 0.7 +counter/7000) {
       console.log('Running Survey Generation...', datetime);
-      const surveys = await generateSurveysForDate(datetime);
+      const surveys = await runSurveysForDate(datetime);
       for (const survey of surveys.surveys) {
         await SurveyService.createSurvey(survey);
       }
@@ -191,17 +158,24 @@ async function runSurveyGen(datetime: Date) {
 
 async function runSeatsGen(datetime: Date) {
   console.log('Running Seats Generation...', datetime);
-  
+
   const orgOcto = 'octodemo';
   const orgOas = 'octoaustenstone';
+  if (seatsInitialized == false) {
+    seatsInitialized = true;
+    seatsExampleInitialized = initializeAllSeats(seatsExample, datetime);
+    //seatsExample2Initialized = initializeAllSeats(seatsExample2, datetime);
+  }
   //call generateSeatsData for each member of the org by looping through the members array
-  let newSeats = generateSeatsDataOas(datetime);
-  await SeatService.insertSeats(orgOas, datetime, newSeats);
-
-
-//call generateSeatsData for each member of the org by looping through the members array
-  let newSeats2 = generateSeatsDataOcto(datetime);
-  await SeatService.insertSeats(orgOcto, datetime, newSeats2);
+  let newSeats = generateSeatsData(datetime);
+  await SeatService.insertSeats(orgOcto, datetime, newSeats);
+  //I need to patch seatsExampleInitialized with the new data
+for (const seat of newSeats) {
+  const seatIndex = seatsExampleInitialized.seats.findIndex((s: any) => s.user === seat.user);
+  if (seatIndex !== -1 ) {
+    seatsExampleInitialized.seats[seatIndex].last_activity_at = seat.last_activity_at;
+  }
+}
 }
 
 async function runMetricsGen(datetime: Date) {
@@ -215,10 +189,9 @@ async function runMetricsGen(datetime: Date) {
 }
 
 async function calendarClock() {
-  let datetime = new Date('2024-11-27T00:00:00');
-  scaleupDate = new Date('2024-11-11T00:00:00');
-  const endDate = new Date('2025-01-27T00:00:00');
-  console.log
+  let datetime = new Date('2024-11-01T00:00:00');
+  const endDate = new Date('2025-01-28T00:00:00');
+  console.log('datetime:', datetime);
   membersOcto = await TeamsService.getAllMembers('octodemo');
   membersOas = await TeamsService.getAllMembers('octoaustenstone');
   console.log('count Octo members:', membersOcto.length);
@@ -231,10 +204,11 @@ async function calendarClock() {
     await runMetricsGen(datetime);
 
     datetime.setHours(datetime.getHours() + 1);
+    counter+=1;
     console.log('datetime:', datetime);
   }
 
-  
+
 }
 
 async function runClock() {
@@ -243,7 +217,7 @@ async function runClock() {
   let connected = false;
   seatsInitialized = false;
   console.log('Starting clock...');
-  console.log('seats', seatsExample2.seats.length);
+  console.log('seats', seatsExample.seats.length);
 
   while (retryCount < maxRetries) {
     try {
@@ -260,15 +234,15 @@ async function runClock() {
       retryCount++;
       console.error(`Attempt ${retryCount}/${maxRetries} failed:`, error.message);
 
-      if (error.name === 'MongoServerSelectionError' || 
-          error.name === 'MongoNetworkError' ||
-          (error.code && error.code === 10107)) {  // Not Primary error code
-        
+      if (error.name === 'MongoServerSelectionError' ||
+        error.name === 'MongoNetworkError' ||
+        (error.code && error.code === 10107)) {  // Not Primary error code
+
         // Wait with exponential backoff before retrying
         const backoffTime = Math.min(1000 * Math.pow(2, retryCount), 30000);
-        console.log(`Primary failover detected. Waiting ${backoffTime/1000} seconds before retrying...`);
+        console.log(`Primary failover detected. Waiting ${backoffTime / 1000} seconds before retrying...`);
         await new Promise(resolve => setTimeout(resolve, backoffTime));
-        
+
         // Force reconnection
         try {
           await database.disconnect();
@@ -276,7 +250,7 @@ async function runClock() {
         } catch (disconnectError) {
           console.log('Disconnect error (can be ignored):', disconnectError.message);
         }
-        
+
         continue;
       }
 

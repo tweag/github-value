@@ -1,9 +1,9 @@
 {
   "surveys":   [{
     "id": 0,
-    "userId": "@mattg57",
+    "userId": "mattg57",
     "org": "octodemo",
-    "repo": "github-value",
+    "repo": "github-value2",
     "prNumber": "23",
     "usedCopilot": true,
     "percentTimeSaved": 35,

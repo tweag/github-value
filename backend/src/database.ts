@@ -39,7 +39,7 @@ class Database {
         };
         logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
       });
-      //logger.info('Database setup completed successfully');
+
     } catch (error) {
       logger.debug(error);
       if (error instanceof Error) {

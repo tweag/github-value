@@ -95,6 +95,7 @@ export class TimeSavedChartComponent implements OnInit, OnChanges {
 
   ngOnChanges() {
     if (this.surveys) {
+      //console.log('Original surveys:', this.surveys);
       this._chartOptions = {
         ...this._chartOptions,
         ...this.highchartsService.transformSurveysToScatter(this.surveys, this.activity)
