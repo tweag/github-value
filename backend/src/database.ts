@@ -1,6 +1,6 @@
 import updateDotenv from 'update-dotenv';
 import logger from './services/logger.js';
-import mongoose, { Schema } from 'mongoose';
+import mongoose, { mongo, Schema } from 'mongoose';
 import util from 'util';
 
 class Database {
@@ -34,10 +34,11 @@ class Database {
       });
       mongoose.set('debug', (collectionName: string, methodName: string, ...methodArgs: unknown[]) => {
         const msgMapper = (m: unknown) => {
-          return util.inspect(m, false, 10, true)
+            return util.inspect(m, false, 10, true)
             .replace(/\n/g, '').replace(/\s{2,}/g, ' ');
         };
-        logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
+        // logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
+        logger.debug(`[Mongoose] ${collectionName}.${methodName}(${methodArgs.map(msgMapper).join(', ')})`);
       });
 
     } catch (error) {
@@ -241,11 +242,7 @@ class Database {
     });
 
     seatsSchema.index({ org: 1, queryAt: 1, last_activity_at: -1 });
-    seatsSchema.index({ team: 1, member: 1 }, { unique: true });
-    seatsSchema.index({ createdAt: 1 });
-    seatsSchema.index({ queryAt: 1 });
-    seatsSchema.index({ assignee: 1 });
-    seatsSchema.index({ assignee_id: 1 });
+    seatsSchema.index({ org: 1, team: 1, queryAt: 1, assignee_id: 1 }, { unique: true });
 
     mongoose.model('Seats', seatsSchema);
 
@@ -286,10 +283,12 @@ class Database {
 
     const activityTotalsSchema = new mongoose.Schema({
       org: String,
-      member_id: {
+      assignee: {
         type: Schema.Types.ObjectId,
         ref: 'Member'
       },
+      assignee_id: Number,
+      assignee_login: String,
       date: Date,
       total_active_time_ms: Number,
       last_activity_at: Date,
@@ -298,7 +297,7 @@ class Database {
       timestamps: true
     });
     
-    activityTotalsSchema.index({ org: 1, date: 1, member_id: 1 }, { unique: true });
+    activityTotalsSchema.index({ org: 1, date: 1, assignee: 1 }, { unique: true });
     activityTotalsSchema.index({ date: 1 }); // For date range queries
     
     mongoose.model('ActivityTotals', activityTotalsSchema);

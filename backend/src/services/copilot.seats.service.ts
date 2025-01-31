@@ -35,8 +35,6 @@ class SeatsService {
       .sort({ queryAt: -1 })  // -1 for descending order
       .select('queryAt');
 
-    //console.log(`Latest query at: ${latestQuery?.queryAt}`);
-
     const seats = await Seats.find({
       ...(org ? { org } : {}),
       queryAt: latestQuery?.queryAt
@@ -44,7 +42,6 @@ class SeatsService {
       .populate('assignee')
       .sort({ last_activity_at: -1 });  // DESC ordering ⬇️
 
-    console.log(`Found ${seats.length} seats for ${org || 'all orgs'} at ${latestQuery?.queryAt}`);
     return seats;
   }
 
@@ -124,7 +121,7 @@ class SeatsService {
       }
     }));
     await Members.bulkWrite(memberUpdates);
-    
+
     const updatedMembers = await Members.find({
       org,
       id: { $in: data.map(seat => seat.assignee.id) }
@@ -140,7 +137,6 @@ class SeatsService {
       assignee: updatedMembers.find(m => m.id === seat.assignee.id)?._id
     }));
     const seatResults = await Seats.insertMany(seatsData);
-    console.log(`Inserted ${seatResults.length} seats for ${org} at ${queryAt}`);
 
     const adoptionData = {
       enterprise: null,
@@ -160,33 +156,65 @@ class SeatsService {
     await adoptionService.createAdoption(adoptionData);
 
     const today = new Date(queryAt);
-    today.setUTCHours(0,0,0,0);
+    // add 1 to day
+    // today.setDate(today.getDate() + 1);
+    today.setUTCHours(0, 0, 0, 0);
     const activityUpdates = seatResults.map(seat => {
-      if (!seat.last_activity_at) return null;
-  
+      if (!seat.assignee_login) {
+        console.warn('Missing assignee_login for seat:', seat);
+        return null;
+      }
       return {
         updateOne: {
           filter: {
             org,
-            member_id: seat.assignee,
-            date: today,
-            $or: [
-              { last_activity_at: { $lt: seat.last_activity_at } },
-              { last_activity_at: { $exists: false } }
-            ]
+            assignee: seat.assignee,
+            assignee_id: seat.assignee_id,
+            assignee_login: seat.assignee_login,
+            date: today
           },
-          update: {
-            $inc: { total_active_time_ms: 30 * 60 * 1000 }, // 30 min per activity
+          update: [{
             $set: {
-              last_activity_at: seat.last_activity_at,
-              last_activity_editor: seat.last_activity_editor
+              total_active_time_ms: {
+                $cond: {
+                  if: { $eq: [seat.last_activity_at, null] },
+                  then: { $ifNull: ["$total_active_time_ms", 0] },
+                  else: {
+                    $add: [
+                      { $ifNull: ["$total_active_time_ms", 0] },
+                      {
+                        $cond: {
+                          if: {
+                            $and: [
+                              {
+                                $or: [
+                                  { $eq: ["$last_activity_at", null] },
+                                  { $lt: ["$last_activity_at", seat.last_activity_at] }
+                                ]
+                              },
+                              { $gt: [seat.last_activity_at, today] }
+                            ]
+                          },
+                          then: 1,
+                          else: 0
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
             }
-          },
+          }, {
+            $set: {
+              last_activity_editor: seat.last_activity_editor,
+              last_activity_at: seat.last_activity_at
+            }
+          }],
           upsert: true
         }
       };
     }).filter(update => update !== null);
-  
+
     if (activityUpdates.length > 0) {
       await ActivityTotals.bulkWrite(activityUpdates);
     }
@@ -351,39 +379,49 @@ class SeatsService {
   }) {
     const ActivityTotals = mongoose.model('ActivityTotals');
     const { org, since, until } = params;
-  
+
     const match: any = {};
     if (org) match.org = org;
-    if (since) match.date = { $gte: new Date(since) };
-    if (until) match.date = { ...match.date, $lte: new Date(until) };
-  
+    if (since || until) {
+      match.date = {
+        ...(since && { $gte: new Date(since) }),
+        ...(until && { $lte: new Date(until) })
+      };
+    }
+
+    console.log('getting totals', match);
     const totals = await ActivityTotals.aggregate([
+      // Match documents within date range and org
       { $match: match },
+      // First group by date AND assignee_login
       {
         $group: {
-          _id: "$member_id",
-          total_time: { $sum: "$total_active_time_ms" }
+          _id: {
+            date: "$date",
+            login: "$assignee_login"
+          },
+          daily_time: { $sum: "$total_active_time_ms" }
         }
       },
+      // Then group by just assignee_login to sum across days
       {
-        $lookup: {
-          from: 'members',
-          localField: '_id',
-          foreignField: '_id',
-          as: 'member'
+        $group: {
+          _id: "$_id.login",
+          total_time: { $sum: "$daily_time" }
         }
       },
-      { $unwind: '$member' },
+      // Sort by total time descending
       { $sort: { total_time: -1 } },
+      // Project final fields
       {
         $project: {
           _id: 0,
-          login: '$member.login',
+          login: '$_id',
           total_time: 1
         }
       }
     ]);
-  
+
     return totals.map(t => [t.login, t.total_time]);
   }
 }

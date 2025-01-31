@@ -33,7 +33,7 @@ class AdoptionController {
 
   async getAdoptionTotals(req: Request, res: Response): Promise<void> {
     try {
-      const totals = await SeatsService.getMembersActivityTotals(req.query);
+      const totals = await SeatsService.getMembersActivityTotals2(req.query);
       res.status(200).json(totals);
     } catch (error) {
       res.status(500).json(error);

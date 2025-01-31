@@ -4,7 +4,7 @@ import { insertUsage } from '../models/usage.model.js';
 import SeatService, { SeatEntry } from '../services/copilot.seats.service.js';
 import { App, Octokit } from 'octokit';
 import { MetricDailyResponseType } from '../models/metrics.model.js';
-import mongoose from 'mongoose';
+import mongoose, { MongooseError } from 'mongoose';
 import metricsService from './metrics.service.js';
 import teamsService from './teams.service.js';
 import adoptionService from './adoption.service.js';
@@ -175,6 +175,10 @@ class QueryService {
       return result;
     } catch (error) {
       logger.debug(error)
+      if (error instanceof Error) {
+        logger.error('Error updating seat assignments', error.message);
+        return;
+      }
       logger.error('Error querying copilot seat assignments');
     }
   }
