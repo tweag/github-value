@@ -10,52 +10,52 @@ class TargetValuesService {
       throw new Error(`Error fetching target values: ${error}`);
     }
   }
-
+  
   async updateTargetValues(data: {
     current: {
-      seats: string;
-      adoptedDevs: string;
-      monthlyDevsReportingTimeSavings: string;
-      percentSeatsReportingTimeSavings: string;
-      percentSeatsAdopted: string;
-      percentMaxAdopted: string;
-      dailySuggestions: string;
-      dailyChatTurns: string;
-      weeklyPRSummaries: string;
-      weeklyTimeSaved: string;
-      monthlyTimeSavings: string;
-      annualTimeSavingsDollars: string;
-      productivityBoost: string;
+      seats: number;
+      adoptedDevs: number;
+      monthlyDevsReportingTimeSavings: number;
+      percentSeatsReportingTimeSavings: number;
+      percentSeatsAdopted: number;
+      percentMaxAdopted: number;
+      dailySuggestions: number;
+      dailyChatTurns: number;
+      weeklyPRSummaries: number;
+      weeklyTimeSaved: number;
+      monthlyTimeSavings: number;
+      annualTimeSavingsDollars: number;
+      productivityBoost: number;
     };
     target: {
-      seats: string;
-      adoptedDevs: string;
-      monthlyDevsReportingTimeSavings: string;
-      percentSeatsReportingTimeSavings: string;
-      percentSeatsAdopted: string;
-      percentMaxAdopted: string;
-      dailySuggestions: string;
-      dailyChatTurns: string;
-      weeklyPRSummaries: string;
-      weeklyTimeSaved: string;
-      monthlyTimeSavings: string;
-      annualTimeSavingsDollars: string;
-      productivityBoost: string;
+      seats: number;
+      adoptedDevs: number;
+      monthlyDevsReportingTimeSavings: number;
+      percentSeatsReportingTimeSavings: number;
+      percentSeatsAdopted: number;
+      percentMaxAdopted: number;
+      dailySuggestions: number;
+      dailyChatTurns: number;
+      weeklyPRSummaries: number;
+      weeklyTimeSaved: number;
+      monthlyTimeSavings: number;
+      annualTimeSavingsDollars: number;
+      productivityBoost: number;
     };
     max: {
-      seats: string;
-      adoptedDevs: string;
-      monthlyDevsReportingTimeSavings: string;
-      percentSeatsReportingTimeSavings: string;
-      percentSeatsAdopted: string;
-      percentMaxAdopted: string;
-      dailySuggestions: string;
-      dailyChatTurns: string;
-      weeklyPRSummaries: string;
-      weeklyTimeSaved: string;
-      monthlyTimeSavings: string;
-      annualTimeSavingsDollars: string;
-      productivityBoost: string;
+      seats: number;
+      adoptedDevs: number;
+      monthlyDevsReportingTimeSavings: number;
+      percentSeatsReportingTimeSavings: number;
+      percentSeatsAdopted: number;
+      percentMaxAdopted: number;
+      dailySuggestions: number;
+      dailyChatTurns: number;
+      weeklyPRSummaries: number;
+      weeklyTimeSaved: number;
+      monthlyTimeSavings: number;
+      annualTimeSavingsDollars: number;
+      productivityBoost: number;
     };
   }) {
     try {

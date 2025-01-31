@@ -350,21 +350,21 @@
               <td>Annual Time Savings as Dollars ($)</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('current.annualTimeSavingsDollars')?.invalid && form.get('current.annualTimeSavingsDollars')?.touched}" [value]="form.get('current.annualTimeSavingsDollars')?.value || '' | matCurrencyPipe" (blur)="onBlur($event, 'current', 'annualTimeSavingsDollars')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('current.annualTimeSavingsDollars')?.invalid && form.get('current.annualTimeSavingsDollars')?.touched}" [value]="form.get('current.annualTimeSavingsDollars')?.value " (blur)="onBlur($event, 'current', 'annualTimeSavingsDollars')" [attr.disabled]="disableInputs ? true : null">
                   <span matTextPrefix>$&nbsp;</span>
                   <mat-error *ngIf="form.get('current.annualTimeSavingsDollars')?.invalid">Invalid value</mat-error>
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'target'">
-                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('target.annualTimeSavingsDollars')?.invalid && form.get('target.annualTimeSavingsDollars')?.touched}" [value]="form.get('target.annualTimeSavingsDollars')?.value || '' | matCurrencyPipe" (blur)="onBlur($event, 'target', 'annualTimeSavingsDollars')">
+                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('target.annualTimeSavingsDollars')?.invalid && form.get('target.annualTimeSavingsDollars')?.touched}" [value]="form.get('target.annualTimeSavingsDollars')?.value " (blur)="onBlur($event, 'target', 'annualTimeSavingsDollars')">
                   <span matTextPrefix>$&nbsp;</span>
                   <mat-error *ngIf="form.get('target.annualTimeSavingsDollars')?.invalid">Invalid value</mat-error>
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('max.annualTimeSavingsDollars')?.invalid && form.get('max.annualTimeSavingsDollars')?.touched}" [value]="form.get('max.annualTimeSavingsDollars')?.value || '' | matCurrencyPipe" (blur)="onBlur($event, 'max', 'annualTimeSavingsDollars')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('max.annualTimeSavingsDollars')?.invalid && form.get('max.annualTimeSavingsDollars')?.touched}" [value]="form.get('max.annualTimeSavingsDollars')?.value " (blur)="onBlur($event, 'max', 'annualTimeSavingsDollars')" [attr.disabled]="disableInputs ? true : null">
                   <span matTextPrefix>$&nbsp;</span>
                   <mat-error *ngIf="form.get('max.annualTimeSavingsDollars')?.invalid">Invalid value</mat-error>
                 </mat-form-field>

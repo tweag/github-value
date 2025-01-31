@@ -122,7 +122,9 @@ class SurveyController {
     try {
       const Survey = mongoose.model('Survey');
       const { id } = req.params;
-      const updated = await Survey.findByIdAndUpdate(id, req.body);
+      const updated = await Survey.findOneAndUpdate({
+        id: Number(id) // Cast `id` to Number
+      }, req.body);
       if (updated) {
         res.status(200).json({ _id: id, ...req.body });
       } else {

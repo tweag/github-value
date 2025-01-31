@@ -311,25 +311,27 @@ class Database {
       usedCopilot: Boolean,
       percentTimeSaved: Number,
       reason: String,
-      timeUsedFor: String
+      timeUsedFor: String,
+      kudos: Number
     }, {
       timestamps: true
     }));
 
     const TargetsDetailSchema = new mongoose.Schema({
-      seats: String,
-      adoptedDevs: String,
-      monthlyDevsReportingTimeSavings: String,
-      percentSeatsReportingTimeSavings: String,
-      percentSeatsAdopted: String,
-      percentMaxAdopted: String,
-      dailySuggestions: String,
-      dailyChatTurns: String,
-      weeklyPRSummaries: String,
-      weeklyTimeSaved: String,
-      monthlyTimeSavings: String,
-      annualTimeSavingsDollars: String,
-      productivityBoost: String
+      seats: Number,
+      adoptedDevs: Number,
+      monthlyDevsReportingTimeSavings: Number,
+      percentSeatsReportingTimeSavings: Number,
+      percentSeatsAdopted: Number,
+      percentMaxAdopted: Number,
+      dailySuggestions: Number,
+      dailyChatTurns: Number,
+      weeklyPRSummaries: Number,
+      weeklyTimeSaved: Number,
+      monthlyTimeSavings: Number,
+      annualTimeSavingsDollars: Number,
+      productivityBoost: Number,
+      asOfDate: Number
     });
     
     const TargetsSchema = new mongoose.Schema({

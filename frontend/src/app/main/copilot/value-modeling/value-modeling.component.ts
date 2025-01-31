@@ -230,7 +230,11 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
         // const currentAsStrings = this.convertMetricStateToString(this.gridObject.current);
         //console.log('AsOfDate as string:', currentAsStrings.asOfDate);
 
-        this.loadGridObject();
+        // Add a 2-second timer and call a method
+        setTimeout(() => {
+          this.loadGridObject();
+        }, 1000);
+
         console.log('0. Update Current gridObject:', this.gridObject);
       } catch (error) {
         console.error('Error during initialization:', error);
@@ -249,6 +253,8 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       // Step 2: Perform calculations on the updated gridObject
       this.modelCalc();
 
+      await this.queryCurrentAndMaxValues();
+
       // Step 3: Synchronize the form with gridObject
       this.updateFormFromGridObject();
 
@@ -256,7 +262,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       Highcharts.charts.forEach(chart => {
         chart?.update({});
       }
-      
+
       );
       console.log('execGridLifecycle: Lifecycle completed successfully');
     }
@@ -293,10 +299,11 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   loadGridObject() {
     // Stub: Load the gridObject from a data source
-    console.log('loadGridObject: Loading saved gridObject', this.gridObjectSaved);
+    
     this.targetService.getTargets().subscribe((targetGrid) => {
       if (targetGrid) {
         this.gridObject = targetGrid;
+        console.log('Loaded gridObject:', this.gridObject);
       }
       this.execGridLifecycle();
     });
@@ -342,13 +349,16 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     try {
       for (const key in metricState) {
         if (metricState.hasOwnProperty(key) && key !== '_id') {
-            if (key === 'asOfDate') {
+          if (key === 'asOfDate') {
             result[key] = metricState.asOfDate ? new Date(metricState.asOfDate).toDateString() : '';
-            } else if (key === 'productivityBoost') {
+          } else if (key === 'productivityBoost') {
             result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-2') || '0.00';
-            } else {
+          } else if (key === 'annualTimeSavingsDollars') {
+            console.log(' Raw Value >',metricState[key as keyof TargetsDetailType]);
+            result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';  
+          } else {
             result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';
-            }
+          }
         }
       }
     } catch (error) {
@@ -428,22 +438,22 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
   }
 
   private calculateAnnualTimeSavingsDollars(weeklyTimeSaved: number, adoptedDevs: number): number {
-    const weeksInYear = 50; 
-    const hourlyRate = this.devCostPerYear / (this.hoursPerYear || 1); 
+    const weeksInYear = 50;
+    const hourlyRate = this.devCostPerYear / (this.hoursPerYear || 1);
     return weeklyTimeSaved * weeksInYear * hourlyRate * adoptedDevs;
   }
 
   private calculateProductivityBoost(weeklyTimeSaved: number, adoptedDevs: number, maxDevs: number): number {
-      console.log('weeklyTimeSaved:', weeklyTimeSaved);
-      console.log('adoptedDevs:', adoptedDevs);
-      console.log('maxDevs:', maxDevs);
-      console.log('this.hoursPerYear:', this.hoursPerYear);
-      return  weeklyTimeSaved * adoptedDevs * 50  / (this.hoursPerYear * maxDevs ) || 1;
-    }
+    console.log('weeklyTimeSaved:', weeklyTimeSaved);
+    console.log('adoptedDevs:', adoptedDevs);
+    console.log('maxDevs:', maxDevs);
+    console.log('this.hoursPerYear:', this.hoursPerYear);
+    return weeklyTimeSaved * adoptedDevs * 50 / (this.hoursPerYear * maxDevs) || 1;
+  }
 
   private calculateMonthlyTimeSavings(adoptedDevs: number, weeklyTimeSaved: number): number {
     const weeksInMonth = 4;
-    return weeklyTimeSaved * weeksInMonth * adoptedDevs ;
+    return weeklyTimeSaved * weeksInMonth * adoptedDevs;
   }
 
   toggleInputs(disable: boolean) {
@@ -457,7 +467,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
 
   async queryCurrentAndMaxValues(): Promise<void> {
-    
+
     const now = new Date();
     const utcNow = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0, 0);
     const xDaysAgoUTC = new Date(utcNow - this.clickCounter * 24 * 60 * 60 * 1000);
@@ -569,7 +579,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
         if (weekAtaTimeSurveys?.length) {
           weekAtaTimeSurveys.forEach(survey => {
-            console.log('Survey data:', survey);
+            //console.log('Survey pcts:', survey.percentTimeSaved);
           });
           const avgWeeklyTimeSaved = weekAtaTimeSurveys.reduce((acc, survey) =>
             acc + (survey.percentTimeSaved || 0), 0) * 12 * 0.01 / (weekAtaTimeSurveys.length * distinctUsers.length);
