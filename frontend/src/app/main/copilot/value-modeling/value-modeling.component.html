@@ -1,16 +1,12 @@
 <div class="page-container">
   <div class="page-header">
     <h1>Value Modeling and Targeting</h1>
-    <div class="button-group">
-      <button mat-raised-button color="primary" (click)="loadGridObject()">Load</button>
-      <button mat-raised-button color="accent" (click)="saveGridObject()">Save</button>
-      <mat-slide-toggle (change)="toggleInputs($event.checked)">Disable Current and Max Inputs</mat-slide-toggle>
-    </div>
+    <!-- Removed button-group and Load button -->
   </div>
 
   <!-- Charts Section -->
   <div class="charts-grid">
-    <mat-card>
+    <!-- <mat-card>
       <mat-card-header>
         <mat-card-title>Org-Level Metrics</mat-card-title>
       </mat-card-header>
@@ -37,7 +33,7 @@
           </highcharts-chart>
         </div>
       </mat-card-content>
-    </mat-card>
+    </mat-card> -->
   </div>
 
   <!-- Metrics Table -->
@@ -72,7 +68,7 @@
               <td>Seats</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="seats" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'seats')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="seats" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'seats')" [readonly]="disableInputs">
                 </mat-form-field>
               </td>
               <td>
@@ -82,7 +78,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="seats" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'seats')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="seats" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'seats')" [readonly]="disableInputs">
                 </mat-form-field>
               </td>
             </tr>
@@ -90,17 +86,17 @@
               <td>Adopted Devs</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="adoptedDevs" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'adoptedDevs')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="adoptedDevs" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'adoptedDevs')" [readonly]="disableInputs">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'target'">
-                  <input matInput type="text" formControlName="adoptedDevs" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'adoptedDevs')" >
+                  <input matInput type="text" formControlName="adoptedDevs" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'adoptedDevs')">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="adoptedDevs" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'adoptedDevs')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="adoptedDevs" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'adoptedDevs')" [readonly]="disableInputs">
                 </mat-form-field>
               </td>
             </tr>
@@ -108,17 +104,17 @@
               <td>Monthly Devs reporting Time Savings</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="monthlyDevsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'monthlyDevsReportingTimeSavings')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="monthlyDevsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'monthlyDevsReportingTimeSavings')" [readonly]="disableInputs">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'target'">
-                  <input matInput type="text" formControlName="monthlyDevsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'monthlyDevsReportingTimeSavings')" >
+                  <input matInput type="text" formControlName="monthlyDevsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'target', 'monthlyDevsReportingTimeSavings')">
                 </mat-form-field>
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="monthlyDevsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'monthlyDevsReportingTimeSavings')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="monthlyDevsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'monthlyDevsReportingTimeSavings')" [readonly]="disableInputs">
                 </mat-form-field>
               </td>
             </tr>
@@ -126,7 +122,7 @@
               <td>% of Seats reporting Time Savings</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="percentSeatsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'percentSeatsReportingTimeSavings')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="percentSeatsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'percentSeatsReportingTimeSavings')" [readonly]="disableInputs">
                   <span matTextSuffix>%</span>
                 </mat-form-field>
               </td>
@@ -138,7 +134,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="percentSeatsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'percentSeatsReportingTimeSavings')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="percentSeatsReportingTimeSavings" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'percentSeatsReportingTimeSavings')" [readonly]="disableInputs">
                   <span matTextSuffix>%</span>
                 </mat-form-field>
               </td>
@@ -147,7 +143,7 @@
               <td>% of Seats Adopted</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="percentSeatsAdopted" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'percentSeatsAdopted')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="percentSeatsAdopted" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'percentSeatsAdopted')" [readonly]="disableInputs">
                   <span matTextSuffix>%</span>
                 </mat-form-field>
               </td>
@@ -159,7 +155,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="percentSeatsAdopted" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'percentSeatsAdopted')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="percentSeatsAdopted" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'percentSeatsAdopted')" [readonly]="disableInputs">
                   <span matTextSuffix>%</span>
                 </mat-form-field>
               </td>
@@ -168,7 +164,7 @@
               <td>% of Max Adopted</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="percentMaxAdopted" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'percentMaxAdopted')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="percentMaxAdopted" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'percentMaxAdopted')" [readonly]="disableInputs">
                   <span matTextSuffix>%</span>
                 </mat-form-field>
               </td>
@@ -180,7 +176,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="percentMaxAdopted" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'percentMaxAdopted')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="percentMaxAdopted" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'percentMaxAdopted')" [readonly]="disableInputs">
                   <span matTextSuffix>%</span>
                 </mat-form-field>
               </td>
@@ -220,7 +216,7 @@
               <td>Daily Suggestions</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'dailySuggestions')" [value]="form.get('current.dailySuggestions')?.value" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'dailySuggestions')" [value]="form.get('current.dailySuggestions')?.value" [readonly]="disableInputs">
                 </mat-form-field>
               </td>
               <td>
@@ -230,7 +226,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'dailySuggestions')" [value]="form.get('max.dailySuggestions')?.value " [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="dailySuggestions" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'dailySuggestions')" [value]="form.get('max.dailySuggestions')?.value " [readonly]="disableInputs">
                 </mat-form-field>
               </td>
             </tr>
@@ -238,7 +234,7 @@
               <td>Daily Chat Turns</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'dailyChatTurns')" [value]="form.get('current.dailyChatTurns')?.value " [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'dailyChatTurns')" [value]="form.get('current.dailyChatTurns')?.value " [readonly]="disableInputs">
                 </mat-form-field>
               </td>
               <td>
@@ -248,7 +244,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'dailyChatTurns')" [value]="form.get('max.dailyChatTurns')?.value " [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="dailyChatTurns" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'dailyChatTurns')" [value]="form.get('max.dailyChatTurns')?.value " [readonly]="disableInputs">
                 </mat-form-field>
               </td>
             </tr>
@@ -256,7 +252,7 @@
               <td>Weekly PR Summaries</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'weeklyPRSummaries')" [value]="form.get('current.weeklyPRSummaries')?.value " [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'weeklyPRSummaries')" [value]="form.get('current.weeklyPRSummaries')?.value " [readonly]="disableInputs">
                 </mat-form-field>
               </td>
               <td>
@@ -266,7 +262,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'weeklyPRSummaries')" [value]="form.get('max.weeklyPRSummaries')?.value " [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="weeklyPRSummaries" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'weeklyPRSummaries')" [value]="form.get('max.weeklyPRSummaries')?.value " [readonly]="disableInputs">
                 </mat-form-field>
               </td>
             </tr>
@@ -274,7 +270,7 @@
               <td>Weekly Time Saved (hrs)</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="weeklyTimeSaved" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'weeklyTimeSaved')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="weeklyTimeSaved" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'current', 'weeklyTimeSaved')" [readonly]="disableInputs">
                   <span matTextSuffix>hrs</span>
                 </mat-form-field>
               </td>
@@ -286,7 +282,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="weeklyTimeSaved" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'weeklyTimeSaved')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="weeklyTimeSaved" class="example-right-align" matThousandSeparator (blur)="onBlur($event, 'max', 'weeklyTimeSaved')" [readonly]="disableInputs">
                   <span matTextSuffix>hrs</span>
                 </mat-form-field>
               </td>
@@ -326,7 +322,7 @@
               <td>Monthly Time Savings (hrs)</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="monthlyTimeSavings" class="example-right-align" [ngClass]="{'invalid': form.get('current.monthlyTimeSavings')?.invalid && form.get('current.monthlyTimeSavings')?.touched}" matThousandSeparator (blur)="onBlur($event, 'current', 'monthlyTimeSavings')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="monthlyTimeSavings" class="example-right-align" [ngClass]="{'invalid': form.get('current.monthlyTimeSavings')?.invalid && form.get('current.monthlyTimeSavings')?.touched}" matThousandSeparator (blur)="onBlur($event, 'current', 'monthlyTimeSavings')" [readonly]="disableInputs">
                   <span matTextSuffix>hrs</span>
                   <mat-error *ngIf="form.get('current.monthlyTimeSavings')?.invalid">Invalid value</mat-error>
                 </mat-form-field>
@@ -340,7 +336,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="monthlyTimeSavings" class="example-right-align" [ngClass]="{'invalid': form.get('max.monthlyTimeSavings')?.invalid && form.get('max.monthlyTimeSavings')?.touched}" matThousandSeparator (blur)="onBlur($event, 'max', 'monthlyTimeSavings')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="monthlyTimeSavings" class="example-right-align" [ngClass]="{'invalid': form.get('max.monthlyTimeSavings')?.invalid && form.get('max.monthlyTimeSavings')?.touched}" matThousandSeparator (blur)="onBlur($event, 'max', 'monthlyTimeSavings')" [readonly]="disableInputs">
                   <span matTextSuffix>hrs</span>
                   <mat-error *ngIf="form.get('max.monthlyTimeSavings')?.invalid">Invalid value</mat-error>
                 </mat-form-field>
@@ -350,7 +346,7 @@
               <td>Annual Time Savings as Dollars ($)</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('current.annualTimeSavingsDollars')?.invalid && form.get('current.annualTimeSavingsDollars')?.touched}" [value]="form.get('current.annualTimeSavingsDollars')?.value " (blur)="onBlur($event, 'current', 'annualTimeSavingsDollars')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('current.annualTimeSavingsDollars')?.invalid && form.get('current.annualTimeSavingsDollars')?.touched}" [value]="form.get('current.annualTimeSavingsDollars')?.value " (blur)="onBlur($event, 'current', 'annualTimeSavingsDollars')" [readonly]="disableInputs">
                   <span matTextPrefix>$&nbsp;</span>
                   <mat-error *ngIf="form.get('current.annualTimeSavingsDollars')?.invalid">Invalid value</mat-error>
                 </mat-form-field>
@@ -364,7 +360,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('max.annualTimeSavingsDollars')?.invalid && form.get('max.annualTimeSavingsDollars')?.touched}" [value]="form.get('max.annualTimeSavingsDollars')?.value " (blur)="onBlur($event, 'max', 'annualTimeSavingsDollars')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="annualTimeSavingsDollars" class="example-right-align" [ngClass]="{'invalid': form.get('max.annualTimeSavingsDollars')?.invalid && form.get('max.annualTimeSavingsDollars')?.touched}" [value]="form.get('max.annualTimeSavingsDollars')?.value " (blur)="onBlur($event, 'max', 'annualTimeSavingsDollars')" [readonly]="disableInputs">
                   <span matTextPrefix>$&nbsp;</span>
                   <mat-error *ngIf="form.get('max.annualTimeSavingsDollars')?.invalid">Invalid value</mat-error>
                 </mat-form-field>
@@ -374,7 +370,7 @@
               <td>Productivity or Throughput Boost (%)</td>
               <td>
                 <mat-form-field [formGroupName]="'current'">
-                  <input matInput type="text" formControlName="productivityBoost" class="example-right-align" [ngClass]="{'invalid': form.get('current.productivityBoost')?.invalid && form.get('current.productivityBoost')?.touched}" matThousandSeparator (blur)="onBlur($event, 'current', 'productivityBoost')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="productivityBoost" class="example-right-align" [ngClass]="{'invalid': form.get('current.productivityBoost')?.invalid && form.get('current.productivityBoost')?.touched}" matThousandSeparator (blur)="onBlur($event, 'current', 'productivityBoost')" [readonly]="disableInputs">
                   <span matTextSuffix>%</span>
                   <mat-error *ngIf="form.get('current.productivityBoost')?.invalid">Invalid value</mat-error>
                 </mat-form-field>
@@ -388,7 +384,7 @@
               </td>
               <td>
                 <mat-form-field [formGroupName]="'max'">
-                  <input matInput type="text" formControlName="productivityBoost" class="example-right-align" [ngClass]="{'invalid': form.get('max.productivityBoost')?.invalid && form.get('max.productivityBoost')?.touched}" matThousandSeparator (blur)="onBlur($event, 'max', 'productivityBoost')" [attr.disabled]="disableInputs ? true : null">
+                  <input matInput type="text" formControlName="productivityBoost" class="example-right-align" [ngClass]="{'invalid': form.get('max.productivityBoost')?.invalid && form.get('max.productivityBoost')?.touched}" matThousandSeparator (blur)="onBlur($event, 'max', 'productivityBoost')" [readonly]="disableInputs">
                   <span matTextSuffix>%</span>
                   <mat-error *ngIf="form.get('max.productivityBoost')?.invalid">Invalid value</mat-error>
                 </mat-form-field>
@@ -399,4 +395,9 @@
       </mat-card-content>
     </mat-card>
   </form>
+
+  <!-- Save button moved to the bottom -->
+  <div class="save-button-container">
+    <button mat-raised-button color="accent" (click)="saveGridObject()">Save</button>
+  </div>
 </div>

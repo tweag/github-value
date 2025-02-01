@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 import { SurveyMockConfig } from '../types.js';
 import SequenceService from '../../../services/sequence.service.js';
 import surveyExample from './exampleSurvey.json' assert { type: 'json' };
-import { SurveyType } from '../../../database.js';
+import { SurveyType } from "../models/survey.model.js";
 
 class MockSurveyGenerator {
   private config: SurveyMockConfig;
@@ -12,7 +12,6 @@ class MockSurveyGenerator {
   constructor(config: SurveyMockConfig, templateData: any) {
     this.config = config;
     this.baseData = templateData;
-    return Math.floor(Math.random() * 100);
   }
 
   private getRandomUserId(): string {
@@ -33,10 +32,10 @@ class MockSurveyGenerator {
 
   private getRandomPercentTimeSaved(): number {
     const x = Math.floor(Math.random() * 100);
-    if ( x < 50 ){
-      return Math.floor(Math.random() * 100) || 100;
+    if ( x < 10 || x > 60) {
+      return Math.floor(Math.random() * 50) || 50;
     }
-    return 100;
+    return 25;
   }
 
   private getRandomReason(): string {

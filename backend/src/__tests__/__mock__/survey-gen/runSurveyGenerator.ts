@@ -14,7 +14,7 @@ const __dirname = dirname(__filename);
 const mockConfig: SurveyMockConfig = {
   startDate: new Date('2024-12-30'),
   endDate: new Date('2024-12-31'),
-  userIds: ['nathos', 'mattg57', '04Surf','azizshamim','beardofedu','austenstone','arfon', 'kyanny', 'amandahmt', 'jefeish', 'sdehm', 'dgreif', 'matthewisabel', '2percentsilk', 'mariorod','bekahwhittle','AdamTheCreator','bevns'],
+  userIds: ['nathos', 'mattg57', '04Surf','azizshamim','beardofedu','austenstone','arfon', 'kyanny', 'amandahmt', 'jefeish', 'sdehm', 'dgreif', 'matthewisabel', '2percentsilk', 'mariorod','bekahwhittle','AdamTheCreator','bevns','mfilosa'],
   orgs: ['octodemo'],
   repos: ['github-value', 'github-value-chart'],
   reasons: ['Prefilled code blocks for me', 'Helped me generate test data', 'I was able to build a new feature without learning the framework'],
@@ -61,7 +61,8 @@ const runSurveysForDate = async (datetime: Date) => {
 //   }
 //   db = new Database(mongoUri);
 //   await db.connect();
-//   let surveys = runSurveys();
+//   let surveys = await runSurveys();
+//   console.log('surveys:', surveys);
   
 // } catch (error) {
 //   console.error('Error connecting to the database:', error);

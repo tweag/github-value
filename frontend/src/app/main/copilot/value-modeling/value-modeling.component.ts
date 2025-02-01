@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewEncapsulation } from '@angular/core';
 import { FormControl, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../../../material.module';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -29,8 +29,9 @@ import { forkJoin, catchError, tap, finalize } from 'rxjs';
   providers: [
     DecimalPipe
   ],
+  encapsulation: ViewEncapsulation.None, // add this line
   templateUrl: './value-modeling.component.html',
-  styleUrl: './value-modeling.component.scss'
+  styleUrls: ['./value-modeling.component.scss']
 })
 export class ValueModelingComponent implements OnInit, AfterViewInit {
   Highcharts: typeof Highcharts = Highcharts;
@@ -40,7 +41,6 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   gridObject: TargetsGridType = initializeGridObject();
   gridObjectSaved: TargetsGridType = initializeGridObject();
-  disableInputs = true;
   clickCounter = 0; // when this changes we need to call queryCurrentValues again
   asOfDate: Date = new Date();
 
@@ -190,6 +190,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       productivityBoost: new FormControl('0', [Validators.required, Validators.min(0), Validators.max(100)])
     })
   });
+  disableInputs: boolean = true;
 
 
 
@@ -215,26 +216,27 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     this.form.valueChanges.subscribe((values) => {
       console.log('1*. Form value changed:', values);
     });
+
+    //this.toggleInputs(); // Call toggleInputs to initialize disabled state
   }
 
   // Helper method to handle async calls
   private async initializeComponent() {
+    this.gridObject.current.asOfDate = new Date().getTime();
+    setTimeout(() => {
+      this.loadGridObject();
+    }, 500);
+
     this.installationsService.currentInstallation.pipe(
       takeUntil(this._destroy$.asObservable())
     ).subscribe(installation => {
       installation?.account?.login;
       try {
-        // Update form value correctly
-        // this.form.get('current.seats')?.setValue('100'); // Use the proper FormControl path
-        this.gridObject.current.asOfDate = new Date().getTime();
-        // const currentAsStrings = this.convertMetricStateToString(this.gridObject.current);
-        //console.log('AsOfDate as string:', currentAsStrings.asOfDate);
-
-        // Add a 2-second timer and call a method
-        setTimeout(() => {
-          this.loadGridObject();
-        }, 1000);
-
+        if (installation?.account?.login) {
+          this.installation = installation;
+       console.log('installation?.account?.login:', installation?.account?.login);
+       this.execGridLifecycle(); 
+        }
         console.log('0. Update Current gridObject:', this.gridObject);
       } catch (error) {
         console.error('Error during initialization:', error);
@@ -456,12 +458,27 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     return weeklyTimeSaved * weeksInMonth * adoptedDevs;
   }
 
-  toggleInputs(disable: boolean) {
-    if (disable) {
-      this.disableInputs = true;
-      console.log('disableInputs:', this.disableInputs);
-    } else {
-      this.disableInputs = false;
+  toggleInputs() {
+
+    const controlNames: (keyof TargetsDetailType)[] = [
+      'seats', 'adoptedDevs', 'monthlyDevsReportingTimeSavings',
+      'percentSeatsReportingTimeSavings', 'percentSeatsAdopted', 'percentMaxAdopted',
+      'dailySuggestions', 'dailyChatTurns', 'weeklyPRSummaries', 'weeklyTimeSaved',
+      'monthlyTimeSavings', 'annualTimeSavingsDollars', 'productivityBoost'
+    ];
+
+    // Iterate through each form control and disable/enable based on disableInputs
+    for (const level of ['current', 'target', 'max'] as const) {
+      for (const controlName of controlNames) {
+        const control = this.form.get(`${level}.${controlName}`);
+        if (control) {
+          if (this.disableInputs && level !== 'target') {  // Disable current and max when disableInputs is true
+            control.disable();
+          } else {
+            control.enable();
+          }
+        }
+      }
     }
   }
 
@@ -489,17 +506,17 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     forkJoin({
       settings: this.settingsService.getAllSettings(),
       dayAtaTimeMetrics: this.metricsService.getMetricsTotals({
-        org: this.installation?.account?.login,
+        org: this.installation?.account?.login, 
         since: xPlus1DaysAgoUTC.toISOString(),
         until: xDaysAgoUTC.toISOString()
       }),
       weekAtaTimeMetrics: this.metricsService.getMetricsTotals({
-        org: this.installation?.account?.login,
+        org: this.installation?.account?.login, 
         since: xPlus7DaysAgoUTC.toISOString(),
         until: xDaysAgoUTC.toISOString()
       }),
       dayAtaTimeAdoptions: this.adoptionService.getAdoptions({
-        org: this.installation?.account?.login,
+        org: this.installation?.account?.login, 
         since: xPlus1DaysAgoUTC.toISOString(),
         until: xDaysAgoUTC.toISOString(),
         daysInactive: 30

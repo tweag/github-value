@@ -11,7 +11,8 @@ import { MetricDailyResponseType } from '../../models/metrics.model.js';
 import Database from '../../database.js';
 import 'dotenv/config';
 //import seatsExample from '../__mock__/seats-gen/seats.json'; //50 users
-import seatsExample from '../__mock__/seats-gen/seats2.json'; //100 users
+//import seatsExample from '../__mock__/seats-gen/seats2.json'; //100 users
+import seatsExample from '../__mock__/seats-gen/merged_seats.json'; //1000 users
 
 
 let membersOas: any[] = []; //octoaustenstone org
@@ -30,12 +31,12 @@ const metricsMockConfig: MockConfig = {
   metrics: {
     total_active_users: {
       baseValue: 100,
-      range: { min: 14, max: 240 },
-      trend: 'stable'
+      range: { min: 14, max: 1000 },
+      trend: 'grow'
     },
     total_engaged_users: {
       baseValue: 80,
-      range: { min: 10, max: 200 },
+      range: { min: 10, max: 900 },
       trend: 'grow'
     },
     code_suggestions: {
@@ -46,17 +47,17 @@ const metricsMockConfig: MockConfig = {
     code_acceptances: {
       baseValue: 150,
       range: { min: 40, max: 250 },
-      trend: 'stable'
+      trend: 'grow'
     },
     code_lines_suggested: {
       baseValue: 2250,
       range: { min: 2250, max: 5000 },
-      trend: 'stable'
+      trend: 'grow'
     },
     code_lines_accepted: {
       baseValue: 1200,
       range: { min: 750, max: 1955 },
-      trend: 'stable'
+      trend: 'grow'
     },
     chats: {
       baseValue: 45,
@@ -66,7 +67,7 @@ const metricsMockConfig: MockConfig = {
     chat_insertions: {
       baseValue: 120,
       range: { min: 120, max: 300 },
-      trend: 'stable'
+      trend: 'grow'
     },
     chat_copies: {
       baseValue: 160,
@@ -86,7 +87,7 @@ const metricsMockConfig: MockConfig = {
     total_code_review_comments: {
       baseValue: 30,
       range: { min: 30, max: 60 },
-      trend: 'fixed'
+      trend: 'grow'
     }
   },
   models: [
@@ -146,11 +147,12 @@ function generateSeatsData(datetime: Date) {
 
 async function runSurveyGen(datetime: Date) {
   if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23 && Math.random() < 0.5) {
-    if (Math.random() < 0.7 +counter/7000) {
+    if (Math.random() < 0.7 + counter/7000) {
       console.log('Running Survey Generation...', datetime);
       const surveys = await runSurveysForDate(datetime);
       for (const survey of surveys.surveys) {
         await SurveyService.createSurvey(survey);
+        console.log('Survey created:', survey);
       }
     }
   }
@@ -189,23 +191,24 @@ async function runMetricsGen(datetime: Date) {
 }
 
 async function calendarClock() {
-  let datetime = new Date('2024-11-01T00:00:00');
-  const endDate = new Date('2025-01-28T00:00:00');
-  console.log('datetime:', datetime);
+  let datetime = new Date('2024-11-16T15:00:00');
+  const endDate = new Date('2025-02-01T00:00:00');
+  console.log('datetime:', datetime.getTime());
+  console.log('endDate:', endDate.getTime());
   membersOcto = await TeamsService.getAllMembers('octodemo');
   membersOas = await TeamsService.getAllMembers('octoaustenstone');
   console.log('count Octo members:', membersOcto.length);
 
   console.log('count octoaustenstone members:', membersOas.length);
 
-  while (datetime < endDate) {
+  while (datetime.getTime() < endDate.getTime()) {
     await runSurveyGen(datetime);
     await runSeatsGen(datetime);
     await runMetricsGen(datetime);
 
     datetime.setHours(datetime.getHours() + 1);
     counter+=1;
-    console.log('datetime:', datetime);
+    console.log('datetime:    >', datetime);
   }
 
 
