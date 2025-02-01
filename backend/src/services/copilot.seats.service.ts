@@ -28,19 +28,19 @@ type MemberDailyActivity = {
 
 class SeatsService {
   async getAllSeats(org?: string) {
-    const Seats = mongoose.model('Seats');
     const Member = mongoose.model('Member');
-
-    const latestQuery = await Seats.findOne()
-      .sort({ queryAt: -1 })  // -1 for descending order
-      .select('queryAt');
-
-    const seats = await Seats.find({
-      ...(org ? { org } : {}),
-      queryAt: latestQuery?.queryAt
+    
+    const seats = await Member.find({
+      ...(org ? { org } : {})
     })
-      .populate('assignee')
-      .sort({ last_activity_at: -1 });  // DESC ordering ⬇️
+      .select('org login id name url avatar_url')
+      .populate({
+        path: 'seat',
+        select: '-_id -__v',
+        options: { lean: true }
+      })
+      .sort({ 'seat.last_activity_at': -1 })
+      .exec();
 
     return seats;
   }
@@ -127,6 +127,7 @@ class SeatsService {
       id: { $in: data.map(seat => seat.assignee.id) }
     });
 
+    console.log('austenstone-alt2', data.find(s => s.assignee.login === 'austenstone-alt2'));
     const seatsData = data.map((seat) => ({
       queryAt,
       org,
@@ -137,6 +138,17 @@ class SeatsService {
       assignee: updatedMembers.find(m => m.id === seat.assignee.id)?._id
     }));
     const seatResults = await Seats.insertMany(seatsData);
+    
+    // Add member seat updates
+    const memberSeatUpdates = seatResults.map(seat => ({
+      updateOne: {
+        filter: { org, id: seat.assignee_id },
+        update: {
+          $set: { seat: seat._id }
+        }
+      }
+    }));
+    await Members.bulkWrite(memberSeatUpdates);
 
     const adoptionData = {
       enterprise: null,

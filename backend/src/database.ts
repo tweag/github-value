@@ -201,10 +201,15 @@ class Database {
       email: String,
       starred_at: String,
       user_view_type: String,
+      seat: {
+        type: Schema.Types.ObjectId,
+        ref: 'Seats'
+      }
     }, {
       timestamps: true,
     });
     memberSchema.index({ org: 1, login: 1, id: 1 }, { unique: true });
+    memberSchema.index({ seat: 1 });
     memberSchema.virtual('seats', {
       ref: 'Seats',
       localField: '_id',
@@ -226,24 +231,25 @@ class Database {
     const seatsSchema = new mongoose.Schema({
       org: String,
       team: String,
-      assigning_team_id: Number,
-      plan_type: String,
+      created_at: Date,
+      updated_at: Date,
+      pending_cancellation_date: Date,
       last_activity_at: Date,
       last_activity_editor: String,
-      queryAt: Date,
-      assignee_id: Number,
-      assignee_login: String,
+      plan_type: String,
       assignee: {
         type: Schema.Types.ObjectId,
         ref: 'Member'
       },
+      queryAt: Date,
+      assignee_id: Number,
+      assignee_login: String,
     }, {
       timestamps: true
     });
 
     seatsSchema.index({ org: 1, queryAt: 1, last_activity_at: -1 });
     seatsSchema.index({ org: 1, team: 1, queryAt: 1, assignee_id: 1 }, { unique: true });
-
     mongoose.model('Seats', seatsSchema);
 
     const adoptionSchema = new Schema({

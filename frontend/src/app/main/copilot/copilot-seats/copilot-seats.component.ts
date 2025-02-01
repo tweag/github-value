@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ColumnOptions, TableComponent } from '../../../shared/table/table.component';
-import { Seat, SeatService } from '../../../services/api/seat.service';
+import { AllSeats, Seat, SeatService } from '../../../services/api/seat.service';
 import { SortDirection } from '@angular/material/sort';
 import { Router } from '@angular/router';
 import { InstallationsService } from '../../../services/api/installations.service';
@@ -16,56 +16,60 @@ import { takeUntil } from 'rxjs';
   styleUrl: './copilot-seats.component.scss'
 })
 export class CopilotSeatsComponent implements OnInit {
-  seats?: Seat[];
+  seats?: AllSeats[];
   tableColumns: ColumnOptions[] = [
     { 
       columnDef: 'avatar', 
       header: '', 
-      cell: (element: Seat) => `${element.assignee.avatar_url}`,
+      cell: (element: AllSeats) => `${element.avatar_url}`,
       isImage: true
     },
     { 
       columnDef: 'login', 
       header: 'User', 
-      cell: (element: Seat) => `${element.assignee.login}`,
-      // link: (element: Seat) => `https://github.com/${element.assignee.login}`
+      cell: (element: AllSeats) => `${element.login}`,
+      // link: (element: AllSeats) => `https://github.com/${element.assignee.login}`
     },
     { 
       columnDef: 'last_activity_at', 
       header: 'Last Active', 
-      cell: (element: Seat) => element.last_activity_at ? new Date(element.last_activity_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'
+      cell: (element: AllSeats) => element.seat?.last_activity_at ? new Date(element.seat.last_activity_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' }) : '-'
     },
     { 
       columnDef: 'last_activity_editor', 
       header: 'Editor', 
-      cell: (element: Seat) => element.last_activity_editor?.split('/')[0] || '-',
+      cell: (element: AllSeats) => element.seat?.last_activity_editor?.split('/')[0] || '-',
       chipList: true,
-      chipListIcon: (element: Seat) => this.getIconForEditor(element.last_activity_editor),
+      chipListIcon: (element: AllSeats) => this.getIconForEditor(element.seat?.last_activity_editor),
     },
     { 
       columnDef: 'created_at', 
       header: 'Created', 
-      cell: (element: Seat) => new Date(element.created_at).toLocaleString([], { dateStyle: 'short' })
+      cell: (element: AllSeats) => new Date(element.seat?.created_at).toLocaleString([], { dateStyle: 'short' })
     },
     { 
       columnDef: 'plan_type', 
       header: 'Plan', 
-      cell: (element: Seat) => `${element.plan_type}`,
+      cell: (element: AllSeats) => `${element.seat?.plan_type || 'disabled'}`,
       chipList: true,
-      chipListIcon: (element: Seat) => element.plan_type === 'enterprise' ? 'corporate_fare' : 'paid'
+      chipListIcon: (element: AllSeats) => element.seat?.plan_type === 'enterprise' ? 'corporate_fare' : element.seat?.plan_type === 'business' ? 'paid' : 'close'
+    },
+    { 
+      columnDef: 'org', 
+      header: 'Org', 
+      cell: (element: AllSeats) => `${element.org}`,
     }
   ];
   defaultSort = {id: 'last_activity_at', start: 'desc' as SortDirection, disableClear: false};
-  sortingDataAccessor = (item: Seat, property: string) => {
+  sortingDataAccessor = (item: AllSeats, property: string) => {
     switch(property) {
       case 'login':
-        return (item.assignee as { login: string })?.login.toLowerCase();
+        return item.login.toLowerCase();
       default:
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (item as any)[property];
+        return item.seat?.[property as keyof Seat]
     }
   };
-  filterPredicate = (data: Seat, filter: string) => {
+  filterPredicate = (data: AllSeats, filter: string) => {
     const searchStr = JSON.stringify(data).toLowerCase();
     return searchStr.includes(filter);
   };
@@ -81,14 +85,14 @@ export class CopilotSeatsComponent implements OnInit {
       takeUntil(this.installationsService.destroy$)
     ).subscribe(installation => {
       this.seatsService.getAllSeats(installation?.account?.login).subscribe(seats => {
-        this.seats = seats as Seat[];
+        this.seats = seats;
       });
     });
   }
 
-  onRowClick(seat: Seat) {
-    if (seat.assignee.id) {
-      this.router.navigate(['/copilot/seats', seat.assignee.id]);
+  onRowClick(seat: AllSeats) {
+    if (seat.id) {
+      this.router.navigate(['/copilot/seats', seat.id]);
     }
   }
 

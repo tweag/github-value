@@ -10,7 +10,6 @@ type SeatType = {
   last_activity_editor: string | null;
   plan_type: string;
   assignee_id: number;
-  assigning_team_id: number | null;
   createdAt: Date;
   updatedAt: Date;
 };
