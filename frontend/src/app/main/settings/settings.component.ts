@@ -135,9 +135,7 @@ export class SettingsComponent implements OnInit {
       percentCoding: this.convertStringToMetricState(this.form.controls.percentCoding.value?.toString() || ' '),
       percentTimeSaved: this.convertStringToMetricState(this.form.controls.percentTimeSaved.value?.toString() || ' ')
     };
-    
-    console.log('Saving settings', settings);
-  
+      
     // Now you can store the settings object in the database
     this.settingsService.createSettings(settings).subscribe(() => {
       this.router.navigate(['/']);

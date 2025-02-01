@@ -305,7 +305,6 @@ class MetricsService {
 
   async insertMetrics(org: string, data: MetricDailyResponseType[], team?: string) {
     const Metrics = mongoose.model('Metrics');
-    console.log('data', data);
     for (const day of data) {
       // const parts = day.date.split('-').map(Number);
       // const date = new Date(Date.UTC(parts[0], parts[1] - 1, parts[2] + 1));

@@ -111,7 +111,6 @@ export class CopilotValueComponent implements OnInit {
           this.surveysData = data;
         }),
         this.targetsService.getTargets().subscribe(data => {
-          console.log('targets', data)
           this.targetsData = data;
         })
       ];

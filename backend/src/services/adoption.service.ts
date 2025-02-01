@@ -23,20 +23,9 @@ export class AdoptionService {
   async createAdoption(adoptionData: any): Promise<AdoptionType> {
     const adoptionModel = mongoose.model('Adoption');
     try {
-      // Use `findOneAndUpdate` with `upsert` to avoid duplicates
-      const result = await adoptionModel.findOneAndUpdate(
-        { date: adoptionData.date }, // Match by unique key (e.g., `date`)
-        { $set: adoptionData },      // Update the fields with new data
-        { upsert: true, new: true }  // Insert if not found, return the updated document
-      );
+      const result = await adoptionModel.create(adoptionData);
       return result;
     } catch (error: any) {
-      if (error.code === 11000) {
-        // Handle duplicate key error explicitly
-        logger.error('Duplicate key error creating adoption:', error);
-        //throw new Error('An adoption with the same date already exists.'); 
-        // TODO
-      }
       logger.error('Error creating adoption:', error);
       throw error; // Rethrow other errors
     }

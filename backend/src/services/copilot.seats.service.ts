@@ -29,7 +29,7 @@ type MemberDailyActivity = {
 class SeatsService {
   async getAllSeats(org?: string) {
     const Member = mongoose.model('Member');
-    
+
     const seats = await Member.find({
       ...(org ? { org } : {})
     })
@@ -127,7 +127,6 @@ class SeatsService {
       id: { $in: data.map(seat => seat.assignee.id) }
     });
 
-    console.log('austenstone-alt2', data.find(s => s.assignee.login === 'austenstone-alt2'));
     const seatsData = data.map((seat) => ({
       queryAt,
       org,
@@ -138,7 +137,7 @@ class SeatsService {
       assignee: updatedMembers.find(m => m.id === seat.assignee.id)?._id
     }));
     const seatResults = await Seats.insertMany(seatsData);
-    
+
     // Add member seat updates
     const memberSeatUpdates = seatResults.map(seat => ({
       updateOne: {
@@ -171,61 +170,55 @@ class SeatsService {
     // add 1 to day
     // today.setDate(today.getDate() + 1);
     today.setUTCHours(0, 0, 0, 0);
-    const activityUpdates = seatResults.map(seat => {
-      if (!seat.assignee_login) {
-        console.warn('Missing assignee_login for seat:', seat);
-        return null;
-      }
-      return {
-        updateOne: {
-          filter: {
-            org,
-            assignee: seat.assignee,
-            assignee_id: seat.assignee_id,
-            assignee_login: seat.assignee_login,
-            date: today
-          },
-          update: [{
-            $set: {
-              total_active_time_ms: {
-                $cond: {
-                  if: { $eq: [seat.last_activity_at, null] },
-                  then: { $ifNull: ["$total_active_time_ms", 0] },
-                  else: {
-                    $add: [
-                      { $ifNull: ["$total_active_time_ms", 0] },
-                      {
-                        $cond: {
-                          if: {
-                            $and: [
-                              {
-                                $or: [
-                                  { $eq: ["$last_activity_at", null] },
-                                  { $lt: ["$last_activity_at", seat.last_activity_at] }
-                                ]
-                              },
-                              { $gt: [seat.last_activity_at, today] }
-                            ]
-                          },
-                          then: 1,
-                          else: 0
-                        }
+    const activityUpdates = seatResults.map(seat => ({
+      updateOne: {
+        filter: {
+          org,
+          assignee: seat.assignee,
+          assignee_id: seat.assignee_id,
+          assignee_login: seat.assignee_login,
+          date: today
+        },
+        update: [{
+          $set: {
+            total_active_time_ms: {
+              $cond: {
+                if: { $eq: [seat.last_activity_at, null] },
+                then: { $ifNull: ["$total_active_time_ms", 0] },
+                else: {
+                  $add: [
+                    { $ifNull: ["$total_active_time_ms", 0] },
+                    {
+                      $cond: {
+                        if: {
+                          $and: [
+                            {
+                              $or: [
+                                { $eq: ["$last_activity_at", null] },
+                                { $lt: ["$last_activity_at", seat.last_activity_at] }
+                              ]
+                            },
+                            { $gt: [seat.last_activity_at, today] }
+                          ]
+                        },
+                        then: 1,
+                        else: 0
                       }
-                    ]
-                  }
+                    }
+                  ]
                 }
               }
             }
-          }, {
-            $set: {
-              last_activity_editor: seat.last_activity_editor,
-              last_activity_at: seat.last_activity_at
-            }
-          }],
-          upsert: true
-        }
-      };
-    }).filter(update => update !== null);
+          }
+        }, {
+          $set: {
+            last_activity_editor: seat.last_activity_editor,
+            last_activity_at: seat.last_activity_at
+          }
+        }],
+        upsert: true
+      }
+    })).filter(update => update !== null);
 
     if (activityUpdates.length > 0) {
       await ActivityTotals.bulkWrite(activityUpdates);
@@ -401,7 +394,6 @@ class SeatsService {
       };
     }
 
-    console.log('getting totals', match);
     const totals = await ActivityTotals.aggregate([
       // Match documents within date range and org
       { $match: match },

@@ -65,7 +65,6 @@ export class DashboardCardDrilldownBarChartComponent implements OnChanges {
         ...this.chartOptions,
         ...this._chartOptions
       };
-      console.log('chartOptions', this._chartOptions);
       this.updateFlag = true;
     }
   }
