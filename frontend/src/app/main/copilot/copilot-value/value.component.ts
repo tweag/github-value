@@ -90,15 +90,9 @@ export class CopilotValueComponent implements OnInit {
     ).subscribe(installation => {
       this.subscriptions.forEach(s => s.unsubscribe());
       this.subscriptions = [
-        combineLatest([
-          this.daysInactive.valueChanges.pipe(startWith(30)),
-          this.adoptionFidelity.valueChanges.pipe(startWith('day'))
-          //TODO remove this
-        ]).subscribe(() => {
-          this.seatService.getActivity(installation?.account?.login).subscribe(data => {
-            this.activityData = data;
-            this.cdr.detectChanges();
-          });
+        this.seatService.getActivity(installation?.account?.login).subscribe(data => {
+          this.activityData = data;
+          this.cdr.detectChanges();
         }),
         this.metricsService.getMetrics({
           org: installation?.account?.login,
@@ -111,7 +105,6 @@ export class CopilotValueComponent implements OnInit {
           this.surveysData = data;
         }),
         this.targetsService.getTargets().subscribe(data => {
-          console.log('targets', data)
           this.targetsData = data;
         })
       ];

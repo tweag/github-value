@@ -89,7 +89,6 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    console.log(changes, this.targets)
     if (changes['data'] && this.data) {
       const options = this.highchartsService.transformActivityMetricsToLine(this.data);
       this._chartOptions = {
@@ -114,7 +113,6 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
         (this.chart?.yAxis[0] as any).plotLinesAndBands[0].render();
       }, 5000)
     }
-    console.log(this._chartOptions)
   }
 
 }

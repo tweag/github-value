@@ -46,7 +46,7 @@
     </ng-container>
     }
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr disabled="true" mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns;" [class.clickable]="isClickable"
       (click)="rowClick.emit(row)"></tr>
 

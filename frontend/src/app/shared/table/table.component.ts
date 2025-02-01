@@ -74,6 +74,9 @@ export class TableComponent implements OnChanges, OnInit  {
       this.displayedColumns = this.columns.map(c => c.columnDef);
     }
     if (changes['data']) {
+      if (!changes['data'].isFirstChange()) {
+        this.sort.sort({ id: '', start: 'asc', disableClear: false });
+      }
       if (this.data) {
         this.setData(this.data);
       }

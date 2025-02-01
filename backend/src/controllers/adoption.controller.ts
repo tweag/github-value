@@ -13,7 +13,7 @@ class AdoptionController {
 
       const query = {
         filter: {
-          ...enterprise ? { enterprise: 'enterprise' } : undefined,
+          ...enterprise || !org && !team ? { enterprise: 'enterprise' } : undefined,
           ...org ? { org } : undefined,
           ...team ? { team } : undefined,
           ...(Object.keys(dateFilter).length && { date: dateFilter }),
@@ -33,7 +33,7 @@ class AdoptionController {
 
   async getAdoptionTotals(req: Request, res: Response): Promise<void> {
     try {
-      const totals = await SeatsService.getMembersActivityTotals(req.query);
+      const totals = await SeatsService.getMembersActivityTotals2(req.query);
       res.status(200).json(totals);
     } catch (error) {
       res.status(500).json(error);

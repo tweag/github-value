@@ -37,7 +37,12 @@ class TeamsController {
     const Member = mongoose.model('Member');
     try {
       const members = await Member.find()
-        .select('login name url avatar_url')
+        .select('login org name url avatar_url')
+        .populate({
+          path: 'seat',
+          select: '-_id -__v',
+          options: { lean: true }
+        })
         .sort({ login: 'asc' })
         .exec();
 

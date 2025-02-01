@@ -192,9 +192,6 @@ const theme: Highcharts.Options = {
   },
   xAxis: xAxisConfig,
   yAxis: yAxisConfig,
-  time: {
-    useUTC: false
-  },
   legend: {
     align: 'left',
     verticalAlign: 'top',
