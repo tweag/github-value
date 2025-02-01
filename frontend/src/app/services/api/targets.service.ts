@@ -3,21 +3,21 @@ import { HttpClient } from '@angular/common/http';
 import { serverUrl } from '../server.service';
 
 export interface TargetsDetailType {
-  seats: string | number;
-  adoptedDevs: string | number;
-  monthlyDevsReportingTimeSavings: string | number;
-  percentSeatsReportingTimeSavings: string | number;
-  percentSeatsAdopted: string | number;
-  percentMaxAdopted: string | number;
-  dailySuggestions: string | number;
-  dailyChatTurns: string | number;
-  weeklyPRSummaries: string | number;
-  weeklyTimeSaved: string | number;
-  monthlyTimeSavings: string | number;
-  annualTimeSavingsDollars: string | number;
-  productivityBoost: string | number;
-  asOfDate?: string | number;
-  [key: string]: string | number | undefined;
+  seats:  number;
+  adoptedDevs:  number;
+  monthlyDevsReportingTimeSavings:  number;
+  percentSeatsReportingTimeSavings:  number;
+  percentSeatsAdopted:  number;
+  percentMaxAdopted:  number;
+  dailySuggestions:  number;
+  dailyChatTurns:  number;
+  weeklyPRSummaries:  number;
+  weeklyTimeSaved:  number;
+  monthlyTimeSavings:  number;
+  annualTimeSavingsDollars:  number;
+  productivityBoost:  number;
+  asOfDate:  number;
+  [key: string]:  number ;
 };
 
 export interface TargetsGridType {
