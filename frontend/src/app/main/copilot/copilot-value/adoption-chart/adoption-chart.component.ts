@@ -102,7 +102,7 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
     }
     if (changes['targets'] && this.targets) {
       if (this.targets?.target.adoptedDevs) {
-        const target = +this.targets.target.adoptedDevs;
+        const target = (+this.targets.target.adoptedDevs / this.targets.max.seats) * 100;
         const yAxis = this._chartOptions.yAxis as Highcharts.YAxisOptions;
         if (yAxis?.plotLines?.[0]) {
           yAxis.plotLines[0].value = target;

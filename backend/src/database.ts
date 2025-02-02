@@ -2,6 +2,7 @@ import updateDotenv from 'update-dotenv';
 import logger from './services/logger.js';
 import mongoose, { mongo, Schema } from 'mongoose';
 import util from 'util';
+import { da } from 'date-fns/locale';
 
 class Database {
   mongoose: mongoose.Mongoose | null = null;
@@ -13,7 +14,7 @@ class Database {
 
   async connect() {
     //improve the logger message  @12:12
-    
+
     logger.info('Connecting to the database', this.mongodbUri);
     if (this.mongodbUri) await updateDotenv({ MONGODB_URI: this.mongodbUri });
     try {
@@ -34,7 +35,7 @@ class Database {
       });
       mongoose.set('debug', (collectionName: string, methodName: string, ...methodArgs: unknown[]) => {
         const msgMapper = (m: unknown) => {
-            return util.inspect(m, false, 10, true)
+          return util.inspect(m, false, 10, true)
             .replace(/\n/g, '').replace(/\s{2,}/g, ' ');
         };
         // logger.debug(`\x1B[0;36mMongoose:\x1B[0m: ${collectionName}.${methodName}` + `(${methodArgs.map(msgMapper).join(', ')})`);
@@ -156,7 +157,7 @@ class Database {
         repositories: [RepositorySchema]
       }
     }));
-    
+
     const teamSchema = new Schema({
       org: { type: String, required: true },
       team: String,
@@ -302,10 +303,10 @@ class Database {
     }, {
       timestamps: true
     });
-    
+
     activityTotalsSchema.index({ org: 1, date: 1, assignee: 1 }, { unique: true });
     activityTotalsSchema.index({ date: 1 }); // For date range queries
-    
+
     mongoose.model('ActivityTotals', activityTotalsSchema);
 
     mongoose.model('Survey', new mongoose.Schema({
@@ -331,7 +332,9 @@ class Database {
       percentSeatsAdopted: Number,
       percentMaxAdopted: Number,
       dailySuggestions: Number,
+      dailyAcceptances: Number,
       dailyChatTurns: Number,
+      dailyDotComChats: Number,
       weeklyPRSummaries: Number,
       weeklyTimeSaved: Number,
       monthlyTimeSavings: Number,
@@ -339,7 +342,7 @@ class Database {
       productivityBoost: Number,
       asOfDate: Number
     });
-    
+
     const TargetsSchema = new mongoose.Schema({
       current: TargetsDetailSchema,
       target: TargetsDetailSchema,
@@ -352,10 +355,10 @@ class Database {
       _id: { type: String, required: true },
       seq: { type: Number, default: 0 }
     });
-    
+
     mongoose.model('Counter', CounterSchema);
   }
-  
+
   async disconnect() {
     await this.mongoose?.disconnect();
   }

@@ -63,7 +63,7 @@ export class HighchartsService {
       return localDate;
     };
     const ideCompletionsSeries: Highcharts.SeriesOptionsType = {
-      name: 'IDE Completions',
+      name: 'IDE Suggestions',
       type: 'column',
       data: data.map(dateData => ({
         name: convertedDate(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
@@ -435,7 +435,7 @@ export class HighchartsService {
       lineWidth: 2,
       marker: {
         enabled: true,
-        radius: 4,
+        radius: 3,
         symbol: 'circle'
       },
       states: {
@@ -471,7 +471,7 @@ export class HighchartsService {
       lineWidth: 2,
       marker: {
         enabled: true,
-        radius: 4,
+        radius: 3,
         symbol: 'circle'
       },
       states: {
@@ -482,7 +482,12 @@ export class HighchartsService {
     };
     const dailyActiveIdeCompletionsSeries = {
       ...initialSeries,
-      name: 'IDE Completions',
+      name: 'IDE Suggestions',
+      data: [] as CustomHighchartsPointOptions[]
+    };
+    const dailyActiveIdeAcceptsSeries = {
+      ...initialSeries,
+      name: 'IDE Accepts',
       data: [] as CustomHighchartsPointOptions[]
     };
     const dailyActiveIdeChatSeries = {
@@ -507,6 +512,12 @@ export class HighchartsService {
         (dailyActiveIdeCompletionsSeries.data).push({
           x: new Date(date).getTime(),
           y: (currentMetrics.copilot_ide_code_completions.total_code_suggestions / (dateData.totalActive || 1)),
+          raw: date
+        });
+
+        (dailyActiveIdeAcceptsSeries?.data).push({
+          x: new Date(date).getTime(),
+          y: (currentMetrics.copilot_ide_code_completions.total_code_acceptances / (dateData.totalActive || 1)),
           raw: date
         });
       }
@@ -536,9 +547,10 @@ export class HighchartsService {
     return {
       series: [
         dailyActiveIdeCompletionsSeries,
+        dailyActiveIdeAcceptsSeries,
         dailyActiveIdeChatSeries,
         dailyActiveDotcomChatSeries,
-        dailyActiveDotcomPrSeries,
+        // dailyActiveDotcomPrSeries,
       ]
     }
   }
@@ -603,7 +615,7 @@ export class HighchartsService {
           lineWidth: 2,
           marker: {
             enabled: true,
-            radius: 4,
+            radius: 3,
             symbol: 'circle'
           },
           states: {
@@ -622,7 +634,7 @@ export class HighchartsService {
         //   })),
         //   marker: {
         //     enabled: true,
-        //     radius: 4,
+        //     radius: 3,
         //     symbol: 'triangle',
         //   },
         //   tooltip: {

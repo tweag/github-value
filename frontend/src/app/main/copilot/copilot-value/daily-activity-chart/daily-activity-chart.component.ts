@@ -23,10 +23,57 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
   @Input() metrics?: CopilotMetrics[];
   @Input() chartOptions?: Highcharts.Options;
   @Output() chartInstanceChange = new EventEmitter<Highcharts.Chart>();
+  private chart?: Highcharts.Chart;
   _chartOptions: Highcharts.Options = {
+    chart: {
+      events: {
+        redraw: () => {
+          if (!this.chart) return;
+
+          // Mapping from series name to target values
+          const targetMapping: Record<string, number> = {
+            'IDE Suggestions': this.targets?.target.dailySuggestions || 0,
+            'IDE Accepts': this.targets?.target.dailyAcceptances || 0,
+            'IDE Chats': this.targets?.target.dailyChatTurns || 0,
+            '.COM Chats': this.targets?.target.dailyDotComChats || 0
+          };
+
+          let newTarget = 1000;
+          const visibleSeries = this.chart.series.filter(s => s.visible);
+
+          if (visibleSeries.length === 1) {
+            const series = visibleSeries[0];
+            if (series.name && targetMapping[series.name]) {
+              newTarget = targetMapping[series.name];
+            }
+          }
+
+          // Use chart instance to access yAxis
+          const yAxis = this.chart.yAxis[0];
+          const plotLineId = 'target-line';
+
+          yAxis.removePlotLine(plotLineId);
+          yAxis.addPlotLine({
+            id: plotLineId,
+            value: newTarget,
+            color: 'var(--sys-primary)',
+            dashStyle: 'Dash',
+            width: 2,
+            label: {
+              text: 'Target Level',
+              align: 'left',
+              style: {
+                color: 'var(--sys-primary)'
+              }
+            },
+            zIndex: 2
+          });
+        }
+      }
+    },
     yAxis: {
       title: {
-        text: 'Average Activity Per User'
+        text: 'Daily Activity Per Avg User'
       },
       min: 0,
       plotBands: [{
@@ -39,20 +86,6 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
             color: 'var(--sys-on-surface-variant)'
           }
         }
-      }],
-      plotLines: [{
-        value: 1000,
-        color: 'var(--sys-primary)',
-        dashStyle: 'Dash',
-        width: 2,
-        label: {
-          text: 'Target Level',
-          align: 'left',
-          style: {
-            color: 'var(--sys-primary)'
-          }
-        },
-        zIndex: 2
       }]
     },
     tooltip: {
@@ -68,16 +101,16 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
       }
     },
     series: [{
-      name: 'IDE Completions',
+      name: 'IDE Suggestions',
+      type: 'spline',
+    }, {
+      name: 'IDE Accepts',
       type: 'spline',
     }, {
       name: 'IDE Chats',
       type: 'spline',
     }, {
       name: '.COM Chats',
-      type: 'spline',
-    }, {
-      name: '.COM Pull Requests',
       type: 'spline',
     }]
   };
@@ -91,7 +124,7 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
     this._chartOptions.tooltip = Object.assign({}, this.chartOptions?.tooltip, this._chartOptions.tooltip);
     this._chartOptions = Object.assign({}, this.chartOptions, this._chartOptions);
   }
-  
+
   ngOnChanges() {
     if (this.activity && this.metrics) {
       this._chartOptions = {
@@ -100,5 +133,10 @@ export class DailyActivityChartComponent implements OnInit, OnChanges {
       };
       this.updateFlag = true;
     }
+  }
+
+  onChartInstance(chart: Highcharts.Chart) {
+    this.chart = chart;
+    this.chartInstanceChange.emit(chart);
   }
 }

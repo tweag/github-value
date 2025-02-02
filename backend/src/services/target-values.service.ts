@@ -10,7 +10,7 @@ class TargetValuesService {
       throw new Error(`Error fetching target values: ${error}`);
     }
   }
-  
+
   async updateTargetValues(data: {
     current: {
       seats: number;
@@ -26,6 +26,9 @@ class TargetValuesService {
       monthlyTimeSavings: number;
       annualTimeSavingsDollars: number;
       productivityBoost: number;
+      dailyAcceptances: number;
+      dailyDotComChats: number;
+      asOfDate: number;
     };
     target: {
       seats: number;
@@ -41,6 +44,8 @@ class TargetValuesService {
       monthlyTimeSavings: number;
       annualTimeSavingsDollars: number;
       productivityBoost: number;
+      dailyAcceptances: number;
+      dailyDotComChats: number;
     };
     max: {
       seats: number;
@@ -56,6 +61,8 @@ class TargetValuesService {
       monthlyTimeSavings: number;
       annualTimeSavingsDollars: number;
       productivityBoost: number;
+      dailyAcceptances: number;
+      dailyDotComChats: number;
     };
   }) {
     try {

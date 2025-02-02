@@ -2,7 +2,7 @@
 import SurveyService from '../../services/survey.service.js';
 import SeatService from '../../services/copilot.seats.service.js';
 import metricsService from '../../services/metrics.service.js';
-import TeamsService from '../../services/teams.service.js'; 
+import TeamsService from '../../services/teams.service.js';
 import { runSurveysForDate } from '../__mock__/survey-gen/runSurveyGenerator.js';
 import { MockSeatsGenerator } from '../__mock__/seats-gen/mockSeatsGenerator.js';
 import { MockMetricsGenerator } from '../__mock__/metrics-gen/mockGenerator.js';
@@ -40,52 +40,52 @@ const metricsMockConfig: MockConfig = {
       trend: 'grow'
     },
     code_suggestions: {
-      baseValue: 700,
+      baseValue: 800,
       range: { min: 150, max: 1000 },
       trend: 'grow'
     },
     code_acceptances: {
-      baseValue: 150,
+      baseValue: 180,
       range: { min: 40, max: 250 },
       trend: 'grow'
     },
     code_lines_suggested: {
-      baseValue: 2250,
+      baseValue: 2500,
       range: { min: 2250, max: 5000 },
       trend: 'grow'
     },
     code_lines_accepted: {
-      baseValue: 1200,
+      baseValue: 1400,
       range: { min: 750, max: 1955 },
       trend: 'grow'
     },
     chats: {
-      baseValue: 45,
+      baseValue: 60,
       range: { min: 35, max: 75 },
       trend: 'grow'
     },
     chat_insertions: {
-      baseValue: 120,
+      baseValue: 150,
       range: { min: 120, max: 300 },
       trend: 'grow'
     },
     chat_copies: {
-      baseValue: 160,
+      baseValue: 190,
       range: { min: 160, max: 460 },
       trend: 'stable'
     },
     pr_summaries: {
-      baseValue: 60,
+      baseValue: 80,
       range: { min: 60, max: 160 },
       trend: 'grow'
     },
     total_code_reviews: {
-      baseValue: 50,
+      baseValue: 60,
       range: { min: 25, max: 100 },
       trend: 'grow'
     },
     total_code_review_comments: {
-      baseValue: 30,
+      baseValue: 40,
       range: { min: 30, max: 60 },
       trend: 'grow'
     }
@@ -147,7 +147,7 @@ function generateSeatsData(datetime: Date) {
 
 async function runSurveyGen(datetime: Date) {
   if (datetime.getDay() >= 1 && datetime.getDay() <= 5 && datetime.getHours() >= 6 && datetime.getHours() <= 23 && Math.random() < 0.5) {
-    if (Math.random() < 0.7 + counter/7000) {
+    if (Math.random() < 0.7 + counter / 7000) {
       console.log('Running Survey Generation...', datetime);
       const surveys = await runSurveysForDate(datetime);
       for (const survey of surveys.surveys) {
@@ -172,12 +172,12 @@ async function runSeatsGen(datetime: Date) {
   let newSeats = generateSeatsData(datetime);
   await SeatService.insertSeats(orgOcto, datetime, newSeats);
   //I need to patch seatsExampleInitialized with the new data
-for (const seat of newSeats) {
-  const seatIndex = seatsExampleInitialized.seats.findIndex((s: any) => s.user === seat.user);
-  if (seatIndex !== -1 ) {
-    seatsExampleInitialized.seats[seatIndex].last_activity_at = seat.last_activity_at;
+  for (const seat of newSeats) {
+    const seatIndex = seatsExampleInitialized.seats.findIndex((s: any) => s.user === seat.user);
+    if (seatIndex !== -1) {
+      seatsExampleInitialized.seats[seatIndex].last_activity_at = seat.last_activity_at;
+    }
   }
-}
 }
 
 async function runMetricsGen(datetime: Date) {
@@ -191,7 +191,7 @@ async function runMetricsGen(datetime: Date) {
 }
 
 async function calendarClock() {
-  let datetime = new Date('2024-11-16T15:00:00');
+  let datetime = new Date('2024-12-30T01:00:00');
   const endDate = new Date('2025-02-01T00:00:00');
   console.log('datetime:', datetime.getTime());
   console.log('endDate:', endDate.getTime());
@@ -207,7 +207,7 @@ async function calendarClock() {
     await runMetricsGen(datetime);
 
     datetime.setHours(datetime.getHours() + 1);
-    counter+=1;
+    counter += 1;
     console.log('datetime:    >', datetime);
   }
 

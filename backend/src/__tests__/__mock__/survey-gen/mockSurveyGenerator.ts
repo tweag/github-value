@@ -32,10 +32,10 @@ class MockSurveyGenerator {
 
   private getRandomPercentTimeSaved(): number {
     const x = Math.floor(Math.random() * 100);
-    if ( x < 10 || x > 60) {
-      return Math.floor(Math.random() * 50) || 50;
+    if (x < 10 || x > 65) {
+      return Math.floor(Math.random() * 45) || 55;
     }
-    return 25;
+    return 30;
   }
 
   private getRandomReason(): string {
@@ -59,12 +59,15 @@ class MockSurveyGenerator {
       survey.org = this.getRandomOrg();
       //survey.repo = this.getRandomRepo();
       survey.prNumber = this.getRandomPrNumber();
-      survey.usedCopilot = Math.random() > 0.5;
-      survey.percentTimeSaved = this.getRandomPercentTimeSaved();
-      survey.reason = this.getRandomReason();
-      survey.timeUsedFor = this.getRandomTimeUsedFor();
-      survey.createdAt = this.getRandomDate();
-      survey.updatedAt = this.getRandomDate();
+      survey.usedCopilot = Math.random() > 0.15;
+      if (survey.usedCopilot) {
+
+        survey.percentTimeSaved = this.getRandomPercentTimeSaved();
+        survey.reason = this.getRandomReason();
+        survey.timeUsedFor = this.getRandomTimeUsedFor();
+        survey.createdAt = this.getRandomDate();
+        survey.updatedAt = this.getRandomDate();
+      }
       return survey;
     }));
 

@@ -43,6 +43,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
   gridObjectSaved: TargetsGridType = initializeGridObject();
   clickCounter = 0; // when this changes we need to call queryCurrentValues again
   asOfDate: Date = new Date();
+  originalAsOfDate: Date = new Date();
 
 
   devCostPerYear: number = 0;
@@ -157,7 +158,10 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       weeklyTimeSaved: new FormControl('0', [Validators.required, Validators.min(0)]),
       monthlyTimeSavings: new FormControl('0', [Validators.required, Validators.min(0)]),
       annualTimeSavingsDollars: new FormControl('0', [Validators.required, Validators.min(0)]),
-      productivityBoost: new FormControl('0', [Validators.required, Validators.min(0), Validators.max(100)])
+      productivityBoost: new FormControl('0', [Validators.required, Validators.min(0), Validators.max(100)]),
+      dailyAcceptances: new FormControl('0', [Validators.required, Validators.min(0)]),
+      dailyDotComChats: new FormControl('0', [Validators.required, Validators.min(0)]),
+      asOfDate: new FormControl('0', [Validators.required, Validators.min(0)])
     }),
     target: new FormGroup({
       seats: new FormControl('0', [Validators.required, Validators.min(0)]),
@@ -172,7 +176,9 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       weeklyTimeSaved: new FormControl('0', [Validators.required, Validators.min(0)]),
       monthlyTimeSavings: new FormControl('0', [Validators.required, Validators.min(0)]),
       annualTimeSavingsDollars: new FormControl('0', [Validators.required, Validators.min(0)]),
-      productivityBoost: new FormControl('0', [Validators.required, Validators.min(0), Validators.max(100)])
+      productivityBoost: new FormControl('0', [Validators.required, Validators.min(0), Validators.max(100)]),
+      dailyAcceptances: new FormControl('0', [Validators.required, Validators.min(0)]),
+      dailyDotComChats: new FormControl('0', [Validators.required, Validators.min(0)])
     }),
     max: new FormGroup({
       seats: new FormControl('0', [Validators.required, Validators.min(0)]),
@@ -187,7 +193,9 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       weeklyTimeSaved: new FormControl('0', [Validators.required, Validators.min(0)]),
       monthlyTimeSavings: new FormControl('0', [Validators.required, Validators.min(0)]),
       annualTimeSavingsDollars: new FormControl('0', [Validators.required, Validators.min(0)]),
-      productivityBoost: new FormControl('0', [Validators.required, Validators.min(0), Validators.max(100)])
+      productivityBoost: new FormControl('0', [Validators.required, Validators.min(0), Validators.max(100)]),
+      dailyAcceptances: new FormControl('0', [Validators.required, Validators.min(0)]),
+      dailyDotComChats: new FormControl('0', [Validators.required, Validators.min(0)])
     })
   });
   disableInputs: boolean = true;
@@ -222,9 +230,19 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   // Helper method to handle async calls
   private async initializeComponent() {
-    this.gridObject.current.asOfDate = new Date().getTime();
+
+    this.loadGridObject();
     setTimeout(() => {
-      this.loadGridObject();
+      if (this.gridObject.current.asOfDate === 0) {
+        this.gridObject.current.asOfDate = new Date().getTime();
+        this.asOfDate = new Date();
+        this.originalAsOfDate = new Date();
+      }
+      else {
+        this.asOfDate = new Date(this.gridObject.current.asOfDate);
+        this.originalAsOfDate = new Date(this.gridObject.current.asOfDate);
+      }
+
     }, 500);
 
     this.installationsService.currentInstallation.pipe(
@@ -234,8 +252,8 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       try {
         if (installation?.account?.login) {
           this.installation = installation;
-       console.log('installation?.account?.login:', installation?.account?.login);
-       this.execGridLifecycle(); 
+          console.log('installation?.account?.login:', installation?.account?.login);
+          this.execGridLifecycle();
         }
         console.log('0. Update Current gridObject:', this.gridObject);
       } catch (error) {
@@ -301,7 +319,7 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   loadGridObject() {
     // Stub: Load the gridObject from a data source
-    
+
     this.targetService.getTargets().subscribe((targetGrid) => {
       if (targetGrid) {
         this.gridObject = targetGrid;
@@ -316,10 +334,12 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     // Stub: Save the gridObject to a data source
 
     this.updateGridObjectFromForm();
+    this.gridObject.current.asOfDate = this.asOfDate.getTime();
+
     //This needs to be a deep copy. If we do a shallow copy, the gridObjectSaved will be updated whenever the gridObject is updated.
     this.gridObjectSaved = JSON.parse(JSON.stringify(this.gridObject));
     console.log('7. Saved gridObject:', this.gridObjectSaved);
-    this.targetService.saveTargets(this.gridObject).subscribe();
+    this.targetService.saveTargets(this.gridObjectSaved).subscribe();
   }
 
   private updateFormFromGridObject() {
@@ -356,8 +376,8 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
           } else if (key === 'productivityBoost') {
             result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-2') || '0.00';
           } else if (key === 'annualTimeSavingsDollars') {
-            console.log(' Raw Value >',metricState[key as keyof TargetsDetailType]);
-            result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';  
+            console.log(' Raw Value >', metricState[key as keyof TargetsDetailType]);
+            result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';
           } else {
             result[key] = this.decimalPipe.transform(metricState[key as keyof TargetsDetailType], '1.0-0') || '0';
           }
@@ -378,7 +398,9 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
       percentSeatsAdopted: 0,
       percentMaxAdopted: 0,
       dailySuggestions: 0,
+      dailyAcceptances: 0,
       dailyChatTurns: 0,
+      dailyDotComChats: 0,
       weeklyPRSummaries: 0,
       weeklyTimeSaved: 0,
       monthlyTimeSavings: 0,
@@ -506,17 +528,17 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     forkJoin({
       settings: this.settingsService.getAllSettings(),
       dayAtaTimeMetrics: this.metricsService.getMetricsTotals({
-        org: this.installation?.account?.login, 
+        org: this.installation?.account?.login,
         since: xPlus1DaysAgoUTC.toISOString(),
         until: xDaysAgoUTC.toISOString()
       }),
       weekAtaTimeMetrics: this.metricsService.getMetricsTotals({
-        org: this.installation?.account?.login, 
+        org: this.installation?.account?.login,
         since: xPlus7DaysAgoUTC.toISOString(),
         until: xDaysAgoUTC.toISOString()
       }),
       dayAtaTimeAdoptions: this.adoptionService.getAdoptions({
-        org: this.installation?.account?.login, 
+        org: this.installation?.account?.login,
         since: xPlus1DaysAgoUTC.toISOString(),
         until: xDaysAgoUTC.toISOString(),
         daysInactive: 30
@@ -548,7 +570,9 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
         gridObject.max.adoptedDevs = this.developerCount;
         gridObject.max.monthlyDevsReportingTimeSavings = this.developerCount;
         gridObject.max.dailySuggestions = 150;
+        gridObject.max.dailyAcceptances = 50;
         gridObject.max.dailyChatTurns = 50;
+        gridObject.max.dailyDotComChats = 50;
         gridObject.max.weeklyPRSummaries = 5;
         gridObject.max.weeklyTimeSaved = (this.hoursPerYear * this.percentCoding / 100 * this.percentTimeSaved / 100) / 50;
       }),
@@ -571,7 +595,9 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
         // Process metrics
 
         gridObject.current.dailySuggestions = (Number(dayAtaTimeMetrics.copilot_ide_code_completions?.total_code_suggestions) || 0) / (Number(gridObject.current.adoptedDevs) || 1) || 0;
-        gridObject.current.dailyChatTurns = (Number(dayAtaTimeMetrics.copilot_ide_chat?.total_chats || 0)) / (dayAtaTimeMetrics.total_active_users || 1) || 0;
+        gridObject.current.dailyAcceptances = (Number(dayAtaTimeMetrics.copilot_ide_code_completions?.total_code_acceptances || 0)) / (Number(gridObject.current.adoptedDevs) || 1) || 0;
+        gridObject.current.dailyChatTurns = (Number(dayAtaTimeMetrics.copilot_ide_chat?.total_chats || 0)) / (Number(gridObject.current.adoptedDevs) || 1) || 0;
+        gridObject.current.dailyDotComChats = (Number(dayAtaTimeMetrics.copilot_dotcom_chat?.total_chats || 0)) / (Number(gridObject.current.adoptedDevs) || 1) || 0;
 
       }),
       tap(({ weekAtaTimeMetrics }) => {
@@ -633,13 +659,13 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
 
   incrementCounter() {
     this.clickCounter++;
-    this.asOfDate = new Date(Date.now() - this.clickCounter * 24 * 60 * 60 * 1000);
+    this.asOfDate = new Date(this.originalAsOfDate.getTime() - this.clickCounter * 24 * 60 * 60 * 1000);
     this.execGridLifecycle();
   }
 
   decrementCounter() {
     this.clickCounter--;
-    this.asOfDate = new Date(Date.now() - this.clickCounter * 24 * 60 * 60 * 1000);
+    this.asOfDate = new Date(this.originalAsOfDate.getTime() - this.clickCounter * 24 * 60 * 60 * 1000);
     this.execGridLifecycle();
   }
 
