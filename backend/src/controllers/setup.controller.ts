@@ -65,11 +65,10 @@ class SetupController {
   async setupStatus(req: Request, res: Response) {
     try {
       const status = {
-        dbConnected: await app.database.sequelize?.authenticate().then(() => true).catch(() => false),
+        dbConnected: app.database.mongoose?.connection.readyState === 1,
         isSetup: app.github.app !== undefined,
         installations: app.github.installations.map(i => ({
           installation: i.installation,
-          ...i.queryService.status
         }))
       };
       return res.json(status);
@@ -102,13 +101,7 @@ class SetupController {
 
   async setupDB(req: Request, res: Response) {
     try {
-      await app.database.connect(req.body.url || {
-        database: req.body.database || 'value',
-        host: req.body.host,
-        port: req.body.port,
-        username: req.body.username,
-        password: req.body.password
-      });
+      await app.database.connect();
       res.json({ message: 'DB setup started' });
     } catch (error) {
       res.status(500).json(error);

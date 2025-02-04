@@ -1,33 +1,50 @@
-import { Survey, SurveyType } from "../models/survey.model.js";
-import { Op, WhereOptions } from 'sequelize';
+import { SurveyType } from "../models/survey.model.js";
+import mongoose from 'mongoose';
+import SequenceService from './sequence.service.js';
 
 class SurveyService {
+
   async createSurvey(survey: SurveyType) {
+    survey.id = await SequenceService.getNextSequenceValue('survey-sequence');
+    console.log('survey', survey);
+    const Survey = mongoose.model('Survey');
     return await Survey.create(survey);
   }
 
   async updateSurvey(survey: SurveyType) {
-    await Survey.update(survey, {
-      where: { id: survey.id }
-    });
-    return await Survey.findByPk(survey.id);
-  }
-
+    if (!survey || !survey.id || typeof survey.id !== 'number') {
+      throw new Error('Invalid survey data provided');
+    }
+    const Survey = mongoose.model('Survey');
+    const result = await Survey.updateOne({ id: survey.id }, survey);
   
-  async getRecentSurveysWithGoodReasons(minReasonLength: number): Promise<Survey[]> {
-    return Survey.findAll({
-      where: {
-        reason: {
-          [Op.and]: [
-            { [Op.ne]: null },
-            { [Op.ne]: '' },
-            { [Op.gte]: minReasonLength }
-          ]
-        }
-      } as WhereOptions,
-      order: [['updatedAt', 'DESC']],
-      limit: 20
-    });
+    // Check if the update modified any document.
+  if (result.modifiedCount === 0) {
+    throw new Error('Survey update failed: no document was modified');
+  }
+  
+  const updatedSurvey = await Survey.findOne({ id: survey.id });
+  if (!updatedSurvey) {
+    throw new Error('Survey update failed: survey not found');
+  }
+  
+  return updatedSurvey;
+  }
+  
+  async getRecentSurveysWithGoodReasons(minReasonLength: number): Promise<SurveyType[]> {
+    if (typeof minReasonLength !== 'number' || isNaN(minReasonLength) || minReasonLength < 1) {
+      throw new Error('Invalid minReasonLength provided');
+    }
+    const Survey = mongoose.model('Survey');
+    return Survey.find({
+      reason: {
+        $and: [
+          { $ne: null },
+          { $ne: '' },
+          { $gte: minReasonLength }
+        ]
+      }
+    }).sort({ updatedAt: -1 }).limit(20).exec();
   }
 }
 

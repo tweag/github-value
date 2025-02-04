@@ -36,13 +36,13 @@ export interface GitHubInput {
 }
 class GitHub {
   app?: App;
+  queryService?: QueryService;
   webhooks?: Express;
   input: GitHubInput;
   expressApp: Express;
   installations = [] as {
     installation: Endpoints["GET /app/installations"]["response"]["data"][0],
     octokit: Octokit
-    queryService: QueryService
   }[];
   status = 'starting';
   cronExpression = '0 * * * * *';
@@ -88,23 +88,22 @@ class GitHub {
       logger.error('Failed to create webhook middleware')
     }
 
+    this.queryService = new QueryService(this.app, {
+      cronTime: this.cronExpression
+    });
+    logger.info(`CRON task ${this.cronExpression} started`);
     for await (const { octokit, installation } of this.app.eachInstallation.iterator()) {
       if (!installation.account?.login) return;
-      const queryService = new QueryService(installation.account.login, octokit, {
-        cronTime: this.cronExpression
-      });
       this.installations.push({
         installation,
-        octokit,
-        queryService
+        octokit
       });
-      logger.info(`${installation.account?.login} cron task ${this.cronExpression} started`);
     }
     return this.app;
   }
 
   disconnect = () => {
-    this.installations.forEach((i) => i.queryService.delete())
+    this.queryService?.delete();
     this.installations = [];
   }
 

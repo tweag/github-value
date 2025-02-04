@@ -12,6 +12,7 @@ import GitHub from './github.js';
 import SettingsService from './services/settings.service.js';
 import apiRoutes from "./routes/index.js"
 import WebhookService from './services/smee.js';
+import { log } from 'console';
 
 class App {
   e: Express;
@@ -27,13 +28,11 @@ class App {
     this.baseUrl = process.env.BASE_URL || 'http://localhost:' + port;
     this.e = express();
     this.port = port;
-    this.database = new Database(process.env.JAWSDB_URL ? process.env.JAWSDB_URL : {
-      host: process.env.MYSQL_HOST,
-      port: Number(process.env.MYSQL_PORT) || 3306,
-      username: process.env.MYSQL_USER,
-      password: process.env.MYSQL_PASSWORD,
-      database: process.env.MYSQL_DATABASE || 'value'
-    });
+    logger.info(`Starting application on port ${this.port}`);
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI must be set');
+    }
+    this.database = new Database(process.env.MONGODB_URI);
     const webhookService = new WebhookService({
       url: process.env.WEBHOOK_PROXY_URL,
       path: '/api/github/webhooks',
@@ -66,6 +65,7 @@ class App {
 
   public async start() {
     try {
+      logger.info(`Starting application on port ${this.port}`);
       logger.info('Starting application');
 
       logger.info('Express setup...');
@@ -125,7 +125,9 @@ class App {
       (_, res) => res.sendFile(path.join(frontendPath, 'index.html'))
     );
 
-    this.eListener = this.e.listen(this.port);
+    this.eListener = this.e.listen(this.port, '0.0.0.0');
+    logger.info(`eListener on port ${this.port}`);
+
   }
 
   private initializeSettings() {

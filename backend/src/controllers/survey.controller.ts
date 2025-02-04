@@ -1,13 +1,19 @@
-import { Request, Response } from 'express';
-import { Survey } from '../models/survey.model.js';
+import { application, Request, Response } from 'express';
+import { SurveyType } from '../models/survey.model.js';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
-import { Op, Sequelize, WhereOptions } from 'sequelize';
+import mongoose from 'mongoose';
+import { MemberType } from 'models/teams.model.js';
+import { memoryUsage } from 'process';
+import validator from 'validator';
+
+
+
 
 class SurveyController {
   async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
-    let survey: Survey;
+    let survey: SurveyType;
     try {
       const _survey = await surveyService.updateSurvey({
         ...req.body,
@@ -52,37 +58,48 @@ class SurveyController {
 
   async createSurvey(req: Request, res: Response): Promise<void> {
     try {
-      const survey = await surveyService.createSurvey({
-        ...req.body,
-        status: 'completed'
-      })
-      res.status(201).json(survey);
+      console.log('req.body', req.body);
+      const newSurvey = req.body;
+      //const member = await this.getMemberByLogin(newSurvey.userId, newSurvey.org)|| true; //needs to be fixed :"Cannot read properties of undefined (reading 'getMemberByLogin')""
+      if (true) {
+        const survey = surveyService.createSurvey(newSurvey);
+        res.status(201).json(survey);
+      }
     } catch (error) {
-      res.status(500).json(error);
+      res.status(500).json((error as Error).message);
       return;
     }
   }
 
   async getAllSurveys(req: Request, res: Response): Promise<void> {
+    const { org, team, reasonLength, since, until, status } = req.query as { [key: string]: string | undefined };;
     try {
-      const { org, reasonLength } = req.query;
-      const minReasonLength = parseInt(reasonLength as string);
-      const surveys = await Survey.findAll({
-        order: [['updatedAt', 'DESC']],
-        where: {
-          ...org ? { org: org as string } : {},
-          ...reasonLength ? {
-            reason: {
-              [Op.and]: [
-                Sequelize.where(Sequelize.fn('LENGTH', Sequelize.col('reason')), {
-                  [Op.gte]: minReasonLength
-                })
-              ]
-            }
-          } : {}
-        } as WhereOptions
-      });
+      const dateFilter: any = {};
+      if (since) {
+        dateFilter.$gte = new Date(since);
+      }
+      if (until) {
+        dateFilter.$lte = new Date(until);
+      }
+
+      const query = {
+        filter: {
+          ...(org ? { org: String(org) } : {}),
+          ...(team ? { team: String(team) } : {}),
+          ...(reasonLength ? { $expr: { $and: [{ $gt: [{ $strLenCP: { $ifNull: ['$reason', ''] } }, 40] }, { $ne: ['$reason', null] }] } } : {}),
+          ...(Object.keys(dateFilter).length > 0 ? { createdAt: dateFilter } : {}),
+          ...(status ? { status } : {}),
+        },
+        projection: {
+          _id: 0,
+          __v: 0,
+        }
+      };
+
+      const Survey = mongoose.model('Survey');
+      const surveys = await Survey.find(query.filter, query.projection);
       res.status(200).json(surveys);
+
     } catch (error) {
       res.status(500).json(error);
     }
@@ -91,12 +108,13 @@ class SurveyController {
   async getSurveyById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-      const survey = await Survey.findByPk(id);
-      if (survey) {
-        res.status(200).json(survey);
-      } else {
-        res.status(404).json({ error: 'Survey not found' });
+      const Survey = mongoose.model('Survey');
+      const survey = await Survey.findOne({ id: Number(id) }); // Cast `id` to Number
+      if (!survey) {
+        res.status(404).json({ message: 'Survey not found' });
+        return;
       }
+      res.status(200).json(survey);
     } catch (error) {
       res.status(500).json(error);
     }
@@ -104,14 +122,13 @@ class SurveyController {
 
   async updateSurvey(req: Request, res: Response): Promise<void> {
     try {
+      const Survey = mongoose.model('Survey');
       const { id } = req.params;
-      // implement the other fields... possibly
-      const [updated] = await Survey.update(req.body, {
-        where: { id }
-      });
+      const updated = await Survey.findOneAndUpdate({
+        id: Number(id) // Cast `id` to Number
+      }, req.body);
       if (updated) {
-        const updatedSurvey = await Survey.findByPk(id);
-        res.status(200).json(updatedSurvey);
+        res.status(200).json({ _id: id, ...req.body });
       } else {
         res.status(404).json({ error: 'Survey not found' });
       }
@@ -122,10 +139,9 @@ class SurveyController {
 
   async deleteSurvey(req: Request, res: Response): Promise<void> {
     try {
+      const Survey = mongoose.model('Survey');
       const { id } = req.params;
-      const deleted = await Survey.destroy({
-        where: { id }
-      });
+      const deleted = await Survey.findByIdAndDelete(id);
       if (deleted) {
         res.status(204).send();
       } else {
@@ -134,7 +150,46 @@ class SurveyController {
     } catch (error) {
       res.status(500).json(error);
     }
+    //create a helper function that calls this api
+    //router.get('/members/:login', teamsController.getMemberByLogin);
+  }
+
+  async getMemberByLogin(loginToFind: string, orgToMatch: string): Promise<MemberType> {
+    // Ensure both values are provided.
+    if (!loginToFind || !orgToMatch) {
+      throw new Error('Both login and org must be provided');
+    }
+
+    // Trim the login input and then validate.
+    const trimmedLogin = loginToFind.trim();
+    if (!validator.isAlphanumeric(trimmedLogin, 'en-US', { ignore: '-' })) {
+      throw new Error('Invalid login: Only alphanumeric characters and dashes are allowed');
+    }
+
+    // Optionally validate org if needed
+    const trimmedOrg = orgToMatch.trim();
+    if (!trimmedOrg) {
+      throw new Error('Invalid organization provided');
+    }
+
+    // Retrieve the Member model once instead of on every method call.
+    const Member = mongoose.model<MemberType>('Member');
+
+    try {
+      const member = await Member.findOne({ login: trimmedLogin, org: trimmedOrg })
+        .select('login name url avatar_url')
+        .exec();
+
+      if (member) {
+        return member;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (error) {
+      throw new Error('Member lookup failed with: ' + (error as Error).message);
+    }
   }
 }
+
 
 export default new SurveyController();

@@ -1,0 +1,16 @@
+{
+  "surveys":   [{
+    "id": 0,
+    "userId": "mattg57",
+    "org": "octodemo",
+    "repo": "github-value2",
+    "prNumber": "23",
+    "usedCopilot": true,
+    "percentTimeSaved": 35,
+    "reason": "reason",
+    "timeUsedFor": "repoHousekeeping",
+    "createdAt": "2025-01-09T18:36:58.737Z",
+    "updatedAt": "2025-01-09T18:36:58.737Z"
+  }
+  ]
+} 

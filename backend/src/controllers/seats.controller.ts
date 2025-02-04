@@ -42,15 +42,6 @@ class SeatsController {
       res.status(500).json(error);
     }
   }
-
-  async getActivityTotals(req: Request, res: Response): Promise<void> {
-    try {
-      const totals = await SeatsService.getMembersActivityTotals(req.query);
-      res.status(200).json(totals);
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
 }
 
 export default new SeatsController();

@@ -5,8 +5,10 @@ class SettingsController {
   async getAllSettings(req: Request, res: Response) {
     try {
       const settings = await app.settingsService.getAllSettings();
-      const settingsRsp = Object.fromEntries(settings.map(setting => [setting.dataValues.name, setting.dataValues.value]));
-      res.json(settingsRsp);
+      if (!settings) {
+        return res.status(404).json({ error: 'Settings not found' });
+      }
+      res.json(settings);
     } catch (error) {
       res.status(500).json(error);
     }

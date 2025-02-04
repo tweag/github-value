@@ -2,10 +2,12 @@ import { CronJob, CronJobParams, CronTime } from 'cron';
 import logger from './logger.js';
 import { insertUsage } from '../models/usage.model.js';
 import SeatService, { SeatEntry } from '../services/copilot.seats.service.js';
-import { Octokit } from 'octokit';
-import metricsService from './metrics.service.js';
+import { App, Octokit } from 'octokit';
 import { MetricDailyResponseType } from '../models/metrics.model.js';
+import mongoose, { MongooseError } from 'mongoose';
+import metricsService from './metrics.service.js';
 import teamsService from './teams.service.js';
+import adoptionService from './adoption.service.js';
 
 const DEFAULT_CRON_EXPRESSION = '0 * * * *';
 class QueryService {
@@ -17,62 +19,114 @@ class QueryService {
     teamsAndMembers: false,
     dbInitialized: false
   };
+  app: App;
 
   constructor(
-    public org: string,
-    public octokit: Octokit,
+    app: App,
     options?: Partial<CronJobParams>
   ) {
+    this.app = app;
     // Consider Timezone
     const _options: CronJobParams = {
       cronTime: DEFAULT_CRON_EXPRESSION,
       onTick: () => {
-        this.task(this.org);
+        this.task();
       },
       start: true,
       ...options
     }
     this.cronJob = CronJob.from(_options);
-    this.task(this.org);
+    this.task();
   }
 
   delete() {
     this.cronJob.stop();
   }
 
-  private async task(org: string) {
-    logger.info(`${org} task started`);
-    try {
-      const queries = [
-        this.queryCopilotUsageMetrics(org).then(() => this.status.usage = true),
-        this.queryCopilotUsageMetricsNew(org).then(() => this.status.metrics = true),
-        this.queryCopilotSeatAssignments(org).then(() => this.status.copilotSeats = true),
-      ]
+  private async task() {
+    const queryAt = new Date();
+    const tasks = [];
+    for await (const { octokit, installation } of this.app.eachInstallation.iterator()) {
+      if (!installation.account?.login) return;
+      const org = installation.account.login;
+      tasks.push(this.orgTask(octokit, queryAt, org));
+    }
+    const results = await Promise.all(tasks);
 
-      const lastUpdated = await teamsService.getLastUpdatedAt();
-      const elapsedHours = (new Date().getTime() - lastUpdated.getTime()) / (1000 * 60 * 60);
-      if (elapsedHours > 24) {
-        queries.push(
-          this.queryTeamsAndMembers(org).then(() =>
-            this.status.teamsAndMembers = true
-          )
-        );
-      } else {
-        this.status.teamsAndMembers = true
+    const uniqueSeats = new Map();
+    results.forEach((result) => {
+      if (result?.copilotSeatAssignments) {
+        const { adoption } = result.copilotSeatAssignments;
+        if (adoption) {
+          adoption.seats.forEach((seat) => {
+            if (!uniqueSeats.has(seat.login)) {
+              uniqueSeats.set(seat.login, seat);
+            }
+          });
+        }
+      }
+    });
+
+    const uniqueSeatsArray = Array.from(uniqueSeats.values());
+    const enterpriseAdoptionData = {
+      enterprise: 'enterprise',
+      org: null,
+      team: null,
+      date: queryAt,
+      ...adoptionService.calculateAdoptionTotals(queryAt, uniqueSeatsArray),
+      seats: uniqueSeatsArray
+    }
+
+    adoptionService.createAdoption(enterpriseAdoptionData);
+  }
+
+  private async orgTask(octokit: Octokit, queryAt: Date, org: string) {
+    try {
+      let teamsAndMembers = null;
+      const mostRecentEntry = await teamsService.getLastUpdatedAt();
+      const msSinceLastUpdate = new Date().getTime() - new Date(mostRecentEntry).getTime();
+      const hoursSinceLastUpdate = msSinceLastUpdate / 1000 / 60 / 60;
+      logger.info(`Teams & Members updated ${hoursSinceLastUpdate.toFixed(2)} hours ago for ${org}.`);
+      if (mostRecentEntry && hoursSinceLastUpdate > 24) {
+        logger.info(`Updating teams and members for ${org}`);
+        teamsAndMembers = await this.queryTeamsAndMembers(octokit, org).then(() => {
+          this.status.teamsAndMembers = true;
+        });
       }
 
-      await Promise.all(queries).then(() => {
-        this.status.dbInitialized = true;
-      });
+      const queries = [
+        this.queryCopilotUsageMetrics(octokit, org).then(result => {
+          this.status.usage = true;
+          return result;
+        }),
+        this.queryCopilotUsageMetricsNew(octokit, org).then(result => {
+          this.status.metrics = true;
+          return result;
+        }),
+        this.queryCopilotSeatAssignments(octokit, org, queryAt).then(result => {
+          this.status.copilotSeats = true;
+          return result;
+        }),
+      ];
+
+      const [usageMetrics, usageMetricsNew, copilotSeatAssignments] = await Promise.all(queries);
+      this.status.dbInitialized = true;
+
+      return {
+        usageMetrics,
+        usageMetricsNew,
+        copilotSeatAssignments,
+        teamsAndMembers
+      }
     } catch (error) {
       logger.error(error);
     }
     logger.info(`${org} finished task`);
   }
 
-  public async queryCopilotUsageMetricsNew(org: string, team?: string) {
+  public async queryCopilotUsageMetricsNew(octokit: Octokit, org: string, team?: string) {
     try {
-      const metricsArray = await this.octokit.paginate<MetricDailyResponseType>(
+      const metricsArray = await octokit.paginate<MetricDailyResponseType>(
         'GET /orgs/{org}/copilot/metrics',
         {
           org: org
@@ -85,22 +139,22 @@ class QueryService {
     }
   }
 
-  public async queryCopilotUsageMetrics(org: string) {
+  public async queryCopilotUsageMetrics(octokit: Octokit, org: string) {
     try {
-      const rsp = await this.octokit.rest.copilot.usageMetricsForOrg({
+      const rsp = await octokit.rest.copilot.usageMetricsForOrg({
         org
       });
 
       insertUsage(org, rsp.data);
-      logger.info(`${this.org} usage metrics updated`);
+      logger.info(`${org} usage metrics updated`);
     } catch (error) {
-      logger.error(`Error updating ${this.org} usage metrics`, error);
+      logger.error(`Error updating ${org} usage metrics`, error);
     }
   }
 
-  public async queryCopilotSeatAssignments(org: string) {
+  public async queryCopilotSeatAssignments(octokit: Octokit, org: string, queryAt: Date) {
     try {
-      const rsp = await this.octokit.paginate(this.octokit.rest.copilot.listCopilotSeats, {
+      const rsp = await octokit.paginate(octokit.rest.copilot.listCopilotSeats, {
         org
       }) as { total_seats: number, seats: SeatEntry[] }[];
 
@@ -114,28 +168,30 @@ class QueryService {
         return;
       }
 
-      await SeatService.insertSeats(org, seatAssignments.seats);
+      const result = await SeatService.insertSeats(org, queryAt, seatAssignments.seats);
 
       logger.info(`${org} seat assignments updated`);
+
+      return result;
     } catch (error) {
       logger.debug(error)
+      if (error instanceof Error) {
+        logger.error('Error updating seat assignments', error.message);
+        return;
+      }
       logger.error('Error querying copilot seat assignments');
     }
   }
 
-  public async queryTeamsAndMembers(org: string) {
-    const members = await this.octokit.paginate("GET /orgs/{org}/members", {
-      org
-    });
-    await teamsService.updateMembers(org, members);
+  public async queryTeamsAndMembers(octokit: Octokit, org: string) {
     try {
-      const teams = await this.octokit.paginate(this.octokit.rest.teams.list, {
+      const teams = await octokit.paginate(octokit.rest.teams.list, {
         org
       });
       await teamsService.updateTeams(org, teams);
 
       await Promise.all(
-        teams.map(async (team) => this.octokit.paginate(this.octokit.rest.teams.listMembersInOrg, {
+        teams.map(async (team) => octokit.paginate(octokit.rest.teams.listMembersInOrg, {
           org,
           team_slug: team.slug
         }).then(async (members) =>
@@ -147,7 +203,25 @@ class QueryService {
           })
         )
       )
-      logger.info("Teams & Members successfully updated! 🧑‍🤝‍🧑");
+
+      const members = await octokit.paginate("GET /orgs/{org}/members", {
+        org
+      });
+
+      const Members = mongoose.model('Member');
+
+      // Use bulkWrite with updateOne operations
+      const bulkOps = members.map((member) => ({
+        updateOne: {
+          filter: { org, id: member.id },
+          update: { $set: member },
+          upsert: true
+        }
+      }));
+
+      await Members.bulkWrite(bulkOps, { ordered: false });
+
+      logger.info(`${org} teams and members updated`);
     } catch (error) {
       logger.error('Error querying teams', error);
     }

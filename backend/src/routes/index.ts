@@ -7,6 +7,7 @@ import SeatsController from '../controllers/seats.controller.js';
 import metricsController from '../controllers/metrics.controller.js';
 import teamsController from '../controllers/teams.controller.js';
 import targetValuesController from '../controllers/target-values.controller.js';
+import adoptionController from '../controllers/adoption.controller.js';
 
 const router = Router();
 
@@ -27,8 +28,8 @@ router.get('/metrics', metricsController.getMetrics);
 router.get('/metrics/totals', metricsController.getMetricsTotals);
 
 router.get('/seats', SeatsController.getAllSeats);
-router.get('/seats/activity', SeatsController.getActivity);
-router.get('/seats/activity/totals', SeatsController.getActivityTotals);
+router.get('/seats/activity', adoptionController.getAdoptions);
+router.get('/seats/activity/totals', adoptionController.getAdoptionTotals);
 router.get('/seats/:id', SeatsController.getSeat);
 
 router.get('/teams', teamsController.getAllTeams);
@@ -51,8 +52,8 @@ router.get('/setup/status', setupController.setupStatus);
 
 router.get('/status', setupController.getStatus);
 
-router.get('/predictive-modeling/targets', targetValuesController.getTargetValues);
-router.post('/predictive-modeling/targets', targetValuesController.updateTargetValues);
+router.get('/targets', targetValuesController.getTargetValues);
+router.post('/targets', targetValuesController.updateTargetValues);
 
 router.get('*', (req: Request, res: Response) => {
   res.status(404).send('Route not found');

@@ -1,13 +1,14 @@
 import { Endpoints } from '@octokit/types';
-import { Seat } from "../models/copilot.seats.model.js";
-import { Op, QueryTypes, Sequelize } from 'sequelize';
+import { SeatType } from "../models/copilot.seats.model.js";
 import { components } from "@octokit/openapi-types";
-import { Member, Team } from '../models/teams.model.js';
-import app from '../index.js';
+import mongoose from 'mongoose';
+import { MemberActivityType, MemberType } from 'models/teams.model.js';
+import fs from 'fs';
+import adoptionService from './adoption.service.js';
 
-type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
+type _Seat = any;// NonNullable<Endpoints["GET /orgs/{org}/copilot"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
-  plan_type: string;
+  plan_type: "business" | "enterprise" | "unknown";
   assignee: components['schemas']['simple-user'];
 }
 
@@ -17,128 +18,216 @@ type MemberDailyActivity = {
     totalActive: number,
     totalInactive: number,
     active: {
-      [assignee: string]: Seat
+      [assignee: string]: SeatType
     },
     inactive: {
-      [assignee: string]: Seat
+      [assignee: string]: SeatType
     }
   };
 };
 
 class SeatsService {
   async getAllSeats(org?: string) {
-    const latestQuery = await Seat.findOne({
-      attributes: [[Sequelize.fn('MAX', Sequelize.col('queryAt')), 'queryAt']],
-      where: {
-        ...(org ? { org } : {}),
-      }
-    });
+    const Member = mongoose.model('Member');
 
-    return Seat.findAll({
-      include: [{
-        model: Member,
-        as: 'assignee',
-        attributes: ['login', 'id', 'avatar_url']
-      }],
-      where: {
-        ...(org ? { org } : {}),
-        queryAt: latestQuery?.queryAt
-      },
-      order: [['last_activity_at', 'DESC']]
-    });
+    const seats = await Member.find({
+      ...(org ? { org } : {})
+    })
+      .select('org login id name url avatar_url')
+      .populate({
+        path: 'seat',
+        select: '-_id -__v',
+        options: { lean: true }
+      })
+      .sort({ 'seat.last_activity_at': -1 })
+      .exec();
+
+    return seats;
   }
 
   async getAssignee(id: number) {
-    return Seat.findAll({
-      include: [{
+    const Seats = mongoose.model('Seats');
+    const Member = mongoose.model('Member');
+    const member = await Member.findOne({id}).sort({org: -1}); //this temporarily resolves a bug where one org fails but the other one succeeds
+
+    if (!member) {
+      throw `Member with id ${id} not found`
+    }
+
+    return Seats.find({
+      assignee: member._id
+    })
+      .lean()
+      .populate({
+        path: 'assignee',  // Link to Member model 👤
         model: Member,
-        as: 'assignee'
-      }],
-      where: {
-        assignee_id: id
-      }
-    });
+        select: 'login id avatar_url -_id'  // Only select needed fields 🎯
+      });
   }
 
   async getAssigneeByLogin(login: string) {
-    const assignee = await Member.findOne({
-      where: {
-        login
-      }
-    });
-    if (!assignee) throw new Error(`Assignee ${login} not found`);
-    return Seat.findAll({
-      include: [{
+    const Seats = mongoose.model('Seats');
+    const Member = mongoose.model('Member');
+    const member = await Member.findOne({ login });
+
+    if (!member) {
+      throw `Member with id ${login} not found`
+    }
+
+    return Seats.find({
+      assignee: member._id
+    })
+      .lean()
+      .populate({
+        path: 'assignee',  // Link to Member model 👤
         model: Member,
-        as: 'assignee'
-      }],
-      where: {
-        assignee_id: assignee.id
-      }
-    });
+        select: 'login id avatar_url -_id'  // Only select needed fields 🎯
+      });
   }
 
-  async insertSeats(org: string, data: SeatEntry[], team?: string) {
-    const queryAt = new Date();
-    for (const seat of data) {
-      const [assignee] = await Member.findOrCreate({
-        where: { id: seat.assignee.id },
-        defaults: {
-          org,
-          ...team ? { team } : undefined,
-          id: seat.assignee.id,
-          login: seat.assignee.login,
-          node_id: seat.assignee.node_id,
-          avatar_url: seat.assignee.avatar_url,
-          gravatar_id: seat.assignee.gravatar_id || '',
-          url: seat.assignee.url,
-          html_url: seat.assignee.html_url,
-          followers_url: seat.assignee.followers_url,
-          following_url: seat.assignee.following_url,
-          gists_url: seat.assignee.gists_url,
-          starred_url: seat.assignee.starred_url,
-          subscriptions_url: seat.assignee.subscriptions_url,
-          organizations_url: seat.assignee.organizations_url,
-          repos_url: seat.assignee.repos_url,
-          events_url: seat.assignee.events_url,
-          received_events_url: seat.assignee.received_events_url,
-          type: seat.assignee.type,
-          site_admin: seat.assignee.site_admin,
-        }
-      });
+  async insertSeats(org: string, queryAt: Date, data: SeatEntry[], team?: string) {
+    const Members = mongoose.model('Member');
+    const Seats = mongoose.model('Seats');
+    const ActivityTotals = mongoose.model('ActivityTotals');
 
-      const [assigningTeam] = seat.assigning_team ? await Team.findOrCreate({
-        where: { id: seat.assigning_team.id },
-        defaults: {
-          org,
-          id: seat.assigning_team.id,
-          node_id: seat.assigning_team.node_id,
-          url: seat.assigning_team.url,
-          html_url: seat.assigning_team.html_url,
-          name: seat.assigning_team.name,
-          slug: seat.assigning_team.slug,
-          description: seat.assigning_team.description,
-          privacy: seat.assigning_team.privacy,
-          notification_setting: seat.assigning_team.notification_setting,
-          permission: seat.assigning_team.permission,
-          members_url: seat.assigning_team.members_url,
-          repositories_url: seat.assigning_team.repositories_url
-        }
-      }) : [null];
+    const memberUpdates = data.map(seat => ({
+      updateOne: {
+        filter: { org, id: seat.assignee.id },
+        update: {
+          $set: {
+            ...team ? { team } : undefined,
+            org,
+            id: seat.assignee.id,
+            login: seat.assignee.login,
+            node_id: seat.assignee.node_id,
+            avatar_url: seat.assignee.avatar_url,
+            gravatar_id: seat.assignee.gravatar_id || '',
+            url: seat.assignee.url,
+            html_url: seat.assignee.html_url,
+            followers_url: seat.assignee.followers_url,
+            following_url: seat.assignee.following_url,
+            gists_url: seat.assignee.gists_url,
+            starred_url: seat.assignee.starred_url,
+            subscriptions_url: seat.assignee.subscriptions_url,
+            organizations_url: seat.assignee.organizations_url,
+            repos_url: seat.assignee.repos_url,
+            events_url: seat.assignee.events_url,
+            received_events_url: seat.assignee.received_events_url,
+            type: seat.assignee.type,
+            site_admin: seat.assignee.site_admin,
+          }
+        },
+        upsert: true,
+      }
+    }));
+    await Members.bulkWrite(memberUpdates);
 
-      await Seat.create({
-        queryAt,
-        org,
-        team,
-        created_at: seat.created_at,
-        updated_at: seat.updated_at,
-        pending_cancellation_date: seat.pending_cancellation_date,
+    const updatedMembers = await Members.find({
+      org,
+      id: { $in: data.map(seat => seat.assignee.id) }
+    });
+
+    const seatsData = data.map((seat) => ({
+      queryAt,
+      org,
+      team,
+      ...seat,
+      assignee_id: seat.assignee.id,
+      assignee_login: seat.assignee.login,
+      assignee: updatedMembers.find(m => m.id === seat.assignee.id)?._id
+    }));
+    const seatResults = await Seats.insertMany(seatsData);
+
+    // Add member seat updates
+    const memberSeatUpdates = seatResults.map(seat => ({
+      updateOne: {
+        filter: { org, id: seat.assignee_id },
+        update: {
+          $set: { seat: seat._id }
+        }
+      }
+    }));
+    await Members.bulkWrite(memberSeatUpdates);
+
+    const adoptionData = {
+      enterprise: null,
+      org: org,
+      team: null,
+      date: queryAt,
+      ...adoptionService.calculateAdoptionTotals(queryAt, data),
+      seats: seatResults.map(seat => ({
+        login: seat.assignee_login,
         last_activity_at: seat.last_activity_at,
         last_activity_editor: seat.last_activity_editor,
-        plan_type: seat.plan_type,
-        assignee_id: assignee.id,
-        assigning_team_id: assigningTeam?.id
-      });
+        _assignee: seat.assignee,
+        _seat: seat._id,
+      }))
+    }
+
+    await adoptionService.createAdoption(adoptionData);
+
+    const today = new Date(queryAt);
+    // add 1 to day
+    // today.setDate(today.getDate() + 1);
+    today.setUTCHours(0, 0, 0, 0);
+    const activityUpdates = seatResults.map(seat => ({
+      updateOne: {
+        filter: {
+          org,
+          assignee: seat.assignee,
+          assignee_id: seat.assignee_id,
+          assignee_login: seat.assignee_login,
+          date: today
+        },
+        update: [{
+          $set: {
+            total_active_time_ms: {
+              $cond: {
+                if: { $eq: [seat.last_activity_at, null] },
+                then: { $ifNull: ["$total_active_time_ms", 0] },
+                else: {
+                  $add: [
+                    { $ifNull: ["$total_active_time_ms", 0] },
+                    {
+                      $cond: {
+                        if: {
+                          $and: [
+                            {
+                              $or: [
+                                { $eq: ["$last_activity_at", null] },
+                                { $lt: ["$last_activity_at", seat.last_activity_at] }
+                              ]
+                            },
+                            { $gt: [seat.last_activity_at, today] }
+                          ]
+                        },
+                        then: 1,
+                        else: 0
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }, {
+          $set: {
+            last_activity_editor: seat.last_activity_editor,
+            last_activity_at: seat.last_activity_at
+          }
+        }],
+        upsert: true
+      }
+    })).filter(update => update !== null);
+
+    if (activityUpdates.length > 0) {
+      await ActivityTotals.bulkWrite(activityUpdates);
+    }
+
+    return {
+      seats: seatResults,
+      members: updatedMembers,
+      adoption: adoptionData
     }
   }
 
@@ -148,55 +237,56 @@ class SeatsService {
     precision?: 'hour' | 'day' | 'minute';
     since?: string;
     until?: string;
-  } = {}): Promise<MemberDailyActivity> {
+  } = {}): Promise<any> { // Promise<MemberDailyActivity> {
+    const Seats = mongoose.model('Seats');
+    // const seats = await Seats.find({})
+    // return seats.length;
+
+    // return;
+    // const Member = mongoose.model('Member');
     const { org, daysInactive = 30, precision = 'day', since, until } = params;
-    if (!app.database.sequelize) throw new Error('No database connection available');
-    // const assignees = await app.database.sequelize.query<Member>(
-    //   `SELECT 
-    //       Member.login,
-    //       Member.id,
-    //       activity.id AS 'activity.id',
-    //       activity.createdAt AS 'activity.createdAt',
-    //       activity.last_activity_at AS 'activity.last_activity_at',
-    //       activity.last_activity_editor AS 'activity.last_activity_editor'
-    //   FROM Members AS Member 
-    //   INNER JOIN Seats AS activity ON Member.id = activity.assignee_id
-    //   ${org ? 'WHERE activity.org = :org' : ''}
-    //   ORDER BY activity.last_activity_at ASC`,
-    //   {
-    //     replacements: {
-    //       org
-    //     },
-    //     type: QueryTypes.SELECT,
-    //     nest: true,
-    //     mapToModel: true // 🎯 Maps results to the Model
-    //   }
-    // );
-    
-    const dateFilter = {
-      ...(since && { [Op.gte]: new Date(since as string) }),
-      ...(until && { [Op.lte]: new Date(until as string) })
-    };
-    const assignees = await Member.findAll({
-      attributes: ['login', 'id'],
-      include: [
-        {
-          model: Seat,
-          as: 'activity',
-          attributes: ['createdAt', 'last_activity_at', 'last_activity_editor'],
-          order: [['last_activity_at', 'ASC']],
-          where: {
-            ...(org ? { org } : {}),
-            ...Object.getOwnPropertySymbols(dateFilter).length ? { createdAt: dateFilter } : {}
+    const assignees: MemberActivityType[] = await Seats.aggregate([
+      {
+        $match: {
+          ...(org && { org }),
+          ...(since && { createdAt: { $gte: new Date(since) } }),
+          ...(until && { createdAt: { $lte: new Date(until) } }),
+          last_activity_at: { $ne: null } // Only get records with activity
+        }
+      },
+      {
+        $lookup: {
+          from: 'members',
+          localField: 'assignee',
+          foreignField: '_id',
+          as: 'memberDetails'
+        }
+      },
+      {
+        $unwind: '$memberDetails'
+      },
+      {
+        $group: {
+          _id: '$memberDetails._id',
+          login: { $first: '$memberDetails.login' },
+          id: { $first: '$memberDetails.id' },
+          activity: {
+            $push: {
+              last_activity_at: '$last_activity_at',
+              createdAt: '$createdAt',
+              last_activity_editor: '$last_activity_editor'
+            }
           }
         }
-      ],
-      order: [
-        [{ model: Seat, as: 'activity' }, 'last_activity_at', 'ASC']
-      ]
-    });
+      }
+    ])
+    // .hint({ org: 1, createdAt: 1 })
+    // .allowDiskUse(true)
+    // .explain('executionStats');
+
     const activityDays: MemberDailyActivity = {};
     assignees.forEach((assignee) => {
+      if (!assignee.activity) return;
       assignee.activity.forEach((activity) => {
         const fromTime = activity.last_activity_at?.getTime() || 0;
         const toTime = activity.createdAt.getTime();
@@ -207,7 +297,6 @@ class SeatsService {
         } else if (precision === 'hour') {
           dateIndex.setUTCMinutes(0, 0, 0);
         } else if (precision === 'minute') {
-          dateIndex.setUTCSeconds(0, 0);
         }
         const dateIndexStr = new Date(dateIndex).toISOString();
         if (!activityDays[dateIndexStr]) {
@@ -240,6 +329,8 @@ class SeatsService {
         .sort(([dateA], [dateB]) => new Date(dateA).getTime() - new Date(dateB).getTime())
     );
 
+    fs.writeFileSync('sortedActivityDays.json', JSON.stringify(sortedActivityDays, null, 2), 'utf-8');
+
     return sortedActivityDays;
   }
 
@@ -248,51 +339,94 @@ class SeatsService {
     since?: string;
     until?: string;
   }) {
-    // const assignees2 = await app.database.sequelize?.query(`
-    //   SELECT \`Member\`.\`login\`, \`Member\`.\`id\`, \`activity\`.\`id\` AS \`activity.id\`, \`activity\`.\`last_activity_at\` AS \`activity.last_activity_at\`
-    //   FROM \`Members\` AS \`Member\`
-    //   INNER JOIN \`Seats\` AS \`activity\` ON \`Member\`.\`id\` = \`activity\`.\`assignee_id\`
-    // `, {
-    //   replacements: { org },
-    //   type: QueryTypes.SELECT
-    // });
-    const { org, since, until } = params;    
-    const dateFilter = {
-      ...(since && { [Op.gte]: new Date(since as string) }),
-      ...(until && { [Op.lte]: new Date(until as string) })
-    };
-    const assignees = await Member.findAll({
-      attributes: ['login', 'id'],
-      include: [{
-        model: Seat,
-        as: 'activity',
-        attributes: ['last_activity_at'],
-        order: [['last_activity_at', 'ASC']],
-        where: {
-          ...(org ? { org } : {}),
-          ...Object.getOwnPropertySymbols(dateFilter).length ? { createdAt: dateFilter } : {}
-        }
-      }]
-    });
+    const { org, since, until } = params;
+    const Member = mongoose.model('Member');
 
-    const activityTotals = assignees.reduce((totals, assignee) => {
-      totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {
-        if (index === 0) return totalMs;
-        const prev = assignee.activity[index - 1];
-        const diff = activity.last_activity_at?.getTime() - prev.last_activity_at?.getTime();
-        if (diff) {
-          if (diff > 1000 * 60 * 30) {
-            totalMs += 1000 * 60 * 30;
-          } else {
-            totalMs += diff;
+    const assignees: MemberType[] = await Member
+      .aggregate([
+        {
+          $lookup: {
+            from: 'seats',          // MongoDB collection name (lowercase)
+            localField: '_id',      // Member model field
+            foreignField: 'assignee', // Seats model field
+            as: 'activity'            // Name for the array of seats
           }
         }
-        return totalMs;
-      }, 0);
+      ]);
+
+    const activityTotals = assignees.reduce((totals, assignee) => {
+      if (assignee.activity) {
+        totals[assignee.login] = assignee.activity.reduce((totalMs, activity, index) => {
+          if (index === 0) return totalMs;
+          if (!activity.last_activity_at) return totalMs;
+          const prev = assignee.activity?.[index - 1];
+          const diff = activity.last_activity_at?.getTime() - (prev?.last_activity_at?.getTime() || 0);
+          if (diff) {
+            if (diff > 1000 * 60 * 30) {
+              totalMs += 1000 * 60 * 30;
+            } else {
+              totalMs += diff;
+            }
+          }
+          return totalMs;
+        }, 0);
+      }
       return totals;
     }, {} as { [assignee: string]: number });
 
-    return Object.entries(activityTotals).sort((a, b) => b[1] - a[1]);
+    return Object.entries(activityTotals).sort((a: any, b: any) => b[1] - a[1]);
+  }
+
+  async getMembersActivityTotals2(params: {
+    org?: string;
+    since?: string;
+    until?: string;
+  }) {
+    const ActivityTotals = mongoose.model('ActivityTotals');
+    const { org, since, until } = params;
+
+    const match: any = {};
+    if (org) match.org = org;
+    if (since || until) {
+      match.date = {
+        ...(since && { $gte: new Date(since) }),
+        ...(until && { $lte: new Date(until) })
+      };
+    }
+
+    const totals = await ActivityTotals.aggregate([
+      // Match documents within date range and org
+      { $match: match },
+      // First group by date AND assignee_login
+      {
+        $group: {
+          _id: {
+            date: "$date",
+            login: "$assignee_login"
+          },
+          daily_time: { $sum: "$total_active_time_ms" }
+        }
+      },
+      // Then group by just assignee_login to sum across days
+      {
+        $group: {
+          _id: "$_id.login",
+          total_time: { $sum: "$daily_time" }
+        }
+      },
+      // Sort by total time descending
+      { $sort: { total_time: -1 } },
+      // Project final fields
+      {
+        $project: {
+          _id: 0,
+          login: '$_id',
+          total_time: 1
+        }
+      }
+    ]);
+
+    return totals.map(t => [t.login, t.total_time]);
   }
 }
 

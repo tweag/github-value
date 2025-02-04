@@ -1,4 +1,4 @@
-import { Settings } from '../models/settings.model.js';
+import mongoose from 'mongoose';
 
 export interface SettingsType {
   baseUrl?: string,
@@ -38,56 +38,71 @@ class SettingsService {
   }
 
   async getAllSettings() {
-    return await Settings.findAll();
+    try {
+      const Setting = mongoose.model('Settings');
+      const settingsArray = await Setting.find<{
+        name: string;
+        value: string;
+      }>({});
+      return settingsArray.reduce((acc, setting) => {
+        acc[setting.name] = setting.value;
+        return acc;
+      }, {} as any);
+    } catch (error) {
+      console.error('Failed to get all settings:', error);
+      throw error;
+    }
   }
 
   async getSettingsByName(name: string): Promise<string | undefined> {
     try {
-      const rsp = await Settings.findOne({ where: { name } });
-      if (!rsp) {
+      const setting = await mongoose.model('Settings').findOne({ name });
+      if (!setting) {
         return undefined;
       }
-      return rsp.dataValues.value;
-    } catch {
+      return setting.value;
+    } catch (error) {
+      console.error('Failed to get setting by name:', error);
       return undefined;
     }
   }
 
   async updateSetting(name: keyof SettingsType, value: string) {
-    const lastValue = await this.getSettingsByName(name);
-    if (value === lastValue) {
-      return await Settings.findOne({ where: { name } });
+    try {
+      const Setting = mongoose.model('Settings');
+      const setting = await Setting.findOneAndUpdate(
+        { name },
+        { value },
+        { 
+          new: true,
+          upsert: true,
+        }
+      );
+      return setting.value;
+    } catch (error) {
+      console.error('Failed to update setting:', error);
+      throw error;
     }
-    // if (name === 'webhookProxyUrl') {
-    //   app.github.smee.options.url = value;
-    //   await app.github.smee.connect()
-    // } else if (name === 'webhookSecret') {
-    //   // await app.github.connect({
-    //   //   webhooks: {
-    //   //     secret: value
-    //   //   }
-    //   // })
-    // } else if (name === 'metricsCronExpression') {
-    //   app.github.installations.forEach(install => {
-    //     install.queryService.cronJob.setTime(new CronTime(value));
-    //   });
-    // }
-    await Settings.upsert({ name, value });
-    return this.getSettingsByName(name);
   }
 
   async updateSettings(obj: { [key: string]: string }) {
-    Object.entries(obj).forEach(([name, value]) => {
-      this.updateSetting(name as keyof SettingsType, value);
-    });
+    await Promise.all(
+      Object.entries(obj).map(([name, value]) => 
+      this.updateSetting(name as keyof SettingsType, value)
+      )
+    );
   }
 
   async deleteSettings(name: string) {
-    const deleted = await Settings.destroy({
-      where: { name }
-    });
-    if (!deleted) {
-      throw new Error('Settings not found');
+    try {
+      const Setting = mongoose.model('Settings');
+      await Setting.findOneAndDelete({ name });
+      // if (!result) {
+      //   throw new Error('Settings not found');
+      // }
+    } catch (error) {
+      console.error('Failed to delete setting:', error);
+      throw error;
     }
   }
 }
