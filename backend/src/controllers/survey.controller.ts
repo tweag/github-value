@@ -8,12 +8,10 @@ import { MemberType } from 'models/teams.model.js';
 import { memoryUsage } from 'process';
 import validator from 'validator';
 
-
-
-
 class SurveyController {
   async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
     let survey: SurveyType;
+    console.log(req);
     try {
       const _survey = await surveyService.updateSurvey({
         ...req.body,
@@ -58,7 +56,6 @@ class SurveyController {
 
   async createSurvey(req: Request, res: Response): Promise<void> {
     try {
-      console.log('req.body', req.body);
       const newSurvey = req.body;
       //const member = await this.getMemberByLogin(newSurvey.userId, newSurvey.org)|| true; //needs to be fixed :"Cannot read properties of undefined (reading 'getMemberByLogin')""
       if (true) {

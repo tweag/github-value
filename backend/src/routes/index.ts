@@ -20,7 +20,7 @@ router.post('/survey', surveyController.createSurvey);
 router.get('/survey/:id', surveyController.getSurveyById);
 router.put('/survey/:id', surveyController.updateSurvey); // put github survey logic here
 router.delete('/survey/:id', surveyController.deleteSurvey);
-router.put('/survey/:id/github', surveyController.updateSurveyGitHub);
+router.post('/survey/:id/github', surveyController.updateSurveyGitHub);
 
 router.get('/usage', usageController.getUsage);
 

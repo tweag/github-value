@@ -6,7 +6,6 @@ class SurveyService {
 
   async createSurvey(survey: SurveyType) {
     survey.id = await SequenceService.getNextSequenceValue('survey-sequence');
-    console.log('survey', survey);
     const Survey = mongoose.model('Survey');
     return await Survey.create(survey);
   }

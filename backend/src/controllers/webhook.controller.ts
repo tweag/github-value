@@ -6,36 +6,44 @@ import teamsService from '../services/teams.service.js';
 import { Endpoints } from '@octokit/types';
 
 export const setupWebhookListeners = (github: App) => {
-  github.webhooks.on("pull_request.opened", async ({ octokit, payload }) => {
-    const survey = await surveyService.createSurvey({
-      status: 'pending',
-      hits: 0,
-      userId: payload.pull_request.user.login,
-      org: payload.repository.owner.login,
-      repo: payload.repository.name,
-      prNumber: payload.pull_request.number,
-      usedCopilot: false,
-      percentTimeSaved: -1,
-      reason: '',
-      timeUsedFor: '',
-    })
-
-    const surveyUrl = new URL(`copilot/surveys/new/${survey.id}`, app.baseUrl);
-
-    surveyUrl.searchParams.append('url', payload.pull_request.html_url);
-    surveyUrl.searchParams.append('author', payload.pull_request.user.login);
-
+  github.webhooks.on(["pull_request.opened"], async ({ octokit, payload }) => {
     try {
-      octokit.rest.issues.createComment({
-        owner: payload.repository.owner.login,
+      const survey = await surveyService.createSurvey({
+        status: 'pending',
+        hits: 0,
+        userId: payload.pull_request.user.login,
+        org: payload.repository.owner.login,
         repo: payload.repository.name,
-        issue_number: payload.pull_request.number,
-        body: `Hi @${payload.pull_request.user.login}! \
-  Please fill out this [survey](${surveyUrl.toString()}) \
-  to help us understand if you leveraged Copilot in your pull request.`
-      });
+        prNumber: payload.pull_request.number,
+        usedCopilot: false,
+        percentTimeSaved: -1,
+        reason: '',
+        timeUsedFor: '',
+      })
+
+      const surveyUrl = new URL(`copilot/surveys/new/${survey.id}`, app.baseUrl);
+
+      surveyUrl.searchParams.append('url', payload.pull_request.html_url);
+      surveyUrl.searchParams.append('author', payload.pull_request.user.login);
+
+      if (payload.installation) {
+        const _octokit = await github.getInstallationOctokit(payload.installation.id);
+        await _octokit.rest.issues.createComment({
+          owner: payload.repository.owner.login,
+          repo: payload.repository.name,
+          issue_number: payload.pull_request.number,
+          body: `Hi @${payload.pull_request.user.login}! \
+      Please fill out this [survey](${surveyUrl.toString()}) \
+      to help us understand if you leveraged Copilot in your pull request.`
+        });
+      }
     } catch (error) {
-      logger.error('Error creating survey comment', error);
+      logger.debug(error);
+      if ((error as any)?.status === 422) {
+        logger.info('Survey comment created. (422)');
+      } else {
+        logger.error('Error creating survey comment');
+      }
     };
   });
 
