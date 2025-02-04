@@ -4,7 +4,7 @@
     <span class="spacer"></span>
   </div> -->
   <div class="cards-grid">
-    
+
     <!-- <app-dashboard-card-value routerLink="/copilot/seats" title="Seats" [value]="totalSeats" [change]="seatPercentage"
       changeSuffix="" icon="" changeDescription="% have Copilot"
       subtitle="Total Copilot Seats"></app-dashboard-card-value>
@@ -19,7 +19,7 @@
         <mat-card-title>Adoption</mat-card-title>
       </mat-card-header>
       <ng-container *ngIf="activityData; else loading">
-      <app-adoption-chart [data]="activityData" [chartOptions]="chartOptions"></app-adoption-chart>
+        <app-adoption-chart [data]="activityData" [chartOptions]="chartOptions"></app-adoption-chart>
       </ng-container>
     </mat-card>
     <mat-card id="activity" appearance="outlined" routerLink="/copilot/value" fragment="activity">
@@ -28,21 +28,22 @@
       </mat-card-header>
       <ng-container *ngIf="activityData && metricsData; else loading">
         <app-daily-activity-chart [activity]="activityData" [metrics]="metricsData"
-        [chartOptions]="chartOptions"></app-daily-activity-chart>      </ng-container>
+          [chartOptions]="chartOptions"></app-daily-activity-chart> </ng-container>
     </mat-card>
     <mat-card id="time-saved" appearance="outlined" routerLink="/copilot/value" fragment="time-saved">
       <mat-card-header>
         <mat-card-title>Time Saved</mat-card-title>
       </mat-card-header>
       <ng-container *ngIf="surveysData && activityData; else loading">
-        <app-time-saved-chart [surveys]="surveysData" [activity]="activityData" [chartOptions]="chartOptions"></app-time-saved-chart>
+        <app-time-saved-chart [surveys]="surveysData" [activity]="activityData"
+          [chartOptions]="chartOptions"></app-time-saved-chart>
       </ng-container>
     </mat-card>
 
     @for (status of statuses; track $index) {
-      <mat-card id="status" appearance="outlined">
-        <app-status [title]="status?.title" [message]="status?.message" [status]="status?.status"></app-status>
-      </mat-card>
+    <mat-card id="status" appearance="outlined">
+      <app-status [title]="status?.title" [message]="status?.message" [status]="status?.status"></app-status>
+    </mat-card>
     }
 
   </div>

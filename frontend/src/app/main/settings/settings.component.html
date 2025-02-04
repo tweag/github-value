@@ -10,7 +10,10 @@
     <div class="settings-content auto-fit-grid">
         <mat-form-field floatLabel="always">
           <mat-label>Max number of Developers</mat-label>
-          <input type="text" matInput [value]="form.controls.developerCount.value | number"  formControlName="developerCount" placeholder="Ex: 100">
+          <input type="text" matInput 
+                 [formControl]="form.controls.developerCount"
+                 (blur)="onFieldBlur($event, 'developerCount')" 
+                 placeholder="Ex: 1,000">
           <mat-error *ngIf="form.controls.developerCount.hasError('required')">
             Number of developers is <strong>required</strong>
           </mat-error>
@@ -18,26 +21,30 @@
       
         <mat-form-field floatLabel="always">
           <mat-label>Total Loaded Cost per Developer per Year</mat-label>
-          <input type="text" matInput [value]="form.controls.devCostPerYear.value | number" formControlName="devCostPerYear"
-            placeholder="Ex: 150000" class="example-right-align">
-          <mat-error *ngIf="form.controls.devCostPerYear.hasError('required')">
-            Developer cost is <strong>required</strong>
-          </mat-error>
+          <input type="text" matInput 
+                 [formControl]="form.controls.devCostPerYear"
+                 (blur)="onFieldBlur($event, 'devCostPerYear')" 
+                 placeholder="Ex: 150,000" 
+                 class="example-right-align">
           <span matTextPrefix>$&nbsp;</span>
-          <span matTextSuffix></span>
         </mat-form-field>
       
         <mat-form-field>
           <mat-label>Hours Available per Developer per Year</mat-label>
-          <input type="text" matInput [value]="form.controls.hoursPerYear.value | number" formControlName="hoursPerYear"
-            placeholder="Ex: 2080" 
-            class="example-right-align">
+          <input type="text" matInput 
+                 [formControl]="form.controls.hoursPerYear"
+                 (blur)="onFieldBlur($event, 'hoursPerYear')" 
+                 placeholder="Ex: 2,080" 
+                 class="example-right-align">
         </mat-form-field>
 
       <mat-form-field>
         <mat-label>Time Spent Coding</mat-label>
-        <input type="number" matInput formControlName="percentCoding" placeholder="Ex: 60" min="0" max="100" step="10"
-          class="example-right-align">
+        <input type="text" matInput 
+               [formControl]="form.controls.percentCoding"
+               (blur)="onFieldBlur($event, 'percentCoding')" 
+               placeholder="Ex: 50"
+               class="example-right-align">
         <mat-error *ngIf="form.controls.percentCoding.hasError('required')">
           Coding percentage is <strong>required</strong>
         </mat-error>
@@ -49,8 +56,11 @@
 
       <mat-form-field>
         <mat-label>Time Savings per Task</mat-label>
-        <input type="number" matInput formControlName="percentTimeSaved" placeholder="Ex: 20" min="0" max="100"
-          step="10" class="example-right-align">
+        <input type="text" matInput 
+               [formControl]="form.controls.percentTimeSaved"
+               (blur)="onFieldBlur($event, 'percentTimeSaved')" 
+               placeholder="Ex: 20"
+               class="example-right-align">
         <mat-error *ngIf="form.controls.percentTimeSaved.hasError('required')">
           Time savings is <strong>required</strong>
         </mat-error>
@@ -155,7 +165,4 @@
       <button mat-flat-button color="primary" type="submit">Save</button>
     </div>
   </form>
-  <!-- <p>
-    <a href="https://github.com/austenstone/github-value">GitHub Repository</a>
-  </p> -->
 </div>

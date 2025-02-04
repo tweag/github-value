@@ -21,49 +21,110 @@ interface CustomHighchartsGanttPoint extends Highcharts.GanttPointOptionsObject 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   raw?: any;
 }
+
 @Injectable({
   providedIn: 'root'
 })
 export class HighchartsService {
   transformCopilotMetricsToBarChartDrilldown(data: CopilotMetrics[]): Highcharts.Options {
-    const engagedUsersSeries: Highcharts.SeriesOptionsType = {
-      name: 'Users',
-      type: 'column' as const,
-      data: data.map(dateData => {
-        const date = new Date(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        return {
-          type: 'column',
-          name: date,
-          y: dateData.total_engaged_users,
-          // x: new Date(dateData.date).getTime(),
-          date: new Date(dateData.date),
-          drilldown: `date_${dateData.date}`,
-        }
-      }),
-      tooltip: {
-        headerFormat: '',
-        pointFormatter: function () {
-          return `<b>${new Date(this.date || 0).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</b></br>${this.y} users`;
-        } as Highcharts.FormatterCallbackFunction<CustomHighchartsPoint>
+    const decimalPipe = new DecimalPipe('en-US');
+    const customTooltipInfo = {
+      'copilot_ide_code_completions': (data: IdeCodeCompletionsShared) => `Suggestions: ${decimalPipe.transform(data.total_code_suggestions)}
+          <br>Accepted: ${decimalPipe.transform(data.total_code_acceptances)} (${((data.total_code_acceptances / data.total_code_suggestions) * 100).toFixed(2)}%)
+          <br>LoC suggested: ${decimalPipe.transform(data.total_code_lines_suggested)}
+          <br>LoC accepted: ${decimalPipe.transform(data.total_code_lines_accepted)}`,
+      'copilot_ide_chat': (data: IdeChatShared) => `Chats: ${decimalPipe.transform(data.total_chats)}`,
+      'copilot_dotcom_chat': (data: DotComChatShared) => `Chats: ${decimalPipe.transform(data.total_chats)}`,
+      'copilot_dotcom_pull_requests': (data: DotComPullRequestsShared) => `Summaries: ${decimalPipe.transform(data.total_pr_summaries_created)}`
+    }
+    const topLevelTooltip = {
+      headerFormat: '',
+      pointFormatter: function (this: CustomHighchartsPoint) {
+        const formatted = this.series.name;
+        const parts = [
+          `<b>${new Date(this.date || 0).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</b>: ${(this as any).totalUsers} users<br>`,
+          `<b><span style="color:${this.color}">${formatted}</span></b>: ${this.y} users<br>`,
+          ``
+        ]
+        if (this.customTooltipInfo) parts.push(this.customTooltipInfo());
+        return parts.join('');
       }
+    };
+
+    const convertedDate = (date: string) => {
+      // Extract YYYY-MM-DD from the UTC string
+      const dateParts = date.split('T')[0].split('-');
+      // Create new date using local time (no UTC conversion)
+      const localDate = new Date(
+        parseInt(dateParts[0]),
+        parseInt(dateParts[1]) - 1, // months are 0-based
+        parseInt(dateParts[2])
+      );
+      return localDate;
+    };
+    const ideCompletionsSeries: Highcharts.SeriesOptionsType = {
+      name: 'IDE Suggestions',
+      type: 'column',
+      data: data.map(dateData => ({
+        name: convertedDate(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        totalUsers: dateData.total_engaged_users,
+        y: dateData.copilot_ide_code_completions?.total_engaged_users || 0,
+        date: convertedDate(dateData.date),
+        drilldown: `ide_${dateData.date}`,
+        customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(dateData.copilot_ide_code_completions!),
+      })),
+      tooltip: topLevelTooltip
+    };
+
+    const ideChatSeries: Highcharts.SeriesOptionsType = {
+      name: 'IDE Chat',
+      type: 'column',
+      data: data.map(dateData => ({
+        name: convertedDate(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        totalUsers: dateData.total_engaged_users,
+        y: dateData.copilot_ide_chat?.total_engaged_users || 0,
+        date: convertedDate(dateData.date),
+        drilldown: `chat_${dateData.date}`,
+        customTooltipInfo: () => customTooltipInfo.copilot_ide_chat(dateData.copilot_ide_chat!)
+      })),
+      tooltip: topLevelTooltip
+    };
+
+    const dotcomChatSeries: Highcharts.SeriesOptionsType = {
+      name: 'GitHub.com Chat',
+      type: 'column',
+      data: data.map(dateData => ({
+        name: convertedDate(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        totalUsers: dateData.total_engaged_users,
+        y: dateData.copilot_dotcom_chat?.total_engaged_users || 0,
+        date: convertedDate(dateData.date),
+        drilldown: `dotcom_chat_${dateData.date}`,
+        customTooltipInfo: () => customTooltipInfo.copilot_dotcom_chat(dateData.copilot_dotcom_chat!)
+      })),
+      tooltip: topLevelTooltip
+    };
+
+    const prSeries: Highcharts.SeriesOptionsType = {
+      name: 'Pull Requests',
+      type: 'column',
+      data: data.map(dateData => ({
+        name: convertedDate(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        totalUsers: dateData.total_engaged_users,
+        y: dateData.copilot_dotcom_pull_requests?.total_engaged_users || 0,
+        date: convertedDate(dateData.date),
+        drilldown: `pr_${dateData.date}`,
+        customTooltipInfo: () => customTooltipInfo.copilot_dotcom_pull_requests(dateData.copilot_dotcom_pull_requests!),
+      })),
+      tooltip: topLevelTooltip
     };
 
     const drilldownSeries: Highcharts.SeriesOptionsType[] = [];
 
     data.forEach(dateData => {
       const dateSeriesId = `date_${dateData.date}`;
-      const customTooltipInfo = {
-        'copilot_ide_code_completions': (data: IdeCodeCompletionsShared) => `Suggestions: ${data.total_code_suggestions}
-            <br>Accepted: ${data.total_code_acceptances} (${((data.total_code_acceptances / data.total_code_suggestions) * 100).toFixed(2)}%)
-            <br>LoC suggested: ${data.total_code_lines_suggested}
-            <br>LoC accepted: ${data.total_code_lines_accepted}`,
-        'copilot_ide_chat': (data: IdeChatShared) => `Chats: ${data.total_chats}`,
-        'copilot_dotcom_chat': (data: DotComChatShared) => `Chats: ${data.total_chats}`,
-        'copilot_dotcom_pull_requests': (data: DotComPullRequestsShared) => `Summaries: ${data.total_pr_summaries_created}`
-      }
       drilldownSeries.push({
         type: 'column',
-        name: new Date(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'long' }),
+        name: convertedDate(dateData.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         id: dateSeriesId,
         data: [
           {
@@ -93,86 +154,88 @@ export class HighchartsService {
         ].sort((a, b) => b.y - a.y)
       });
 
-      // IDE Completions drilldown
-      drilldownSeries.push({
-        type: 'column',
-        name: 'IDE Completions',
-        id: `ide_${dateData.date}`,
-        data: dateData.copilot_ide_code_completions?.editors.map((editor) => ({
-          name: editor.name,
-          y: editor.total_engaged_users,
-          drilldown: `ide_${editor.name}_${dateData.date}`,
-          color: this.getEditorColor(editor.name.split('/')[0]),
-          customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(editor)
-        })).sort((a, b) => b.y - a.y)
-      });
-
-      // Editor language drilldowns
-      dateData.copilot_ide_code_completions?.editors.forEach((editor) => {
+      if (dateData.copilot_ide_code_completions?.editors) {
+        // IDE Completions drilldown
         drilldownSeries.push({
           type: 'column',
-          name: editor.name,
-          id: `ide_${editor.name}_${dateData.date}`,
-          data: editor.models.map((model) => ({
-            name: model.name,
-            y: model.total_engaged_users,
-            drilldown: `ide_${editor.name}_${model.name}_${dateData.date}`,
-            customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(model)
+          name: 'IDE Completions',
+          id: `ide_${dateData.date}`,
+          data: dateData.copilot_ide_code_completions?.editors.map((editor) => ({
+            name: editor.name,
+            y: editor.total_engaged_users,
+            drilldown: `ide_${editor.name}_${dateData.date}`,
+            color: this.getEditorColor(editor.name.split('/')[0]),
+            customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(editor)
           })).sort((a, b) => b.y - a.y)
         });
 
-        // Model languages drilldown
-        editor.models.forEach((model) => {
+        // Editor language drilldowns
+        dateData.copilot_ide_code_completions?.editors.forEach((editor) => {
           drilldownSeries.push({
             type: 'column',
-            name: `${model.name} Languages`,
-            id: `ide_${editor.name}_${model.name}_${dateData.date}`,
-            data: (model as CodeModel).languages.map((language) => ({
-              name: language.name,
-              y: language.total_engaged_users,
-              color: this.getLanguageColor(language.name),
-              drilldown: `lang_${editor.name}_${model.name}_${language.name}_${dateData.date}`,
-              customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(language)
+            name: editor.name,
+            id: `ide_${editor.name}_${dateData.date}`,
+            data: editor.models.map((model) => ({
+              name: model.name,
+              y: model.total_engaged_users,
+              drilldown: `ide_${editor.name}_${model.name}_${dateData.date}`,
+              customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(model)
             })).sort((a, b) => b.y - a.y)
           });
-          // Add acceptance stats drilldown for each language
-          (model as CodeModel).languages.forEach((language) => {
+
+          // Model languages drilldown
+          editor.models.forEach((model) => {
             drilldownSeries.push({
               type: 'column',
-              name: `${language.name} Suggestions`,
-              id: `lang_${editor.name}_${model.name}_${language.name}_${dateData.date}`,
-              data: [
-                {
-                  name: 'Suggestions',
-                  y: (language.total_code_lines_suggested || 0),
-                  color: '#007ACC'
-                },
-                {
-                  name: 'Accepted',
-                  y: language.total_code_acceptances || 0,
-                  color: '#4CAF50'
-                },
-                {
-                  name: 'LoC Suggested',
-                  y: language.total_code_lines_suggested,
-                  color: '#FFC107'
-                },
-                {
-                  name: 'LoC Accepted',
-                  y: language.total_code_lines_accepted,
-                  color: '#FF5722'
+              name: `${model.name} Languages`,
+              id: `ide_${editor.name}_${model.name}_${dateData.date}`,
+              data: (model as CodeModel).languages.map((language) => ({
+                name: language.name,
+                y: language.total_engaged_users,
+                color: this.getLanguageColor(language.name),
+                drilldown: `lang_${editor.name}_${model.name}_${language.name}_${dateData.date}`,
+                customTooltipInfo: () => customTooltipInfo.copilot_ide_code_completions(language)
+              })).sort((a, b) => b.y - a.y)
+            });
+            // Add acceptance stats drilldown for each language
+            (model as CodeModel).languages.forEach((language) => {
+              drilldownSeries.push({
+                type: 'column',
+                name: `${language.name} Suggestions`,
+                id: `lang_${editor.name}_${model.name}_${language.name}_${dateData.date}`,
+                data: [
+                  {
+                    name: 'Suggestions',
+                    y: (language.total_code_lines_suggested || 0),
+                    color: '#007ACC'
+                  },
+                  {
+                    name: 'Accepted',
+                    y: language.total_code_acceptances || 0,
+                    color: '#4CAF50'
+                  },
+                  {
+                    name: 'LoC Suggested',
+                    y: language.total_code_lines_suggested,
+                    color: '#FFC107'
+                  },
+                  {
+                    name: 'LoC Accepted',
+                    y: language.total_code_lines_accepted,
+                    color: '#FF5722'
+                  }
+                ],
+                tooltip: {
+                  headerFormat: '',
+                  pointFormatter: function () {
+                    return `<b>${this.name}</b>: ${this.y}`;
+                  }
                 }
-              ],
-              tooltip: {
-                headerFormat: '',
-                pointFormatter: function () {
-                  return `<b>${this.name}</b>: ${this.y}`;
-                }
-              }
+              });
             });
           });
         });
-      });
+      }
 
       // Chat drilldown (Editor level)
       drilldownSeries.push({
@@ -273,7 +336,7 @@ export class HighchartsService {
         type: 'column',
         name: 'Pull Requests',
         id: `pr_${dateData.date}`,
-        data: dateData.copilot_dotcom_pull_requests?.repositories.map((repo) => ({
+        data: dateData.copilot_dotcom_pull_requests?.repositories?.map((repo) => ({
           name: repo.name || 'Unknown',
           y: repo.total_engaged_users,
           drilldown: `pr_${repo.name}_${dateData.date}`,
@@ -282,7 +345,7 @@ export class HighchartsService {
       });
 
       // PR models drilldown
-      dateData.copilot_dotcom_pull_requests?.repositories.forEach((repo) => {
+      dateData.copilot_dotcom_pull_requests?.repositories?.forEach((repo) => {
         drilldownSeries.push({
           type: 'column',
           name: `${repo.name || 'Unknown'} Models`,
@@ -318,19 +381,27 @@ export class HighchartsService {
     });
 
     return {
+      time: {
+        useUTC: true
+      },
       chart: {
         events: {
           drilldown: this.drilldownIfSinglePoint()
         }
       },
-      series: [engagedUsersSeries],
+      plotOptions: {
+        column: {
+          stacking: 'normal'
+        }
+      },
+      series: [ideCompletionsSeries, ideChatSeries, dotcomChatSeries, prSeries],
       drilldown: {
         series: drilldownSeries
       },
       tooltip: {
         headerFormat: '<span><b>{series.name}</b></span><br>',
         pointFormatter: function (this: CustomHighchartsPoint) {
-          const formatted = this.date ? this.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' }) : this.name;
+          const formatted = this.date ? this.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : this.name;
           const parts = [
             `<span style="color:${this.color}">${formatted}</span>: <b>${this.y}</b> users<br/>`
           ]
@@ -364,7 +435,7 @@ export class HighchartsService {
       lineWidth: 2,
       marker: {
         enabled: true,
-        radius: 4,
+        radius: 3,
         symbol: 'circle'
       },
       states: {
@@ -400,7 +471,7 @@ export class HighchartsService {
       lineWidth: 2,
       marker: {
         enabled: true,
-        radius: 4,
+        radius: 3,
         symbol: 'circle'
       },
       states: {
@@ -411,7 +482,12 @@ export class HighchartsService {
     };
     const dailyActiveIdeCompletionsSeries = {
       ...initialSeries,
-      name: 'IDE Completions',
+      name: 'IDE Suggestions',
+      data: [] as CustomHighchartsPointOptions[]
+    };
+    const dailyActiveIdeAcceptsSeries = {
+      ...initialSeries,
+      name: 'IDE Accepts',
       data: [] as CustomHighchartsPointOptions[]
     };
     const dailyActiveIdeChatSeries = {
@@ -435,28 +511,34 @@ export class HighchartsService {
       if (currentMetrics?.copilot_ide_code_completions) {
         (dailyActiveIdeCompletionsSeries.data).push({
           x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_ide_code_completions.total_code_suggestions / dateData.totalActive),
+          y: (currentMetrics.copilot_ide_code_completions.total_code_suggestions / (dateData.totalActive || 1)),
+          raw: date
+        });
+
+        (dailyActiveIdeAcceptsSeries?.data).push({
+          x: new Date(date).getTime(),
+          y: (currentMetrics.copilot_ide_code_completions.total_code_acceptances / (dateData.totalActive || 1)),
           raw: date
         });
       }
       if (currentMetrics?.copilot_ide_chat) {
         (dailyActiveIdeChatSeries.data).push({
           x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_ide_chat.total_chats / dateData.totalActive),
+          y: (currentMetrics.copilot_ide_chat.total_chats / dateData.totalActive || 1),
           raw: date
         });
       }
       if (currentMetrics?.copilot_dotcom_chat) {
         (dailyActiveDotcomChatSeries.data).push({
           x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_dotcom_chat.total_chats / dateData.totalActive),
+          y: (currentMetrics.copilot_dotcom_chat.total_chats / dateData.totalActive || 1),
           raw: date
         });
       }
       if (currentMetrics?.copilot_dotcom_pull_requests) {
         (dailyActiveDotcomPrSeries.data).push({
           x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_dotcom_pull_requests.total_pr_summaries_created / dateData.totalActive),
+          y: (currentMetrics.copilot_dotcom_pull_requests.total_pr_summaries_created / dateData.totalActive || 1),
           raw: date
         });
       }
@@ -465,9 +547,10 @@ export class HighchartsService {
     return {
       series: [
         dailyActiveIdeCompletionsSeries,
+        dailyActiveIdeAcceptsSeries,
         dailyActiveIdeChatSeries,
         dailyActiveDotcomChatSeries,
-        dailyActiveDotcomPrSeries,
+        // dailyActiveDotcomPrSeries,
       ]
     }
   }
@@ -532,7 +615,7 @@ export class HighchartsService {
           lineWidth: 2,
           marker: {
             enabled: true,
-            radius: 4,
+            radius: 3,
             symbol: 'circle'
           },
           states: {
@@ -551,7 +634,7 @@ export class HighchartsService {
         //   })),
         //   marker: {
         //     enabled: true,
-        //     radius: 4,
+        //     radius: 3,
         //     symbol: 'triangle',
         //   },
         //   tooltip: {
@@ -640,6 +723,7 @@ export class HighchartsService {
       xAxis: {
         zoomEnabled: true,
         type: 'datetime',
+        //min: new Date().getTime(),
         min: new Date(seatActivity[0].last_activity_at || seatActivity[0].created_at).getTime(),
         max: new Date().getTime(),
       },

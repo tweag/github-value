@@ -41,4 +41,19 @@ export class MetricsService {
     });
   }
 
+  getMetricsTotalsArray(queryParams?: {
+    org?: string;
+    type?: 'none' | 'copilot_ide_code_completions' | 'copilot_ide_chat' | 'copilot_dotcom_chat' | 'copilot_dotcom_pull_requests';
+    since?: string;
+    until?: string;
+    editor?: 'vscode' | 'JetBrains' | 'Xcode' | 'Neovim' | string;
+    language?: string;
+    model?: 'default' | string;
+  }) {
+    if (!queryParams?.org) delete queryParams?.org;
+    return this.http.get<CopilotMetrics[]>(`${this.apiUrl}/totals`, {
+      params: queryParams
+    });
+  }
+
 }

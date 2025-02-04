@@ -4,6 +4,7 @@ import { HighchartsChartModule } from 'highcharts-angular';
 import { ActivityResponse } from '../../../../services/api/seat.service';
 import { HighchartsService } from '../../../../services/highcharts.service';
 import { DatePipe } from '@angular/common';
+import { TargetsGridType } from '../../../../services/api/targets.service';
 
 @Component({
   selector: 'app-adoption-chart',
@@ -22,6 +23,7 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
   updateFlag = false;
   totalUsers = 500;
   @Input() data?: ActivityResponse;
+  @Input() targets?: TargetsGridType;
   @Input() chartOptions?: Highcharts.Options;
   _chartOptions: Highcharts.Options = {
     yAxis: {
@@ -71,13 +73,16 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
     },
   };
   @Output() chartInstanceChange = new EventEmitter<Highcharts.Chart>();
-  charts: Highcharts.Chart[] = [];
+  chart?: Highcharts.Chart;
 
   constructor(
     private highchartsService: HighchartsService,
   ) { }
 
   ngOnInit() {
+    this.chartInstanceChange.subscribe(chart => {
+      this.chart = chart;
+    });
     this._chartOptions.yAxis = Object.assign({}, this.chartOptions?.yAxis, this._chartOptions.yAxis);
     this._chartOptions.tooltip = Object.assign({}, this.chartOptions?.tooltip, this._chartOptions.tooltip);
     this._chartOptions = Object.assign({}, this.chartOptions, this._chartOptions);
@@ -94,7 +99,19 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
           ...this._chartOptions.tooltip
         }
       };
+    }
+    if (changes['targets'] && this.targets) {
+      if (this.targets?.target.adoptedDevs) {
+        const target = (+this.targets.target.adoptedDevs / this.targets.max.seats) * 100;
+        const yAxis = this._chartOptions.yAxis as Highcharts.YAxisOptions;
+        if (yAxis?.plotLines?.[0]) {
+          yAxis.plotLines[0].value = target;
+        }
+      }
       this.updateFlag = true;
+      setTimeout(() => {
+        (this.chart?.yAxis[0] as any).plotLinesAndBands[0].render();
+      }, 5000)
     }
   }
 

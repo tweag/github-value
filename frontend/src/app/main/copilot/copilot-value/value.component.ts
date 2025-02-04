@@ -14,6 +14,7 @@ import HC_exporting from 'highcharts/modules/exporting';
 HC_exporting(Highcharts);
 import HC_full_screen from 'highcharts/modules/full-screen';
 import { InstallationsService } from '../../../services/api/installations.service';
+import { TargetsGridType, TargetsService } from '../../../services/api/targets.service';
 HC_full_screen(Highcharts);
 
 @Component({
@@ -34,6 +35,7 @@ HC_full_screen(Highcharts);
 export class CopilotValueComponent implements OnInit {
   activityData?: ActivityResponse;
   metricsData?: CopilotMetrics[];
+  targetsData?: TargetsGridType;
   surveysData?: Survey[];
   daysInactive = new FormControl(30);
   adoptionFidelity = new FormControl<'day' | 'hour'>('day');
@@ -78,6 +80,7 @@ export class CopilotValueComponent implements OnInit {
     private metricsService: MetricsService,
     private copilotSurveyService: CopilotSurveyService,
     private installationsService: InstallationsService,
+    private targetsService: TargetsService,
     private cdr: ChangeDetectorRef
   ) { }
 
@@ -86,34 +89,25 @@ export class CopilotValueComponent implements OnInit {
       takeUntil(this.installationsService.destroy$)
     ).subscribe(installation => {
       this.subscriptions.forEach(s => s.unsubscribe());
-      this.subscriptions = [];
-      
-      this.subscriptions.push(
-        combineLatest([
-          this.daysInactive.valueChanges.pipe(startWith(this.daysInactive.value || 30)),
-          this.adoptionFidelity.valueChanges.pipe(startWith(this.adoptionFidelity.value || 'day'))
-        ]).subscribe(([days, fidelity]) => {
-          this.seatService.getActivity(installation?.account?.login, days || 30, fidelity || 'day').subscribe(data => {
-            this.activityData = data;
-            this.cdr.detectChanges();
-          });
-        })
-      )
-      this.subscriptions.push(
+      this.subscriptions = [
+        this.seatService.getActivity(installation?.account?.login).subscribe(data => {
+          this.activityData = data;
+          this.cdr.detectChanges();
+        }),
         this.metricsService.getMetrics({
           org: installation?.account?.login,
         }).subscribe(data => {
           this.metricsData = data;
-        })
-      )
-
-      this.subscriptions.push(
+        }),
         this.copilotSurveyService.getAllSurveys({
           org: installation?.account?.login
         }).subscribe(data => {
           this.surveysData = data;
+        }),
+        this.targetsService.getTargets().subscribe(data => {
+          this.targetsData = data;
         })
-      )
+      ];
     });
   }
 

@@ -150,7 +150,8 @@ export class CopilotDashboardComponent implements OnInit, OnDestroy {
       )
 
       this.subscriptions.push(
-        this.seatService.getActivity(installation?.account?.login, 30).subscribe((activity) => {
+        this.seatService.getActivity(installation?.account?.login).subscribe((activity) => {
+          //TODO: remove this
           this.activityData = activity;
           this.cdr.detectChanges();
         })

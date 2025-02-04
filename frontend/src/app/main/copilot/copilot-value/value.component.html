@@ -1,48 +1,28 @@
 <div class="page-container">
   <div class="page-header">
     <h1>Value</h1>
-    <span class="spacer"></span>
+    <!-- <span class="spacer"></span>
     <div>
-      <mat-form-field>
-        <mat-label>Fidelity</mat-label>
-        <mat-select [formControl]="adoptionFidelity">
-          <mat-option value="day">Day</mat-option>
-          <mat-option value="hour">Hour</mat-option>
-          <mat-option value="minute">Minute</mat-option>
-        </mat-select>
-      </mat-form-field>
-      <mat-form-field>
-        <mat-label>Inactivity</mat-label>
-        <mat-select [formControl]="daysInactive">
-          <mat-option [value]="0.0416666">1 Hour</mat-option>
-          <mat-option [value]="0.25">6 Hours</mat-option>
-          <mat-option [value]="1">1 Day</mat-option>
-          <mat-option [value]="7">7 Days</mat-option>
-          <mat-option [value]="30">30 Days</mat-option>
-          <mat-option [value]="60">60 Days</mat-option>
-          <mat-option [value]="90">90 Days</mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
+    </div> -->
   </div>
   <div class="cards-grid">
     <mat-card class="chart-card" id="adoption" appearance="outlined">
       <mat-card-header>
         <mat-card-title>Adoption</mat-card-title>
       </mat-card-header>
-      <app-adoption-chart [data]="activityData" [chartOptions]="chartOptions" (chartInstanceChange)="chartChanged($event)"></app-adoption-chart>
+      <app-adoption-chart [data]="activityData" [targets]="targetsData" [chartOptions]="chartOptions" (chartInstanceChange)="chartChanged($event)"></app-adoption-chart>
     </mat-card>
     <mat-card class="chart-card" id="activity" appearance="outlined">
       <mat-card-header>
         <mat-card-title>Daily Activity</mat-card-title>
       </mat-card-header>
-      <app-daily-activity-chart [activity]="activityData" [chartOptions]="chartOptions" [metrics]="metricsData" (chartInstanceChange)="chartChanged($event)"></app-daily-activity-chart>
+      <app-daily-activity-chart [activity]="activityData" [targets]="targetsData" [chartOptions]="chartOptions" [metrics]="metricsData" (chartInstanceChange)="chartChanged($event)"></app-daily-activity-chart>
     </mat-card>
     <mat-card class="chart-card" id="time-saved" appearance="outlined">
       <mat-card-header>
         <mat-card-title>Weekly Time Saved</mat-card-title>
       </mat-card-header>
-      <app-time-saved-chart [surveys]="surveysData" [activity]="activityData" [chartOptions]="chartOptions" (chartInstanceChange)="chartChanged($event, false)"></app-time-saved-chart>
+      <app-time-saved-chart [surveys]="surveysData" [targets]="targetsData" [activity]="activityData" [chartOptions]="chartOptions" (chartInstanceChange)="chartChanged($event, false)"></app-time-saved-chart>
     </mat-card>
   </div>
 </div>

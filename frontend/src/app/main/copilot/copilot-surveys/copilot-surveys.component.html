@@ -3,7 +3,7 @@
     <h1>Estimates</h1>
     <span class="spacer"></span>
     <p>
-      <a mat-flat-button color="primary" routerLink="/copilot/surveys/new">New Survey</a>
+      <a mat-flat-button color="primary" routerLink="/copilot/surveys/new">New Estimate</a>
     </p>
   </div>
   <app-table [data]="surveys!" [columns]="surveysColumns" [defaultSort]="{id: 'dateTime', start: 'desc', disableClear: false}" (rowClick)="onSurveyClick($event)"></app-table>

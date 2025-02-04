@@ -40,7 +40,7 @@ export class ActiveUsersChartComponent implements OnChanges {
       pointFormat: '<span style="padding:0">{point.y: .1f} hours</span>',
       headerFormat: '',
       formatter: function () {
-        const hours = (this.y || 0) / (1000 * 60 * 60); // Convert ms to hours
+        const hours = (this.y || 0); // Convert ms to hours
         return `<span style="padding:0">@${this.key}</span><br>
         <span style="padding:0">${hours.toFixed(1)} hours</span>`;
       },

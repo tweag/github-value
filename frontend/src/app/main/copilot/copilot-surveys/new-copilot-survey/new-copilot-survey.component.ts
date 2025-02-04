@@ -40,6 +40,7 @@ export class NewCopilotSurveyComponent implements OnInit {
   defaultPercentTimeSaved = 25;
   id: number;
   surveys: Survey[] = [];
+  orgFromApp: string = '';
 
   constructor(
     private fb: FormBuilder,
@@ -70,6 +71,11 @@ export class NewCopilotSurveyComponent implements OnInit {
       this.params = params;
     });
 
+    // Subscribe to the installationsService to get the latest organization
+    this.installationsService.currentInstallation.subscribe(installation => {
+      this.orgFromApp = installation?.account?.login || '';
+    });
+
     this.loadHistoricalReasons();
 
     this.surveyForm.get('usedCopilot')?.valueChanges.subscribe((value) => {
@@ -84,7 +90,7 @@ export class NewCopilotSurveyComponent implements OnInit {
   loadHistoricalReasons() {
     this.copilotSurveyService.getAllSurveys({
       reasonLength: 20,
-      // org: this.installationsService.currentInstallation.value?.account?.login
+      org: this.orgFromApp
     }).subscribe((surveys: Survey[]) => {
       this.surveys = surveys;
     }
@@ -122,7 +128,7 @@ export class NewCopilotSurveyComponent implements OnInit {
     const survey = {
       id: this.id,
       userId: this.surveyForm.value.userId,
-      org,
+      org: org || this.orgFromApp,
       repo: repo || this.surveyForm.value.repo,
       prNumber: prNumber || this.surveyForm.value.prNumber,
       usedCopilot: this.surveyForm.value.usedCopilot,
@@ -132,7 +138,7 @@ export class NewCopilotSurveyComponent implements OnInit {
     };
     if (!this.id) {
       this.copilotSurveyService.createSurvey(survey).subscribe(() => {
-        this.router.navigate(['/copilot/surveys']);
+        this.router.navigate(['/copilot/survey']);
       });
     } else {
       this.copilotSurveyService.createSurveyGitHub(survey).subscribe(() => {

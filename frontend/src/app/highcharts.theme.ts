@@ -80,14 +80,12 @@ const theme: Highcharts.Options = {
         states: {
           hover: {
             fill: 'var(--mdc-filled-button-container-color)',
-            brightness: 1.08,
             style: {
               color: 'var(--mdc-filled-button-label-text-color)'
             }
           },
           select: {
             fill: 'var(--mdc-filled-button-container-color)',
-            brightness: 0.95
           }
         },
         paddingLeft: 24,
@@ -194,9 +192,6 @@ const theme: Highcharts.Options = {
   },
   xAxis: xAxisConfig,
   yAxis: yAxisConfig,
-  time: {
-    useUTC: false
-  },
   legend: {
     align: 'left',
     verticalAlign: 'top',
