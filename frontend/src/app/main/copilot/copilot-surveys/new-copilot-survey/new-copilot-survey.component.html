@@ -7,7 +7,11 @@
   </div> -->
   <div class="survey-container">
     <div>
-      <h5>Estimate Time Savings</h5>
+      <h5>Estimate Time Savings
+      <a [routerLink]="[]" fragment="why-estimate" class="info-section" aria-label="More info on estimate time savings">
+        <mat-icon>info</mat-icon>
+      </a>
+    </h5>
       <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
         <div *ngIf="!id" class="conditional-fields">
           <label for="usedCopilot" class="label-large">   Who is submitting this estimate?</label>
@@ -98,8 +102,52 @@
       </div>
     </div>
   </div>
+
+  <h3>      </h3>
+  <div id="why-estimate" class="info-section">
+    <h6>
+      .<p> </p>
+      .<p>  </p>
+      . Why Estimate Copilot Time Savings?</h6>
   <p class="footer-text">
-    For developers to have a Downstream Impact with Copilot, they must Adopt, have consistent Activity, get consistent Time Savings, and intentionally spend it on a downstream outcome.
-Using the 3 upstream metrics we can view how copilot is being adopted, utilized and if it results in recognized benefit to developers. Downstream metrics have low signal to noise ratios making small improvements very hard to reliably measure. Capturing time savings at the developer level therefore provides critical visibility for understanding the level of impact and how impact is trending. When high levels of time savings are consistently reported then it becomes more likely to find confirmation in the downstream metrics even if the noise levels are high.
-  </p>
+    <p><strong>Why Estimate Copilot Time Savings?</strong></p>
+
+    <p>Everyone is wildly curious how developers are using Copilot—what works well, what doesn’t, and if this innovation is delivering value. 
+      Your feedback helps you and the broader org of developers understand <strong>how to get the most out of Copilot</strong> while also identifying trends and opportunities for improvement.
+      Users who actively utilize GitHub Copilot tend to recognize time savings. For example, one company found 93% of developers reported Copilot saves them time. On average developers reported a reduction in the time required for a coding task of 21%.</p>
+    
+    <p><strong>A great response includes:</strong></p>
+    <ul>
+        <li>What progress were you trying to make</li>
+        <li>How Copilot assisted you (e.g., learning, planning, building, refactoring, scaffolding, testing, debugging)</li>
+        <li>An estimate of raw time saved impact, regardless if the PR took the same duration or not.</li>
+        <li>Indicate your expectation for where that extra time might show up (mainly to highlight that the time savings has consequences)</li>
+    </ul>
+    
+    <p><strong>Example Responses from real developers:</strong></p>
+    
+    <ul>
+        <li><strong>11-20% Time Savings:</strong>  
+            <br>“Copilot chat asking how to use a specific command. Gives faster accurate answer without having to dig in the CLI documentation.”
+        </li>
+        <li><strong>21-30% Time Savings:</strong>  
+            <br>“For about half the work in this PR, I did the first quarter of it, told GH Copilot ‘see what I did at lines N through N in #file? Do that for....’ and let it do the other one-quarter of the work for me.”
+        </li>
+        <li><strong>31-40% Time Savings:</strong>  
+            <br>“Copilot assisted with formatting large sets of data for a test that normally would have taken much longer to do manually.”
+        </li>
+        <li><strong>More than 41% Time Savings:</strong>  
+            <br>“Was able to tab out the entire process.”
+        </li>
+    </ul>
+    
+    <p><strong>Why This Matters</strong></p>
+    
+    <p>Traditional activity metrics—like lines of code written, PRs merged, or coding time—don’t capture Copilot’s real impact. They are <strong>noisy</strong> (affected by many factors), <strong>delayed</strong> (taking weeks or months to surface trends), and <strong>open to interpretation</strong> (more code doesn’t always mean better outcomes).</p>
+    
+    <p>Capturing time savings directly from developers provides <strong>immediate, firsthand insight</strong> into how Copilot changes the way work gets done. 
+      When time savings are consistently high, downstream benefits are more likely to emerge, even if "productivity" metrics struggle to measure them.</p>
+    
+    <p>Thank you for reading this! Your input helps the developer community learn from each other how to use it effectively. Every insight counts!</p>
+      </div>
 </div>
