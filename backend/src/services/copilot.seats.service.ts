@@ -48,7 +48,7 @@ class SeatsService {
   async getAssignee(id: number) {
     const Seats = mongoose.model('Seats');
     const Member = mongoose.model('Member');
-    const member = await Member.findOne({ id });
+    const member = await Member.findOne({id}).sort({org: -1}); //this temporarily resolves a bug where one org fails but the other one succeeds
 
     if (!member) {
       throw `Member with id ${id} not found`

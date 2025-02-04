@@ -54,7 +54,7 @@ class MockSurveyGenerator {
     const newData = JSON.parse(JSON.stringify(this.baseData));
 
     newData.surveys = await Promise.all(newData.surveys.map(async (survey: SurveyType) => {
-      survey.id = await SequenceService.getNextSequenceValue('survey-sequence');
+      //survey.id = await SequenceService.getNextSequenceValue('survey-sequence');
       survey.userId = this.getRandomUserId();
       survey.org = this.getRandomOrg();
       //survey.repo = this.getRandomRepo();

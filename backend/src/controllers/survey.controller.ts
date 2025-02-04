@@ -4,6 +4,9 @@ import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
 import mongoose from 'mongoose';
+import { MemberType } from 'models/teams.model.js';
+import { memoryUsage } from 'process';
+import validator from 'validator';
 
 
 
@@ -55,16 +58,15 @@ class SurveyController {
 
   async createSurvey(req: Request, res: Response): Promise<void> {
     try {
+      console.log('req.body', req.body);
       const newSurvey = req.body;
-      this.getMemberByLogin(newSurvey.userId);
-      const Survey = mongoose.model('Survey');
-      const survey = await Survey.create(req.body);
-      // surveyService.createSurvey(req.body);
-      //TODO refactor db code to service layer
-
-      res.status(201).json(survey);
+      //const member = await this.getMemberByLogin(newSurvey.userId, newSurvey.org)|| true; //needs to be fixed :"Cannot read properties of undefined (reading 'getMemberByLogin')""
+      if (true) {
+        const survey = surveyService.createSurvey(newSurvey);
+        res.status(201).json(survey);
+      }
     } catch (error) {
-      res.status(500).json(error);
+      res.status(500).json((error as Error).message);
       return;
     }
   }
@@ -152,22 +154,40 @@ class SurveyController {
     //router.get('/members/:login', teamsController.getMemberByLogin);
   }
 
-  async getMemberByLogin(loginToFind: any): Promise<void> {
-    const Member = mongoose.model('Member');
-        try {
-          const { login } = loginToFind;
-          const member = await Member.findOne({ login })
-            .select('login name url avatar_url')
-            .exec();
-    
-          if (member) {
-            return member
-          } else {
-            throw new Error('User not found');
-          }
-        } catch (error) {
-          throw new Error('Member lookup failed with: ' + (error as any).message);
-        }
+  async getMemberByLogin(loginToFind: string, orgToMatch: string): Promise<MemberType> {
+    // Ensure both values are provided.
+    if (!loginToFind || !orgToMatch) {
+      throw new Error('Both login and org must be provided');
+    }
+
+    // Trim the login input and then validate.
+    const trimmedLogin = loginToFind.trim();
+    if (!validator.isAlphanumeric(trimmedLogin, 'en-US', { ignore: '-' })) {
+      throw new Error('Invalid login: Only alphanumeric characters and dashes are allowed');
+    }
+
+    // Optionally validate org if needed
+    const trimmedOrg = orgToMatch.trim();
+    if (!trimmedOrg) {
+      throw new Error('Invalid organization provided');
+    }
+
+    // Retrieve the Member model once instead of on every method call.
+    const Member = mongoose.model<MemberType>('Member');
+
+    try {
+      const member = await Member.findOne({ login: trimmedLogin, org: trimmedOrg })
+        .select('login name url avatar_url')
+        .exec();
+
+      if (member) {
+        return member;
+      } else {
+        throw new Error('User not found');
+      }
+    } catch (error) {
+      throw new Error('Member lookup failed with: ' + (error as Error).message);
+    }
   }
 }
 
