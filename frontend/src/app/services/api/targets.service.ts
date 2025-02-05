@@ -43,7 +43,9 @@ export class TargetsService {
   }
 
   saveTargets(targets: TargetsGridType) {
-    return this.http.post<TargetsGridType>(`${this.apiUrl}`, targets);
+    return this.http.post<TargetsGridType>(`${this.apiUrl}`, {
+      ...targets
+    });
   }
 }
 
