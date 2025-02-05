@@ -1,4 +1,4 @@
-ARG VARIANT=23-bullseye-slim
+ARG VARIANT=22-bullseye-slim
 
 FROM node:${VARIANT} AS backend-builder
 WORKDIR /app/backend
