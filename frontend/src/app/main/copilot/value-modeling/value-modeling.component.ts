@@ -4,12 +4,11 @@ import { MaterialModule } from '../../../material.module';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { CommonModule, DecimalPipe } from '@angular/common';
 import { HighchartsChartModule } from 'highcharts-angular';
-import { SharedModule } from '../../../shared/shared.module';
 import * as Highcharts from 'highcharts';
 import { CopilotSurveyService } from '../../../services/api/copilot-survey.service';
 import { AdoptionService } from '../../../services/api/adoption.service';
 import { MetricsService } from '../../../services/api/metrics.service';
-import { lastValueFrom, Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil } from 'rxjs';
 import { SettingsHttpService } from '../../../services/api/settings.service';
 import { TargetsDetailType, TargetsService, TargetsGridType, initializeGridObject } from '../../../services/api/targets.service';
 import { InstallationsService } from '../../../services/api/installations.service';
@@ -24,7 +23,6 @@ import { forkJoin, catchError, tap, finalize } from 'rxjs';
     CommonModule,
     ReactiveFormsModule,
     HighchartsChartModule,
-    SharedModule
   ],
   providers: [
     DecimalPipe
@@ -199,8 +197,6 @@ export class ValueModelingComponent implements OnInit, AfterViewInit {
     })
   });
   disableInputs: boolean = true;
-
-
 
   constructor(
     private decimalPipe: DecimalPipe,
