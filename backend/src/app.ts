@@ -53,7 +53,7 @@ class App {
       baseUrl: this.baseUrl,
       webhookProxyUrl: process.env.GITHUB_WEBHOOK_PROXY_URL,
       webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
-      metricsCronExpression: '0 0 * * *',
+      metricsCronExpression: process.env.CRON || '0 * * * *',
       devCostPerYear: '100000',
       developerCount: '100',
       hoursPerYear: '2080',

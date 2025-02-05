@@ -28,7 +28,7 @@ class QueryService {
     this.app = app;
     // Consider Timezone
     const _options: CronJobParams = {
-      cronTime: DEFAULT_CRON_EXPRESSION,
+      cronTime: options?.cronTime || DEFAULT_CRON_EXPRESSION,
       onTick: () => {
         this.task();
       },
