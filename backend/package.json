@@ -10,6 +10,7 @@
     "build": "tsc",
     "dev": "tsx watch src/index.ts | bunyan -o short -l info",
     "lint": "eslint src/**/*.ts",
+    "compose:start": "docker-compose -f ../compose.yml up -d",
     "db:start": "docker-compose -f ../compose.yml up -d mongo",
     "dotenv": "cp -n .env.example .env || true"
   },

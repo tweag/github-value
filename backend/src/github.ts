@@ -175,6 +175,7 @@ class GitHub {
 
   setInput(input: GitHubInput) {
     this.input = { ...this.input, ...input };
+    return this.input;
   }
 }
 

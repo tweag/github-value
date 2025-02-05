@@ -1,4 +1,5 @@
-ARG VARIANT=23
+ARG VARIANT=23-bullseye-slim
+
 FROM node:${VARIANT} AS backend-builder
 WORKDIR /app/backend
 COPY backend/package.json backend/package-lock.json ./
@@ -25,8 +26,7 @@ COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 COPY --from=frontend-builder /app/frontend/package.json ./frontend/package.json
 COPY --from=frontend-builder /app/frontend/node_modules ./frontend/node_modules
 
-WORKDIR /app/backend
-
 EXPOSE 8080
 
+WORKDIR /app/backend
 CMD node dist/index.js | ./node_modules/.bin/bunyan

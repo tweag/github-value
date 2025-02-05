@@ -12,7 +12,6 @@ import GitHub from './github.js';
 import SettingsService from './services/settings.service.js';
 import apiRoutes from "./routes/index.js"
 import WebhookService from './services/smee.js';
-import { log } from 'console';
 
 class App {
   e: Express;
@@ -29,6 +28,7 @@ class App {
     this.e = express();
     this.port = port;
     logger.info(`Starting application on port ${this.port}`);
+    console.log(process.env)
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI must be set');
     }
@@ -86,12 +86,12 @@ class App {
 
       return this.e;
     } catch (error) {
-      await this.github.smee.connect();
       logger.error('Failed to start application ❌');
       if (error instanceof Error) {
         logger.error(error.message);
       }
       logger.debug(error);
+      process.exit(1);
     }
   }
 
