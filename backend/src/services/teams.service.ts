@@ -138,17 +138,17 @@ class TeamsService {
     const member = await Member.findOne({ id: memberId });
 
     if (!team || !member) {
-        logger.error(`Team ${teamId} or member ${memberId} not found`);
-        return;
+      logger.error(`Team ${teamId} or member ${memberId} not found`);
+      return;
     }
 
     // Use MongoDB _ids for the relationship
     return TeamMember.findOneAndUpdate(
-        { team: team._id, member: member._id },
-        { team: team._id, member: member._id },
-        { upsert: true, new: true }
+      { team: team._id, member: member._id },
+      { team: team._id, member: member._id },
+      { upsert: true, new: true }
     );
-}
+  }
 
   async deleteMemberFromTeam(teamId: number, memberId: number) {
     const TeamMember = mongoose.model('TeamMember');
@@ -189,15 +189,56 @@ class TeamsService {
     return team?.updatedAt || new Date(0);
   }
 
-  async getAllMembers(org: string) {
+  async getMemberByLogin(login: string) {
+    const Member = mongoose.model('Member');
+    return await Member.findOne({ login })
+      .select('login name url avatar_url')
+      .exec();
+  }
+
+  async getAllMembers(org?: string) {
     const Member = mongoose.model('Member');
     try {
-      const members = await Member.find({ org }).select('login name url avatar_url').sort({ login: 'asc' }).exec();
-      return members;
+      console.log({...org ? { org } : {}})
+      return await Member.find({
+        ...org ? { org } : {}
+      })
+        .select('login org name url avatar_url')
+        .populate({
+          path: 'seat',
+          select: '-_id -__v',
+          options: { lean: true }
+        })
+        .sort({ login: 'asc' })
+        .exec();
     } catch (error) {
       logger.error('Failed to get all members:', error);
       throw error;
     }
+  }
+
+  async getTeams(org?: string) {
+    const Team = mongoose.model('Team');
+    const Member = mongoose.model('Member');
+    return await Team.find({
+      ...org ? { org } : {}
+    })
+      .populate({
+        path: 'members',
+        select: 'login avatar_url',
+        model: Member
+      })
+      .populate({
+        path: 'children',
+        select: 'name org slug description html_url',
+        populate: {
+          path: 'members',
+          select: 'login avatar_url',
+          model: Member
+        }
+      })
+      .sort({ name: 'asc', 'members.login': 'asc' })
+      .exec();
   }
 }
 
