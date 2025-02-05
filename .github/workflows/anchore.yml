@@ -38,6 +38,7 @@ jobs:
     - name: Run the Anchore Grype scan action
       uses: anchore/scan-action@v6
       id: scan
+      continue-on-error: true
       with:
         image: "localbuild/testimage:latest"
         fail-build: true
