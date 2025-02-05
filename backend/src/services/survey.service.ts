@@ -15,21 +15,32 @@ class SurveyService {
       throw new Error('Invalid survey data provided');
     }
     const Survey = mongoose.model('Survey');
-    const result = await Survey.updateOne({ id: survey.id }, survey);
-  
+    const result = await Survey.updateOne({ id: survey.id }, {
+      id: survey.id,
+      userId: survey.userId,
+      org: survey.org,
+      repo: survey.repo,
+      prNumber: survey.prNumber,
+      usedCopilot: survey.usedCopilot,
+      percentTimeSaved: survey.percentTimeSaved,
+      reason: survey.reason,
+      timeUsedFor: survey.timeUsedFor,
+      kudos: survey.kudos
+    });
+
     // Check if the update modified any document.
-  if (result.modifiedCount === 0) {
-    throw new Error('Survey update failed: no document was modified');
+    if (result.modifiedCount === 0) {
+      throw new Error('Survey update failed: no document was modified');
+    }
+
+    const updatedSurvey = await Survey.findOne({ id: survey.id });
+    if (!updatedSurvey) {
+      throw new Error('Survey update failed: survey not found');
+    }
+
+    return updatedSurvey;
   }
-  
-  const updatedSurvey = await Survey.findOne({ id: survey.id });
-  if (!updatedSurvey) {
-    throw new Error('Survey update failed: survey not found');
-  }
-  
-  return updatedSurvey;
-  }
-  
+
   async getRecentSurveysWithGoodReasons(minReasonLength: number): Promise<SurveyType[]> {
     if (typeof minReasonLength !== 'number' || isNaN(minReasonLength) || minReasonLength < 1) {
       throw new Error('Invalid minReasonLength provided');

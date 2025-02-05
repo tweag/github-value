@@ -28,7 +28,6 @@ class App {
     this.e = express();
     this.port = port;
     logger.info(`Starting application on port ${this.port}`);
-    console.log(process.env)
     if (!process.env.MONGODB_URI) {
       throw new Error('MONGODB_URI must be set');
     }
@@ -104,6 +103,10 @@ class App {
   private setupExpress() {
     this.e.use(cors());
     this.e.use(expressLoggerMiddleware);
+    this.e.use(rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 1000, // max 100 requests per windowMs
+    }));
     this.e.use((req, res, next) => {
       if (req.path === '/api/github/webhooks') {
         return next();
@@ -117,13 +120,7 @@ class App {
     const __dirname = dirname(__filename);
     const frontendPath = path.resolve(__dirname, '../../frontend/dist/github-value/browser');
     this.e.use(express.static(frontendPath));
-    this.e.get(
-      '*',
-      rateLimit({
-        windowMs: 15 * 60 * 1000, max: 5000,
-      }),
-      (_, res) => res.sendFile(path.join(frontendPath, 'index.html'))
-    );
+    this.e.get('*', (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 
     this.eListener = this.e.listen(this.port, '0.0.0.0');
     logger.info(`eListener on port ${this.port}`);
