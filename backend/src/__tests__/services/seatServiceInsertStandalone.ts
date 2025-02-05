@@ -3,7 +3,6 @@ import SeatService from '../../services/seats.service.js';
 import { generateStatefulMetrics } from '../__mock__/seats-gen/runSeatsGenerator.js';
 import Database from '../../database.js';
 import 'dotenv/config';
-import { SeatType } from 'models/seats.model.js';
 
 if (!process.env.MONGODB_URI) throw new Error('MONGODB_URI is not defined');
 const database = new Database(process.env.MONGODB_URI);
