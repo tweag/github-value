@@ -132,7 +132,7 @@ class SurveyController {
       const Survey = mongoose.model('Survey');
       const { id } = req.params;
       const updated = await Survey.findOneAndUpdate({
-        id: Number(id)
+        id: { $eq: Number(id) }
       }, {
         id: req.body.id,
         userId: req.body.userId,
