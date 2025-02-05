@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import teamsService from 'services/teams.service.js';
+import teamsService from '../services/teams.service.js';
 
 class TeamsController {
   async getAllTeams(req: Request, res: Response): Promise<void> {
