@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import TargetValuesService from '../services/target-values.service.js';
+import TargetValuesService from '../services/target.service.js';
 
 class TargetValuesController {
   async getTargetValues(req: Request, res: Response): Promise<void> {

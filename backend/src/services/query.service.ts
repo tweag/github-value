@@ -1,7 +1,7 @@
 import { CronJob, CronJobParams, CronTime } from 'cron';
 import logger from './logger.js';
 import { insertUsage } from '../models/usage.model.js';
-import SeatService, { SeatEntry } from '../services/copilot.seats.service.js';
+import SeatService, { SeatEntry } from './seats.service.js';
 import { App, Octokit } from 'octokit';
 import { MetricDailyResponseType } from '../models/metrics.model.js';
 import mongoose from 'mongoose';
