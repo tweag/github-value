@@ -133,7 +133,20 @@ class SurveyController {
       const { id } = req.params;
       const updated = await Survey.findOneAndUpdate({
         id: Number(id)
-      }, req.body);
+      }, {
+        id: req.body.id,
+        userId: req.body.userId,
+        org: req.body.org,
+        repo: req.body.repo,
+        prNumber: req.body.prNumber,
+        usedCopilot: req.body.usedCopilot,
+        percentTimeSaved: req.body.percentTimeSaved,
+        reason: req.body.reason,
+        timeUsedFor: req.body.timeUsedFor,
+        kudos: req.body.kudos,
+        hits: 0,
+        status: 'completed'
+      });
       if (updated) {
         res.status(200).json({ _id: id, ...req.body });
       } else {

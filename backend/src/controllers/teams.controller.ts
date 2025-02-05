@@ -8,7 +8,7 @@ class TeamsController {
     const Team = mongoose.model('Team');
     const Member = mongoose.model('Member');
     try {
-      const query = req.query.org ? { org: req.query.org as string } : {};
+      const query = req.query.org ? { org: req.query.org } : {};
       const teams = await Team.find(query)
         .populate({
           path: 'members',
