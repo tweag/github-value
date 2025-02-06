@@ -319,7 +319,9 @@ class Database {
       percentTimeSaved: Number,
       reason: String,
       timeUsedFor: String,
-      kudos: Number
+      kudos: Number,
+      status: String,
+      hits: Number
     }, {
       timestamps: true
     }));

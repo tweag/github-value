@@ -64,8 +64,7 @@ class App {
 
   public async start() {
     try {
-      logger.info(`Starting application on port ${this.port}`);
-      logger.info('Starting application');
+      logger.info('Starting application...');
 
       logger.info('Express setup...');
       this.setupExpress();
@@ -102,11 +101,6 @@ class App {
 
   private setupExpress() {
     this.e.use(cors());
-    this.e.use(expressLoggerMiddleware);
-    this.e.use(rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 1000, // max 100 requests per windowMs
-    }));
     this.e.use((req, res, next) => {
       if (req.path === '/api/github/webhooks') {
         return next();
@@ -114,6 +108,12 @@ class App {
       bodyParser.json()(req, res, next);
     }, bodyParser.urlencoded({ extended: true }));
 
+    this.e.use(expressLoggerMiddleware);
+    this.e.use(rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 1000, // max 100 requests per windowMs
+      skip: (req) => req.path === '/api/github/webhooks'
+    }));
     this.e.use('/api', apiRoutes);
 
     const __filename = fileURLToPath(import.meta.url);
@@ -124,7 +124,6 @@ class App {
 
     this.eListener = this.e.listen(this.port, '0.0.0.0');
     logger.info(`eListener on port ${this.port}`);
-
   }
 
   private initializeSettings() {
