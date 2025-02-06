@@ -41,6 +41,9 @@ jobs:
     env:
       MONGODB_URI: mongodb://localhost:27017
       PORT: 3000
+      GITHUB_APP_ID: ${{ secrets.APP_ID }}
+      GITHUB_APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+      GITHUB_WEBHOOK_SECRET: ${{ secrets.WEBHOOK_SECRET }}
     strategy:
       matrix:
         node-version: ['18', '20', '22']

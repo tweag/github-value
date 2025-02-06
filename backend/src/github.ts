@@ -59,8 +59,8 @@ class GitHub {
 
   connect = async (input?: GitHubInput) => {
     if (input) this.setInput(input);
-    if (!this.input.appId) throw new Error('App ID is required');
-    if (!this.input.privateKey) throw new Error('Private key is required');
+    if (!this.input.appId) throw new Error('GITHUB_APP_ID is required');
+    if (!this.input.privateKey) throw new Error('GITHUB_APP_PRIVATE_KEY is required');
 
     this.app = new App({
       appId: this.input.appId,
