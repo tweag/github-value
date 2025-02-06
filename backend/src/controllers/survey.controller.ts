@@ -1,16 +1,13 @@
-import { application, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { SurveyType } from '../models/survey.model.js';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
 import mongoose from 'mongoose';
-import { MemberType } from 'models/teams.model.js';
-import { memoryUsage } from 'process';
 
 class SurveyController {
   async updateSurveyGitHub(req: Request, res: Response): Promise<void> {
     let survey: SurveyType;
-    console.log(req);
     try {
       const _survey = await surveyService.updateSurvey({
         id: req.body.id,
