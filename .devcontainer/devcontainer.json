@@ -15,7 +15,13 @@
       "settings": {
         "extensions.ignoreRecommendations": true,
         "gitlens.showWelcomeOnInstall": false,
-        "gitlens.showWhatsNewAfterUpgrades": false
+        "gitlens.showWhatsNewAfterUpgrades": false,
+        "mdb.presetConnections": [
+          {
+              "name": "localhost",
+              "connectionString": "mongodb://localhost:27017"
+          }
+        ]
       },
       "extensions": [
         "ms-vscode.vscode-typescript-next",
