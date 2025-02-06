@@ -51,7 +51,7 @@ class Database {
     }
     mongoose.model('Settings', new mongoose.Schema({
       name: String,
-      value: String
+      value: {}
     }));
     mongoose.model('Usage', new mongoose.Schema({
       org: String,
