@@ -116,7 +116,7 @@ class GitHub {
   getAppManifest(baseUrl: string) {
     const manifest = JSON.parse(readFileSync('github-manifest.json', 'utf8'));
     const base = new URL(baseUrl);
-    manifest.url = base.href;
+    manifest.url = base.href || 'localhost';
     manifest.hook_attributes.url = new URL('/api/github/webhooks', base).href;
     manifest.setup_url = new URL('/api/setup/install/complete', base).href;
     manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;

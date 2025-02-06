@@ -28,10 +28,10 @@ class App {
     this.e = express();
     this.port = port;
     logger.info(`Starting application on port ${this.port}`);
-    if (!process.env.MONGODB_URI) {
-      throw new Error('MONGODB_URI must be set');
-    }
-    this.database = new Database(process.env.MONGODB_URI);
+    // if (!process.env.MONGODB_URI) {
+    //   throw new Error('MONGODB_URI must be set');
+    // }
+    this.database = new Database();
     const webhookService = new WebhookService({
       url: process.env.WEBHOOK_PROXY_URL,
       path: '/api/github/webhooks',
@@ -70,17 +70,19 @@ class App {
       this.setupExpress();
       logger.info('Express setup complete');
 
-      logger.info('Database connecting...');
-      await this.database.connect();
-      logger.info('Database connected');
+      if (process.env.MONGODB_URI) {
+        logger.info('Database connecting...');
+        await this.database.connect(process.env.MONGODB_URI);
+        logger.info('Database connected');
 
-      logger.info('Initializing settings...');
-      await this.initializeSettings();
-      logger.info('Settings initialized');
-
-      logger.info('GitHub App starting...');
-      await this.github.connect();
-      logger.info('GitHub App connected');
+        logger.info('Initializing settings...');
+        await this.initializeSettings();
+        logger.info('Settings initialized');
+  
+        logger.info('GitHub App starting...');
+        await this.github.connect();
+        logger.info('GitHub App connected');
+      }
 
       return this.e;
     } catch (error) {
@@ -89,7 +91,6 @@ class App {
         logger.error(error.message);
       }
       logger.debug(error);
-      process.exit(1);
     }
   }
 

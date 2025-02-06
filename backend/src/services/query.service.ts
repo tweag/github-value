@@ -4,7 +4,6 @@ import { insertUsage } from '../models/usage.model.js';
 import SeatService, { SeatEntry } from './seats.service.js';
 import { App, Octokit } from 'octokit';
 import { MetricDailyResponseType } from '../models/metrics.model.js';
-import mongoose from 'mongoose';
 import metricsService from './metrics.service.js';
 import teamsService from './teams.service.js';
 import adoptionService from './adoption.service.js';
@@ -44,7 +43,7 @@ class QueryService {
 
   private async task() {
     const queryAt = new Date();
-    logger.info(`Task started`);
+    logger.info(`Task started. Last ran at `, this.cronJob.lastDate());
     const tasks = [];
     for await (const { octokit, installation } of this.app.eachInstallation.iterator()) {
       if (!installation.account?.login) return;
