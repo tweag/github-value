@@ -4,7 +4,7 @@
   "service": "dev",
   "remoteUser": "node",
 	"workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
-  "postCreateCommand": "cd /workspaces/${localWorkspaceFolderBasename}/frontend && npm install && npm run build && cd /workspaces/${localWorkspaceFolderBasename}/backend && npm install && npm run build && cd /workspaces/${localWorkspaceFolderBasename}",
+  "postCreateCommand": "cd /workspaces/${localWorkspaceFolderBasename}/frontend && npm install && npm run build && cd /workspaces/${localWorkspaceFolderBasename}/backend && npm install && npm run build && echo 'use npm run dev to start the app'",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
@@ -16,17 +16,19 @@
         "extensions.ignoreRecommendations": true,
         "gitlens.showWelcomeOnInstall": false,
         "gitlens.showWhatsNewAfterUpgrades": false,
+        "mdb.showMongoDBHelpExplorer": false,
         "mdb.presetConnections": [
           {
-              "name": "localhost",
-              "connectionString": "mongodb://localhost:27017"
+              "name": "mongo (github-value)",
+              "connectionString": "mongodb://root:octocat@mongo:27017"
           }
         ]
       },
       "extensions": [
         "ms-vscode.vscode-typescript-next",
         "dbaeumer.vscode-eslint",
-        "Angular.ng-template",
+        "angular.ng-template",
+        "sibiraj-s.vscode-scss-formatter",
         "ms-azuretools.vscode-docker",
         "Github.vscode-github-actions",
         "GitHub.copilot",
