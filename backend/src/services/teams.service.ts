@@ -62,70 +62,16 @@ class TeamsService {
     );
   }
 
-  async updateMembers(org: string, members: Endpoints["GET /orgs/{org}/teams/{team_slug}/members"]["response"]["data"], teamId?: number) {
-    const Member = mongoose.model('Member');
-    const TeamMember = mongoose.model('TeamMember');
-    const Team = mongoose.model('Team');
-
-    // Find team first to get MongoDB _id
-    let mongoTeam: TeamType | null = null;
-    if (teamId) {
-      mongoTeam = await Team.findOne({ githubId: teamId });
-      if (!mongoTeam) {
-        throw new Error(`Team with githubId ${teamId} not found`);
-      }
-    }
-
-    // Process each member 👥
-    await Promise.all(members.map(async member => {
-      // Create or update member
-      const dbMember = await Member.findOneAndUpdate(
-        { id: member.id },
-        {
-          org,
-          login: member.login,
-          id: member.id,
-          node_id: member.node_id,
-          avatar_url: member.avatar_url,
-          gravatar_id: member.gravatar_id || null,
-          url: member.url,
-          html_url: member.html_url,
-          followers_url: member.followers_url,
-          following_url: member.following_url,
-          gists_url: member.gists_url,
-          starred_url: member.starred_url,
-          subscriptions_url: member.subscriptions_url,
-          organizations_url: member.organizations_url,
-          repos_url: member.repos_url,
-          events_url: member.events_url,
-          received_events_url: member.received_events_url,
-          type: member.type,
-          site_admin: member.site_admin
-        },
-        { upsert: true, new: true }
-      );
-
-      // Use MongoDB _ids for relationship
-      if (mongoTeam && dbMember) {
-        try {
-          // Use MongoDB _ids for relationship
-          await TeamMember.findOneAndUpdate(
-            {
-              team: mongoTeam._id,  // Use MongoDB _id 
-              member: dbMember._id  // Use MongoDB _id
-            },
-            {
-              team: mongoTeam._id,
-              member: dbMember._id
-            },
-            { upsert: true }
-          );
-        } catch (error) {
-          logger.error(`Failed to link member ${member.id} to team ${teamId}:`, error);
-          throw error;
-        }
+  async updateMembers(org: string, members: Endpoints["GET /orgs/{org}/teams/{team_slug}/members"]["response"]["data"]) {
+    const Members = mongoose.model('Member');
+    const bulkOps = members.map((member) => ({
+      updateOne: {
+        filter: { org, id: member.id },
+        update: { $set: member },
+        upsert: true
       }
     }));
+    await Members.bulkWrite(bulkOps, { ordered: false });
   }
 
   async addMemberToTeam(teamId: number, memberId: number) {
@@ -199,7 +145,7 @@ class TeamsService {
   async getAllMembers(org?: string) {
     const Member = mongoose.model('Member');
     try {
-      console.log({...org ? { org } : {}})
+      console.log({ ...org ? { org } : {} })
       return await Member.find({
         ...org ? { org } : {}
       })

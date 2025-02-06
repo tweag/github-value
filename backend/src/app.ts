@@ -28,10 +28,10 @@ class App {
     this.e = express();
     this.port = port;
     logger.info(`Starting application on port ${this.port}`);
-    if (!process.env.MONGODB_URI) {
-      throw new Error('MONGODB_URI must be set');
-    }
-    this.database = new Database(process.env.MONGODB_URI);
+    // if (!process.env.MONGODB_URI) {
+    //   throw new Error('MONGODB_URI must be set');
+    // }
+    this.database = new Database();
     const webhookService = new WebhookService({
       url: process.env.WEBHOOK_PROXY_URL,
       path: '/api/github/webhooks',
@@ -65,24 +65,25 @@ class App {
 
   public async start() {
     try {
-      logger.info(`Starting application on port ${this.port}`);
-      logger.info('Starting application');
+      logger.info('Starting application...');
 
       logger.info('Express setup...');
       this.setupExpress();
       logger.info('Express setup complete');
 
-      logger.info('Database connecting...');
-      await this.database.connect();
-      logger.info('Database connected');
+      if (process.env.MONGODB_URI) {
+        logger.info('Database connecting...');
+        await this.database.connect(process.env.MONGODB_URI);
+        logger.info('Database connected');
 
-      logger.info('Initializing settings...');
-      await this.initializeSettings();
-      logger.info('Settings initialized');
-
-      logger.info('GitHub App starting...');
-      await this.github.connect();
-      logger.info('GitHub App connected');
+        logger.info('Initializing settings...');
+        await this.initializeSettings();
+        logger.info('Settings initialized');
+  
+        logger.info('GitHub App starting...');
+        await this.github.connect();
+        logger.info('GitHub App connected');
+      }
 
       return this.e;
     } catch (error) {
@@ -91,7 +92,6 @@ class App {
         logger.error(error.message);
       }
       logger.debug(error);
-      process.exit(1);
     }
   }
 
@@ -103,11 +103,6 @@ class App {
 
   private setupExpress() {
     this.e.use(cors());
-    this.e.use(expressLoggerMiddleware);
-    this.e.use(rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 1000, // max 100 requests per windowMs
-    }));
     this.e.use((req, res, next) => {
       if (req.path === '/api/github/webhooks') {
         return next();
@@ -115,6 +110,12 @@ class App {
       bodyParser.json()(req, res, next);
     }, bodyParser.urlencoded({ extended: true }));
 
+    this.e.use(expressLoggerMiddleware);
+    this.e.use(rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 1000, // max 100 requests per windowMs
+      skip: (req) => req.path === '/api/github/webhooks'
+    }));
     this.e.use('/api', apiRoutes);
 
     const __filename = fileURLToPath(import.meta.url);
@@ -125,7 +126,6 @@ class App {
 
     this.eListener = this.e.listen(this.port, '0.0.0.0');
     logger.info(`eListener on port ${this.port}`);
-
   }
 
   private initializeSettings() {

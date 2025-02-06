@@ -1,6 +1,7 @@
 import { SurveyType } from "../models/survey.model.js";
 import mongoose from 'mongoose';
 import SequenceService from './sequence.service.js';
+import logger from "./logger.js";
 
 class SurveyService {
 
@@ -26,6 +27,8 @@ class SurveyService {
     if (!updatedSurvey) {
       throw new Error('Survey update failed: survey not found');
     }
+
+    logger.info(`Survey updated: ${survey.id}`);
 
     return updatedSurvey;
   }
