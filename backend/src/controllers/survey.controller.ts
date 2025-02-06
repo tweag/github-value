@@ -112,8 +112,12 @@ class SurveyController {
   async getSurveyById(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
+      if (isNaN(Number(id))) {
+        res.status(400).json({ message: 'Invalid survey ID' });
+        return;
+      }
       const Survey = mongoose.model('Survey');
-      const survey = await Survey.findOne({ id: Number(id) }); // Cast `id` to Number
+      const survey = await Survey.findOne({ id: { $eq: Number(id) } }); // Use $eq operator
       if (!survey) {
         res.status(404).json({ message: 'Survey not found' });
         return;
@@ -131,16 +135,16 @@ class SurveyController {
       const updated = await Survey.findOneAndUpdate({
         id: { $eq: Number(id) }
       }, {
-        id: req.body.id,
-        userId: req.body.userId,
-        org: req.body.org,
-        repo: req.body.repo,
-        prNumber: req.body.prNumber,
-        usedCopilot: req.body.usedCopilot,
-        percentTimeSaved: req.body.percentTimeSaved,
-        reason: req.body.reason,
-        timeUsedFor: req.body.timeUsedFor,
-        kudos: req.body.kudos,
+        id: Number(req.body.id),
+        userId: String(req.body.userId),
+        org: String(req.body.org),
+        repo: String(req.body.repo),
+        prNumber: Number(req.body.prNumber),
+        usedCopilot: Boolean(req.body.usedCopilot),
+        percentTimeSaved: Number(req.body.percentTimeSaved),
+        reason: String(req.body.reason),
+        timeUsedFor: String(req.body.timeUsedFor),
+        kudos: String(req.body.kudos),
         hits: 0,
         status: 'completed'
       });
@@ -158,7 +162,11 @@ class SurveyController {
     try {
       const Survey = mongoose.model('Survey');
       const { id } = req.params;
-      const deleted = await Survey.findByIdAndDelete(id);
+      if (isNaN(Number(id))) {
+        res.status(400).json({ message: 'Invalid survey ID' });
+        return;
+      }
+      const deleted = await Survey.findOneAndDelete({ id: { $eq: Number(id) } }); // Use $eq operator
       if (deleted) {
         res.status(204).send();
       } else {

@@ -12,9 +12,7 @@ services:
     environment:
       PORT: 8080
       NODE_ENV: development
-      NODE_OPTIONS: --enable-source-maps
       MONGODB_URI: mongodb://root:octocat@mongo:27017
-
 
   mongo:
     image: mongo
