@@ -39,10 +39,11 @@ class App {
     });
     this.github = new GitHub(
       {
-        appId: process.env.GITHUB_APP_ID,
-        privateKey: process.env.GITHUB_APP_PRIVATE_KEY,
+        // adding GH_APP_* so you can set these as codespaces secrets, can't use GITHUB_* as a prefix for those
+        appId: process.env.GITHUB_APP_ID || process.env.GH_APP_ID,  
+        privateKey: process.env.GITHUB_APP_PRIVATE_KEY || process.env.GH_APP_PRIVATE_KEY,
         webhooks: {
-          secret: process.env.GITHUB_WEBHOOK_SECRET
+          secret: process.env.GITHUB_WEBHOOK_SECRET || process.env.GH_WEBHOOK_SECRET
         }
       },
       this.e,
