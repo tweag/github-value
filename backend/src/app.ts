@@ -24,9 +24,9 @@ class App {
   constructor(
     public port: number
   ) {
+    this.port = port;
     this.baseUrl = process.env.BASE_URL || 'http://localhost:' + port;
     this.e = express();
-    this.port = port;
     logger.info(`Starting application on port ${this.port}`);
     // if (!process.env.MONGODB_URI) {
     //   throw new Error('MONGODB_URI must be set');
@@ -149,11 +149,11 @@ class App {
         }
       })
       .finally(async () => {
+        await this.settingsService.updateSetting('webhookSecret', this.github.input.webhooks?.secret || '', false);
+        await this.settingsService.updateSetting('webhookProxyUrl', this.github.smee.options.url!, false);
+        await this.settingsService.updateSetting('metricsCronExpression', this.github.cronExpression!, false);
         await this.github.smee.connect()
-        await this.settingsService.updateSetting('webhookSecret', this.github.input.webhooks?.secret || '');
-        await this.settingsService.updateSetting('webhookProxyUrl', this.github.smee.options.url!);
-        await this.settingsService.updateSetting('metricsCronExpression', this.github.cronExpression!);
-      });
+      })
   }
 }
 

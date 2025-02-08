@@ -18,9 +18,8 @@ class SetupController {
   async installComplete(req: Request, res: Response) {
     try {
       logger.info(`GitHub installComplete`, req.query);
-      const installationUrl = await app.github.app?.getInstallationUrl();
-      if (!installationUrl) throw new Error('No installation URL found');
-      res.redirect(installationUrl);
+      await app.github.connect();
+      res.redirect(app.baseUrl || '/');
     } catch (error) {
       res.status(500).json(error);
     }
@@ -28,7 +27,8 @@ class SetupController {
 
   getManifest(req: Request, res: Response) {
     try {
-      const manifest = app.github.getAppManifest(`${req.protocol}://${req.hostname}`);
+      app.baseUrl = `${req.protocol}://${req.get('host')}`;
+      const manifest = app.github.getAppManifest();
       res.json(manifest);
     } catch (error) {
       res.status(500).json(error);

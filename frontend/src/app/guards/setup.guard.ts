@@ -34,7 +34,14 @@ export class SetupStatusGuard implements CanActivate {
         // }
         return true;
       }),
-      catchError(() => {
+      catchError((error) => {
+        console.log('error', error);
+        const serializedError = {
+          message: error.message || 'An unknown error occurred',
+          code: error.code || 'UNKNOWN',
+          status: error.status || 500
+        };
+        this.router.navigate(['/error'], { state: { error: serializedError } });
         return of(false);
       })
     );

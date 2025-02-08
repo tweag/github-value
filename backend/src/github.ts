@@ -7,6 +7,7 @@ import updateDotenv from 'update-dotenv';
 import { Express } from 'express';
 import { Endpoints } from '@octokit/types';
 import { setupWebhookListeners } from "./controllers/webhook.controller.js";
+import app from "index.js";
 
 interface SetupStatusDbsInitialized {
   usage?: boolean;
@@ -113,15 +114,16 @@ class GitHub {
     this.installations = [];
   }
 
-  getAppManifest(baseUrl: string) {
+  getAppManifest() {
     const manifest = JSON.parse(readFileSync('github-manifest.json', 'utf8'));
-    const base = new URL(baseUrl);
-    manifest.url = base.href || 'localhost';
-    manifest.hook_attributes.url = new URL('/api/github/webhooks', base).href;
+    const base = new URL(this.baseUrl || 'localhost');
+    manifest.url = base.href;
     manifest.setup_url = new URL('/api/setup/install/complete', base).href;
     manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;
-    manifest.hook_attributes.url = this.smee.options.url;
-    // manifest.name = 'Copilot';
+    if (this.smee.options.url) {
+      manifest.hook_attributes.url = this.smee.options.url;
+      app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
+    }
     return manifest;
   };
 
@@ -139,21 +141,20 @@ class GitHub {
 
     this.input.appId = id.toString();
     this.input.privateKey = pem;
+
     if (webhook_secret) {
       this.input.webhooks = {
         secret: webhook_secret
       }
+      await updateDotenv({
+        GITHUB_WEBHOOK_SECRET: webhook_secret,
+      });
+      app.settingsService.updateSetting('webhookSecret', webhook_secret, false);
     }
-
     await updateDotenv({
       GITHUB_APP_ID: id.toString(),
       GITHUB_APP_PRIVATE_KEY: pem
     });
-    if (webhook_secret) {
-      await updateDotenv({
-        GITHUB_WEBHOOK_SECRET: webhook_secret,
-      });
-    }
 
     return { id, pem, webhook_secret, html_url };
   }

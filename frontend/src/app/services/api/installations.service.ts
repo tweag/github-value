@@ -56,7 +56,11 @@ export class InstallationsService implements OnDestroy {
         this.status = status;
         if (status.installations) {
           this.installations.next(status.installations.map(i => i.installation!));
-          this.setInstallation(this.currentInstallationId);
+          if (this.installations.value.length === 1) {
+            this.setInstallation(this.installations.value[0].id);
+          } else {
+            this.setInstallation(this.currentInstallationId);
+          }
         }
       })
     );

@@ -14,11 +14,13 @@ import { CopilotSurveyComponent } from './main/copilot/copilot-surveys/copilot-s
 import { CopilotSeatComponent } from './main/copilot/copilot-seats/copilot-seat/copilot-seat.component';
 import { DatabaseComponent } from './database/database.component';
 import { ValueModelingComponent } from './main/copilot/value-modeling/value-modeling.component';
+import { ErrorComponent } from './error/error.component';
 
 export const routes: Routes = [
   { path: 'setup', component: InstallComponent },
   { path: 'setup/loading', component: DbLoadingComponent },
   { path: 'setup/db', component: DatabaseComponent },
+  { path: 'error', component: ErrorComponent },
   {
     path: '',
     component: MainComponent,

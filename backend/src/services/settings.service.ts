@@ -69,7 +69,7 @@ class SettingsService {
     }
   }
 
-  async updateSetting(name: keyof SettingsType, value: string) {
+  async updateSetting(name: keyof SettingsType, value: string, runTasks = true) {
     try {
       const Setting = mongoose.model('Settings');
 
@@ -86,22 +86,24 @@ class SettingsService {
           }
         );
 
-        switch (setting.name) {
-          case 'metricsCronExpression':
-            app.github.queryService?.updateCronJob(setting.value);
-            break;
-          case 'webhookSecret':
-            app.github.connect({
-              webhooks: {
-                secret: setting.value
-              }
-            });
-            break;
-          case 'webhookProxyUrl':
-            app.github.smee.connect({
-              url: setting.value
-            });
-            break;
+        if (runTasks) {
+          switch (setting.name) {
+            case 'metricsCronExpression':
+              app.github.queryService?.updateCronJob(setting.value);
+              break;
+            case 'webhookSecret':
+              app.github.connect({
+                webhooks: {
+                  secret: setting.value
+                }
+              });
+              break;
+            case 'webhookProxyUrl':
+              app.github.smee.connect({
+                url: setting.value
+              });
+              break;
+          }
         }
         return true;
       }
