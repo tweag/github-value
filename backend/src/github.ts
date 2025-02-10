@@ -7,7 +7,6 @@ import updateDotenv from 'update-dotenv';
 import { Express } from 'express';
 import { Endpoints } from '@octokit/types';
 import { setupWebhookListeners } from "./controllers/webhook.controller.js";
-import app from "index.js";
 
 interface SetupStatusDbsInitialized {
   usage?: boolean;
