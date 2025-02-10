@@ -7,7 +7,6 @@ import updateDotenv from 'update-dotenv';
 import { Express } from 'express';
 import { Endpoints } from '@octokit/types';
 import { setupWebhookListeners } from "./controllers/webhook.controller.js";
-import app from "./index.js";
 
 interface SetupStatusDbsInitialized {
   usage?: boolean;
@@ -122,7 +121,7 @@ class GitHub {
     manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;
     if (this.smee.options.url) {
       manifest.hook_attributes.url = this.smee.options.url;
-      app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
+      // app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
     }
     return manifest;
   };
@@ -149,7 +148,7 @@ class GitHub {
       await updateDotenv({
         GITHUB_WEBHOOK_SECRET: webhook_secret,
       });
-      app.settingsService.updateSetting('webhookSecret', webhook_secret, false);
+      // app.settingsService.updateSetting('webhookSecret', webhook_secret, false);
     }
     await updateDotenv({
       GITHUB_APP_ID: id.toString(),
