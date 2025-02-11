@@ -7,6 +7,7 @@ import updateDotenv from 'update-dotenv';
 import { Express } from 'express';
 import { Endpoints } from '@octokit/types';
 import { setupWebhookListeners } from "./controllers/webhook.controller.js";
+import app from "./index.js";
 
 interface SetupStatusDbsInitialized {
   usage?: boolean;
@@ -77,6 +78,23 @@ class GitHub {
     if (this.input.webhooks?.secret) await updateDotenv({ GITHUB_WEBHOOK_SECRET: this.input.webhooks.secret })
 
     try {
+      await this.smee.connect();
+    } catch {
+      logger.error('Failed to connect to webhook Smee');
+    }
+
+    try {
+      await this.app.octokit.request('PATCH /app/hook/config', {
+        url: this.smee.options.url,
+        secret: this.input.webhooks?.secret
+      });
+      logger.info('Webhook config updated for app', this.smee.options.url, this.input.webhooks?.secret?.replace(/\S/, '*'));
+    } catch (error) {
+      logger.error('Failed to update webhook config for app');
+      console.log(error);
+    }
+
+    try {
       if (!this.app) throw new Error('GitHub App is not initialized')
       if (!this.expressApp) throw new Error('Express app is not initialized')
       const webhookMiddlewareIndex = this.expressApp._router.stack.findIndex((layer: {
@@ -121,7 +139,7 @@ class GitHub {
     manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;
     if (this.smee.options.url) {
       manifest.hook_attributes.url = this.smee.options.url;
-      // app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
+      app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
     }
     return manifest;
   };
@@ -148,7 +166,7 @@ class GitHub {
       await updateDotenv({
         GITHUB_WEBHOOK_SECRET: webhook_secret,
       });
-      // app.settingsService.updateSetting('webhookSecret', webhook_secret, false);
+      app.settingsService.updateSetting('webhookSecret', webhook_secret, false);
     }
     await updateDotenv({
       GITHUB_APP_ID: id.toString(),

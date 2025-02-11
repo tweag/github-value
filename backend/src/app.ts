@@ -152,7 +152,6 @@ class App {
         await this.settingsService.updateSetting('webhookSecret', this.github.input.webhooks?.secret || '', false);
         await this.settingsService.updateSetting('webhookProxyUrl', this.github.smee.options.url!, false);
         await this.settingsService.updateSetting('metricsCronExpression', this.github.cronExpression!, false);
-        await this.github.smee.connect()
       })
   }
 }

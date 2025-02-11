@@ -37,6 +37,14 @@ export const setupWebhookListeners = (github: App) => {
       to help us understand if you leveraged Copilot in your pull request.`
         });
       }
+      // await octokit.rest.issues.createComment({
+      //   owner: payload.repository.owner.login,
+      //   repo: payload.repository.name,
+      //   issue_number: payload.pull_request.number,
+      //   body: `Hi @${payload.pull_request.user.login}! \
+      // Please fill out this [survey](${surveyUrl.toString()}) \
+      // to help us understand if you leveraged Copilot in your pull request.`
+      // });
     } catch (error) {
       logger.debug(error);
       if ((error as any)?.status === 422) {

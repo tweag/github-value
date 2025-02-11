@@ -24,11 +24,14 @@ export class ErrorComponent {
     const navigation = this.router.getCurrentNavigation();
     const state = navigation?.extras?.state as { error: any };
 
-    console.log('state', state);
-    if (state?.error) {
-      this.error = state.error || JSON.stringify(state.error);
+    if (state) {
+      if (state.error) {
+        this.error = state.error || JSON.stringify(state.error);
+      } else {
+        this.error.message = 'An unknown error occurred';
+      }
     } else {
-      this.error.message = 'An unknown error occurred';
+      this.router.navigate(['/']);
     }
   }
 }
