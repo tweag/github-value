@@ -8,6 +8,11 @@ import { Endpoints } from '@octokit/types';
 export const setupWebhookListeners = (github: App) => {
   github.webhooks.on(["pull_request.opened"], async ({ octokit, payload }) => {
     try {
+      if (payload.pull_request.user.type === 'Bot') {
+        logger.debug(`Ignoring PR from bot user: ${payload.pull_request.user.login}`);
+        return;
+      }
+
       const survey = await surveyService.createSurvey({
         status: 'pending',
         hits: 0,
