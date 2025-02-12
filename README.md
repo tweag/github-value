@@ -14,6 +14,8 @@ GitHub Value is a free and open-source application designed to help measure the 
 
 ### Deployment
 
+github-value will take you through setup the first time you run it. You can manually configure it by copying the [`.env.example`](./.env.example) file to `.env` and configure the environment variables.
+
 <details>
   <summary>Docker Compose</summary>
 
@@ -22,6 +24,14 @@ GitHub Value is a free and open-source application designed to help measure the 
   ```bash
   docker-compose up
   ```
+</details>
+
+<details>
+  <summary>Kubernetes</summary>
+
+  @MattG57 has built a Kubernetes deployment for github-value. You can find it [here](https://github.com/MattG57/gvm-chart).
+
+  If you want to deploy it to your own cluster, you can use the following command.
 </details>
 
 <details>
@@ -74,6 +84,62 @@ GitHub Value is a free and open-source application designed to help measure the 
   # Restart the app
   heroku restart -a app_name
   ```
+</details>
+
+------------
+
+### MongoDB Setup
+
+The docker compose file will automatically set up a MongoDB database for you.
+
+If you want to use a different database, you can change the connection string in the `.env` file or via the environment variables.
+
+```bash
+MONGO_URI=mongodb://mongo:27017/github-value
+```
+
+------------
+
+### GitHub App Setup
+
+github-value will create the GitHub App for you the first time you run it. The app credentials are managed via the `.env` file or via the environment variables.
+
+```bash
+GITHUB_WEBHOOK_SECRET=
+GITHUB_APP_ID=
+GITHUB_APP_PRIVATE_KEY='-----BEGIN RSA PRIVATE KEY-----
+...
+-----END RSA PRIVATE KEY-----'
+```
+
+#### Required Permissions
+
+Set permissions for the app as described in [github-manifest.json](./backend/github-manifest.json)
+
+1. Repository Permisions
+   1. Issues: Read and Write
+   2. Pull requests: Read and Write
+2. Organization Permissions
+   1. Members: Read
+   2. GitHub Copilot Business: Read
+3. Subscribe to events
+   1. Pull request
+   2. Member (optional)
+   3. Team (optional)
+   4. Team add (optional)
+
+<details>
+  <summary>NEW Enterprise App</summary>
+
+  If you have multiple organizations you'd like to monitor copilot usage for, you can now [create GitHub Apps for use within the Enterprise](https://github.blog/changelog/2024-10-22-enterprises-can-create-github-apps-for-use-within-the-enterprise/).
+
+  1. [Registering a GitHub App](https://docs.github.com/en/enterprise-cloud@latest/apps/creating-github-apps/registering-a-github-app/registering-a-github-app#registering-a-github-app)
+  2. Set permissions as described in [permissions](#required-permissions)
+</details>
+
+<details>
+  <summary>Organization App</summary>
+  You can create an organization app directly from github-value. On your first launch when you visit the website it will take you through setup. Simply click register and follow the instructions. You can also optionally use an existing app.
 </details>
 
 ------------
