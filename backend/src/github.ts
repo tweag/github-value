@@ -83,15 +83,17 @@ class GitHub {
       logger.error('Failed to connect to webhook Smee');
     }
 
-    try {
-      await this.app.octokit.request('PATCH /app/hook/config', {
-        url: this.smee.options.url,
-        secret: this.input.webhooks?.secret
-      });
-      logger.info('Webhook config updated for app', this.smee.options.url, this.input.webhooks?.secret?.replace(/\S/, '*'));
-    } catch (error) {
-      logger.error('Failed to update webhook config for app');
-      console.log(error);
+    if (this.smee.options.url) {
+      try {
+        await this.app.octokit.request('PATCH /app/hook/config', {
+          url: this.smee.options.url,
+          secret: this.input.webhooks?.secret
+        });
+        logger.info('Webhook config updated for app', this.smee.options.url, this.input.webhooks?.secret?.replace(/\S/, '*'));
+      } catch (error) {
+        logger.error('Failed to update webhook config for app');
+      }
+      app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
     }
 
     try {

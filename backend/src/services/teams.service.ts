@@ -145,7 +145,6 @@ class TeamsService {
   async getAllMembers(org?: string) {
     const Member = mongoose.model('Member');
     try {
-      console.log({ ...org ? { org } : {} })
       return await Member.find({
         ...org ? { org } : {}
       })

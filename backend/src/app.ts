@@ -129,7 +129,7 @@ class App {
   }
 
   private initializeSettings() {
-    this.settingsService.initialize()
+    return this.settingsService.initialize()
       .then(async (settings) => {
         if (settings.webhookProxyUrl) {
           this.github.smee.options.url = settings.webhookProxyUrl

@@ -35,7 +35,6 @@ export class SetupStatusGuard implements CanActivate {
         return true;
       }),
       catchError((error) => {
-        console.log('error', error);
         const serializedError = {
           message: error.message || 'An unknown error occurred',
           code: error.code || 'UNKNOWN',

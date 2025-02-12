@@ -102,6 +102,7 @@ class SettingsService {
               app.github.smee.connect({
                 url: setting.value
               });
+              app.github.smee.options.url = setting.value;
               break;
           }
         }
