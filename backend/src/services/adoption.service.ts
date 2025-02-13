@@ -2,8 +2,22 @@
 import mongoose from 'mongoose';
 import logger from './logger.js';
 import { SeatEntry } from './seats.service.js';
+import { SeatType } from 'models/seats.model.js';
 
-type AdoptionType = any;
+type AdoptionType = {
+  _id?: string;
+  enterprise: string | null;
+  org: string | null;
+  team: string | null;
+  date: Date;
+  totalSeats: number;
+  totalActive: number;
+  totalInactive: number;
+  seats: Partial<SeatType>[];
+  createdAt?: Date;
+  updatedAt?: Date;
+  __v?: number;
+};
 
 export interface GetAdoptionsParams {
   enterprise?: string;
@@ -20,12 +34,12 @@ export class AdoptionService {
   constructor() {
   }
 
-  async createAdoption(adoptionData: any): Promise<AdoptionType> {
+  async createAdoption(adoptionData: AdoptionType): Promise<AdoptionType> {
     const adoptionModel = mongoose.model('Adoption');
     try {
       const result = await adoptionModel.create(adoptionData);
       return result;
-    } catch (error: any) {
+    } catch (error) {
       logger.error('Error creating adoption:', error);
       throw error; // Rethrow other errors
     }
@@ -79,7 +93,10 @@ export class AdoptionService {
     }
   }
 
-  async getAllAdoptions2(params: any): Promise<AdoptionType[]> {
+  async getAllAdoptions2(params: {
+    filter: mongoose.RootFilterQuery<AdoptionType>;
+    projection: mongoose.ProjectionType<AdoptionType>;
+  }): Promise<AdoptionType[]> {
     const adoptionModel = mongoose.model<AdoptionType>('Adoption');
 
     try {

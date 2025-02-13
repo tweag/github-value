@@ -47,9 +47,9 @@ class SettingsService {
         value: string;
       }>({});
       return settingsArray.reduce((acc, setting) => {
-        acc[setting.name] = setting.value;
+        acc[setting.name as keyof SettingsType] = setting.value;
         return acc;
-      }, {} as any);
+      }, {} as SettingsType);
     } catch (error) {
       console.error('Failed to get all settings:', error);
       throw error;

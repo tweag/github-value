@@ -46,10 +46,6 @@ export class MembersService {
   }
 
   getMemberByLogin(login: string) {
-    return this.http.get<Endpoints["GET /users/{username}"]["response"]["data"]>(`${this.apiUrl}/${login}`).pipe(
-      catchError((error) => {
-        return throwError(() => new Error('User not found'));
-      })
-    );
+    return this.http.get<Endpoints["GET /users/{username}"]["response"]["data"]>(`${this.apiUrl}/${login}`);
   }
 }

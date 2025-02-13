@@ -11,6 +11,7 @@ interface CustomHighchartsPoint extends Highcharts.Point {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   raw?: any;
   customTooltipInfo?: () => string;
+  totalUsers?: number;
 }
 interface CustomHighchartsPointOptions extends Highcharts.PointOptionsObject {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -42,7 +43,7 @@ export class HighchartsService {
       pointFormatter: function (this: CustomHighchartsPoint) {
         const formatted = this.series.name;
         const parts = [
-          `<b>${new Date(this.date || 0).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</b>: ${(this as any).totalUsers} users<br>`,
+          `<b>${new Date(this.date || 0).toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' })}</b>: ${this.totalUsers} users<br>`,
           `<b><span style="color:${this.color}">${formatted}</span></b>: ${this.y} users<br>`,
           ``
         ]
@@ -515,11 +516,13 @@ export class HighchartsService {
           raw: date
         });
 
-        (dailyActiveIdeAcceptsSeries?.data).push({
-          x: new Date(date).getTime(),
-          y: (currentMetrics.copilot_ide_code_completions.total_code_acceptances / (dateData.totalActive || 1)),
-          raw: date
-        });
+        if (dailyActiveIdeAcceptsSeries && dailyActiveIdeAcceptsSeries.data) {
+          dailyActiveIdeAcceptsSeries.data.push({
+            x: new Date(date).getTime(),
+            y: (currentMetrics.copilot_ide_code_completions.total_code_acceptances / (dateData.totalActive || 1)),
+            raw: date
+          });
+        }
       }
       if (currentMetrics?.copilot_ide_chat) {
         (dailyActiveIdeChatSeries.data).push({

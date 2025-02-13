@@ -1,5 +1,4 @@
 import { Endpoints } from "@octokit/types";
-import { TeamType } from "models/teams.model.js";
 import mongoose from "mongoose";
 import logger from "./logger.js";
 

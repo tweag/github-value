@@ -75,7 +75,10 @@ class SurveyController {
   async getAllSurveys(req: Request, res: Response): Promise<void> {
     const { org, team, reasonLength, since, until, status } = req.query as { [key: string]: string | undefined };;
     try {
-      const dateFilter: any = {};
+      const dateFilter: mongoose.FilterQuery<{
+        $gte: Date;
+        $lte: Date;
+      }> = {};
       if (since) {
         dateFilter.$gte = new Date(since);
       }

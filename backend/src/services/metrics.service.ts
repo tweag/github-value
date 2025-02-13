@@ -13,32 +13,30 @@ export interface MetricsQueryParams {
 
 class MetricsService {
   async getMetrics(params: MetricsQueryParams) {
-    const { org, type, since, until, editor, language, model } = params;
-    
+    const { org, since, until, editor, language, model } = params; // type
+
     const dateFilter = {
       ...(since && { $gte: new Date(since) }),
       ...(until && { $lte: new Date(until) })
     };
 
-    const query: any = {
+    const query: mongoose.FilterQuery<MetricDailyResponseType> = {
       ...(org && { org }),
       ...(Object.keys(dateFilter).length && { date: dateFilter })
     };
 
-    const types = type ? type.split(/[ ,]+/) : [];
-
-    const metrics = await mongoose.model('Metrics').find(query).sort({date:1}).lean();
+    const metrics = await mongoose.model<MetricDailyResponseType>('Metrics').find(query).sort({ date: 1 }).lean();
 
     if (editor || language || model) {
       metrics.forEach(metric => {
-        if (metric.copilot_ide_code_completions) {
-          metric.copilot_ide_code_completions.editors = metric.copilot_ide_code_completions.editors.filter((editorItem: any) => {
+        if (metric.copilot_ide_code_completions?.editors) {
+          metric.copilot_ide_code_completions.editors = metric.copilot_ide_code_completions.editors.filter((editorItem) => {
             if (editor && editorItem.name !== editor) return false;
-            if (model) {
-              editorItem.models = editorItem.models.filter((modelItem: any) => {
+            if (editorItem.models) {
+              editorItem.models = editorItem.models.filter((modelItem) => {
                 if (modelItem.name !== model) return false;
-                if (language) {
-                  modelItem.languages = modelItem.languages.filter((languageItem: any) => languageItem.name === language);
+                if (modelItem.languages) {
+                  modelItem.languages = modelItem.languages.filter((languageItem) => languageItem.name === language);
                 }
                 return true;
               });
@@ -46,11 +44,11 @@ class MetricsService {
             return true;
           });
         }
-        if (metric.copilot_ide_chat) {
-          metric.copilot_ide_chat.editors = metric.copilot_ide_chat.editors.filter((editorItem: any) => {
+        if (metric.copilot_ide_chat?.editors) {
+          metric.copilot_ide_chat.editors = metric.copilot_ide_chat.editors.filter((editorItem) => {
             if (editor && editorItem.name !== editor) return false;
-            if (model) {
-              editorItem.models = editorItem.models.filter((modelItem: any) => {
+            if (editorItem.models) {
+              editorItem.models = editorItem.models.filter((modelItem) => {
                 if (modelItem.name !== model) return false;
                 return true;
               });
@@ -58,16 +56,16 @@ class MetricsService {
             return true;
           });
         }
-        if (metric.copilot_dotcom_chat) {
-          metric.copilot_dotcom_chat.models = metric.copilot_dotcom_chat.models.filter((modelItem: any) => {
+        if (metric.copilot_dotcom_chat?.models) {
+          metric.copilot_dotcom_chat.models = metric.copilot_dotcom_chat.models.filter((modelItem) => {
             if (modelItem.name !== model) return false;
             return true;
           });
         }
-        if (metric.copilot_dotcom_pull_requests) {
-          metric.copilot_dotcom_pull_requests.repositories = metric.copilot_dotcom_pull_requests.repositories.filter((repositoryItem: any) => {
-            if (model) {
-              repositoryItem.models = repositoryItem.models.filter((modelItem: any) => {
+        if (metric.copilot_dotcom_pull_requests?.repositories) {
+          metric.copilot_dotcom_pull_requests.repositories = metric.copilot_dotcom_pull_requests.repositories.filter((repositoryItem) => {
+            if (repositoryItem.models) {
+              repositoryItem.models = repositoryItem.models.filter((modelItem) => {
                 if (modelItem.name !== model) return false;
                 return true;
               });
@@ -152,13 +150,13 @@ class MetricsService {
       }
     };
 
-    metrics.forEach((daily: any) => {
+    metrics.forEach((daily) => {
       if (daily.copilot_ide_code_completions) {
         periodMetrics.copilot_ide_code_completions.total_code_acceptances += daily.copilot_ide_code_completions.total_code_acceptances || 0;
         periodMetrics.copilot_ide_code_completions.total_code_suggestions += daily.copilot_ide_code_completions.total_code_suggestions || 0;
         periodMetrics.copilot_ide_code_completions.total_code_lines_accepted += daily.copilot_ide_code_completions.total_code_lines_accepted || 0;
         periodMetrics.copilot_ide_code_completions.total_code_lines_suggested += daily.copilot_ide_code_completions.total_code_lines_suggested || 0;
-        daily.copilot_ide_code_completions.editors?.forEach((editor: any) => {
+        daily.copilot_ide_code_completions.editors?.forEach((editor) => {
           let editorTotals = periodMetrics.copilot_ide_code_completions.editors.find(e => e.name === editor.name);
           if (editorTotals) {
             editorTotals.total_code_acceptances += editor.total_code_acceptances || 0;
@@ -176,7 +174,7 @@ class MetricsService {
             }
             periodMetrics.copilot_ide_code_completions.editors.push(editorTotals);
           }
-          editor.models?.forEach((model: any) => {
+          editor.models?.forEach((model) => {
             let editorModelTotals = editorTotals?.models.find(m => m.name === model.name);
             if (editorModelTotals) {
               editorModelTotals.total_code_acceptances += model.total_code_acceptances || 0;
@@ -194,7 +192,7 @@ class MetricsService {
               }
               editorTotals?.models.push(editorModelTotals);
             }
-            model.languages?.forEach((language: any) => {
+            model.languages?.forEach((language) => {
               let modelLanguageTotals = editorModelTotals?.languages.find(l => l.name === language.name);
               if (modelLanguageTotals) {
                 modelLanguageTotals.total_code_acceptances += language.total_code_acceptances || 0;
@@ -220,7 +218,7 @@ class MetricsService {
         periodMetrics.copilot_ide_chat.total_chats += daily.copilot_ide_chat.total_chats || 0;
         periodMetrics.copilot_ide_chat.total_chat_copy_events += daily.copilot_ide_chat.total_chat_copy_events || 0;
         periodMetrics.copilot_ide_chat.total_chat_insertion_events += daily.copilot_ide_chat.total_chat_insertion_events || 0;
-        daily.copilot_ide_chat.editors?.forEach((editor: any) => {
+        daily.copilot_ide_chat.editors?.forEach((editor) => {
           let editorTotals = periodMetrics.copilot_ide_chat.editors.find(e => e.name === editor.name);
           if (editorTotals) {
             editorTotals.total_chats += editor.total_chats || 0;
@@ -236,7 +234,7 @@ class MetricsService {
             }
             periodMetrics.copilot_ide_chat.editors.push(editorTotals);
           }
-          editor.models?.forEach((model: any) => {
+          editor.models?.forEach((model) => {
             let editorModelTotals = editorTotals?.models.find(m => m.name === model.name);
             if (editorModelTotals) {
               editorModelTotals.total_chats += model.total_chats || 0;
@@ -257,7 +255,7 @@ class MetricsService {
 
       if (daily.copilot_dotcom_chat) {
         periodMetrics.copilot_dotcom_chat.total_chats += daily.copilot_dotcom_chat.total_chats || 0;
-        daily.copilot_dotcom_chat.models?.forEach((model: any) => {
+        daily.copilot_dotcom_chat.models?.forEach((model) => {
           let modelTotals = periodMetrics.copilot_dotcom_chat.models.find(m => m.name === model.name);
           if (modelTotals) {
             modelTotals.total_chats += model.total_chats || 0;
@@ -273,7 +271,7 @@ class MetricsService {
 
       if (daily.copilot_dotcom_pull_requests) {
         periodMetrics.copilot_dotcom_pull_requests.total_pr_summaries_created += daily.copilot_dotcom_pull_requests.total_pr_summaries_created || 0;
-        daily.copilot_dotcom_pull_requests.repositories?.forEach((repository: any) => {
+        daily.copilot_dotcom_pull_requests.repositories?.forEach((repository) => {
           let repositoryTotals = periodMetrics.copilot_dotcom_pull_requests.repositories.find(r => r.name === repository.name);
           if (repositoryTotals) {
             repositoryTotals.total_pr_summaries_created += repository.total_pr_summaries_created || 0;
@@ -285,7 +283,7 @@ class MetricsService {
             }
             periodMetrics.copilot_dotcom_pull_requests.repositories.push(repositoryTotals);
           }
-          repository.models?.forEach((model: any) => {
+          repository.models?.forEach((model) => {
             const repositoryModelTotals = repositoryTotals?.models.find(m => m.name === model.name);
             if (repositoryModelTotals) {
               repositoryModelTotals.total_pr_summaries_created += model.total_pr_summaries_created || 0;

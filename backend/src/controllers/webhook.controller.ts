@@ -1,4 +1,4 @@
-import { App } from 'octokit';
+import { App, RequestError } from 'octokit';
 import logger from '../services/logger.js';
 import surveyService from '../services/survey.service.js';
 import app from '../index.js';
@@ -51,7 +51,7 @@ export const setupWebhookListeners = (github: App) => {
       });
     } catch (error) {
       logger.debug(error);
-      if ((error as any)?.status === 422) {
+      if (error instanceof RequestError && error.status === 422) {
         logger.info('Survey comment created. (422)');
       } else {
         logger.error('Error creating survey comment');

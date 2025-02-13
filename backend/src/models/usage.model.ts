@@ -27,7 +27,7 @@ type UsageBreakdownType = {
   activeUsers: number;
 }
 
-async function insertUsage(org: string, data: Endpoints["GET /orgs/{org}/copilot/usage"]["response"]["data"], team?: string) {
+async function insertUsage(org: string, data: Endpoints["GET /orgs/{org}/copilot/usage"]["response"]["data"]) {
   for (const metrics of data) {
     const Usage = mongoose.model('Usage');
     

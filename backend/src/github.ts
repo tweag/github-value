@@ -70,7 +70,10 @@ class GitHub {
       oauth: {
         clientId: null,
         clientSecret: null
-      } as any
+      } as {
+        clientId: never;
+        clientSecret: never;
+      }
     });
 
     await updateDotenv({ GITHUB_APP_ID: this.input.appId })
@@ -91,7 +94,7 @@ class GitHub {
         });
         logger.info('Webhook config updated for app', this.smee.options.url, this.input.webhooks?.secret?.replace(/\S/, '*'));
       } catch (error) {
-        logger.error('Failed to update webhook config for app');
+        logger.error('Failed to update webhook config for app', error);
       }
       app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
     }

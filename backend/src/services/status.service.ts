@@ -24,7 +24,6 @@ class StatusService {
     const status = {} as StatusType;
 
     const Seats = mongoose.model('Seats');
-    const Member = mongoose.model('Member');
 
     const oldestSeat = await Seats.findOne().sort({ createdAt: 1 });
     const daysSince = oldestSeat ? Math.floor((new Date().getTime() - oldestSeat.createdAt.getTime()) / (1000 * 3600 * 24)) : undefined;

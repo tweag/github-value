@@ -6,7 +6,7 @@ import { MemberActivityType, MemberType } from 'models/teams.model.js';
 import fs from 'fs';
 import adoptionService from './adoption.service.js';
 
-type _Seat = any;// NonNullable<Endpoints["GET /orgs/{org}/copilot"]["response"]["data"]["seats"]>[0];
+type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
   plan_type: "business" | "enterprise" | "unknown";
   assignee: components['schemas']['simple-user'];
@@ -237,7 +237,7 @@ class SeatsService {
     precision?: 'hour' | 'day' | 'minute';
     since?: string;
     until?: string;
-  } = {}): Promise<any> { // Promise<MemberDailyActivity> {
+  } = {}): Promise<MemberDailyActivity> {
     const Seats = mongoose.model('Seats');
     // const seats = await Seats.find({})
     // return seats.length;
@@ -296,7 +296,6 @@ class SeatsService {
           dateIndex.setUTCHours(0, 0, 0, 0);
         } else if (precision === 'hour') {
           dateIndex.setUTCMinutes(0, 0, 0);
-        } else if (precision === 'minute') {
         }
         const dateIndexStr = new Date(dateIndex).toISOString();
         if (!activityDays[dateIndexStr]) {
@@ -342,8 +341,18 @@ class SeatsService {
     const { org, since, until } = params;
     const Member = mongoose.model('Member');
 
+    const match: mongoose.FilterQuery<SeatEntry> = {};
+    if (org) match.org = org;
+    if (since || until) {
+      match.createdAt = {
+        ...(since && { $gte: new Date(since) }),
+        ...(until && { $lte: new Date(until) })
+      };
+    }
+
     const assignees: MemberType[] = await Member
       .aggregate([
+        { $match: match },
         {
           $lookup: {
             from: 'seats',          // MongoDB collection name (lowercase)
@@ -374,7 +383,7 @@ class SeatsService {
       return totals;
     }, {} as { [assignee: string]: number });
 
-    return Object.entries(activityTotals).sort((a: any, b: any) => b[1] - a[1]);
+    return Object.entries(activityTotals).sort((a: [string, number], b: [string, number]) => b[1] - a[1]);
   }
 
   async getMembersActivityTotals2(params: {
@@ -385,7 +394,7 @@ class SeatsService {
     const ActivityTotals = mongoose.model('ActivityTotals');
     const { org, since, until } = params;
 
-    const match: any = {};
+    const match: mongoose.FilterQuery<MemberActivityType> = {};
     if (org) match.org = org;
     if (since || until) {
       match.date = {
@@ -395,9 +404,7 @@ class SeatsService {
     }
 
     const totals = await ActivityTotals.aggregate([
-      // Match documents within date range and org
       { $match: match },
-      // First group by date AND assignee_login
       {
         $group: {
           _id: {
@@ -407,16 +414,13 @@ class SeatsService {
           daily_time: { $sum: "$total_active_time_ms" }
         }
       },
-      // Then group by just assignee_login to sum across days
       {
         $group: {
           _id: "$_id.login",
           total_time: { $sum: "$daily_time" }
         }
       },
-      // Sort by total time descending
       { $sort: { total_time: -1 } },
-      // Project final fields
       {
         $project: {
           _id: 0,
