@@ -1,11 +1,11 @@
-import { Component, inject, model } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { Subject, takeUntil } from 'rxjs';
 import { InstallationsService } from '../../../services/api/installations.service';
 import { Target, Targets, TargetsService } from '../../../services/api/targets.service';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-import { MAT_DIALOG_DATA, MatDialog, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogActions, MatDialogContent, MatDialogRef, MatDialogTitle } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -29,7 +29,7 @@ interface TableTarget {
   templateUrl: './copilot-value-modeling.component.html',
   styleUrl: './copilot-value-modeling.component.scss'
 })
-export class CopilotValueModelingComponent {
+export class CopilotValueModelingComponent implements OnInit {
   displayedColumns: string[] = ['key', 'current', 'target', 'max', 'actions'];
   orgDataSource: TableTarget[] = [];
   userDataSource: TableTarget[] = [];
