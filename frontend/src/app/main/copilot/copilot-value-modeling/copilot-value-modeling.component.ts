@@ -167,8 +167,7 @@ export class CopilotValueModelingComponent {
     MatButtonModule,
     MatDialogTitle,
     MatDialogContent,
-    MatDialogActions,
-    MatDialogClose,
+    MatDialogActions
   ],
 })
 export class EditTargetDialogComponent {
