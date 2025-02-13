@@ -11,8 +11,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { CommonModule } from '@angular/common';
 
+
+type TableTargetFormat = 'number' | 'currency' | 'percent' | 'hrs';
 interface TableTarget {
   key: string;
+  format: TableTargetFormat;
   current: number;
   target: number;
   max: number;
@@ -39,18 +42,35 @@ export class CopilotValueModelingComponent implements OnInit {
     seats: 'Seats',
     adoptedDevs: 'Adopted Devs',
     monthlyDevsReportingTimeSavings: 'Monthly Devs reporting Time Savings',
-    percentOfSeatsReportingTimeSavings: '% of Seats reporting Time Savings',
-    percentOfSeatsAdopted: '% of Seats Adopted',
-    percentOfMaxAdopted: '% of Max Adopted',
+    percentOfSeatsReportingTimeSavings: 'Seats reporting Time Savings',
+    percentOfSeatsAdopted: 'Seats Adopted',
+    percentOfMaxAdopted: 'Max Adopted',
     dailySuggestions: 'Daily Suggestions',
     dailyAcceptances: 'Daily Acceptances',
     dailyChatTurns: 'Daily Chat Turns',
     dailyDotComChats: 'Daily Dot-Com Chats',
     weeklyPRSummaries: 'Weekly PR Summaries',
-    weeklyTimeSavedHrs: 'Weekly Time Saved (hrs)',
-    monthlyTimeSavingsHrs: 'Monthly Time Savings (hrs)',
-    annualTimeSavingsAsDollars: 'Annual Time Savings as Dollars ($)',
-    productivityOrThroughputBoostPercent: 'Productivity or Throughput Boost (%)'
+    weeklyTimeSavedHrs: 'Weekly Time Saved',
+    monthlyTimeSavingsHrs: 'Monthly Time Savings',
+    annualTimeSavingsAsDollars: 'Annual Time Savings as Dollars',
+    productivityOrThroughputBoostPercent: 'Productivity or Throughput Boost'
+  };
+  keyToFormatMap: Record<string, TableTargetFormat> = {
+    seats: 'number',
+    adoptedDevs: 'number',
+    monthlyDevsReportingTimeSavings: 'number',
+    percentOfSeatsReportingTimeSavings: 'percent',
+    percentOfSeatsAdopted: 'percent',
+    percentOfMaxAdopted: 'percent',
+    dailySuggestions: 'number',
+    dailyAcceptances: 'number',
+    dailyChatTurns: 'number',
+    dailyDotComChats: 'number',
+    weeklyPRSummaries: 'number',
+    weeklyTimeSavedHrs: 'hrs',
+    monthlyTimeSavingsHrs: 'hrs',
+    annualTimeSavingsAsDollars: 'currency',
+    productivityOrThroughputBoostPercent: 'percent'
   };
   nameToKeyMap: Record<string, string> = Object.fromEntries(
     Object.entries(this.keyToNameMap).map(([key, value]) => [value, key])
@@ -84,7 +104,8 @@ export class CopilotValueModelingComponent implements OnInit {
       key: this.keyToNameMap[key] || key, // Use the mapped name or the key if no mapping is found
       current: targets[key].current,
       target: targets[key].target,
-      max: targets[key].max
+      max: targets[key].max,
+      format: this.keyToFormatMap[key] || 'number' // Use the mapped format or default to 'number'
     }));
   }
 
@@ -128,22 +149,89 @@ export class CopilotValueModelingComponent implements OnInit {
 
 @Component({
   selector: 'app-edit-target-dialog',
+  imports: [
+    MatFormFieldModule,
+    MatInputModule,
+    FormsModule,
+    MatButtonModule,
+    MatDialogTitle,
+    MatDialogContent,
+    MatDialogActions,
+    CommonModule
+  ],
   template: `
 <h2 mat-dialog-title>{{ data.key }}</h2>
 <mat-dialog-content>
-  <!-- <p>What's your favorite animal?</p> -->
-  <mat-form-field>
-    <mat-label>Current</mat-label>
-    <input matInput [(ngModel)]="data.current" />
-  </mat-form-field>
-  <mat-form-field>
-    <mat-label>Target</mat-label>
-    <input matInput [(ngModel)]="data.target" />
-  </mat-form-field>
-  <mat-form-field>
-    <mat-label>Max</mat-label>
-    <input matInput [(ngModel)]="data.max" />
-  </mat-form-field>
+<ng-container [ngSwitch]="data.format">
+  <ng-container *ngSwitchCase="'currency'">
+    <mat-form-field floatLabel="always">
+      <mat-label>Current</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.current" placeholder="0" />
+      <span matTextPrefix>$&nbsp;</span>
+      <span matTextSuffix>.00</span>
+    </mat-form-field>
+    <mat-form-field floatLabel="always">
+      <mat-label>Target</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.target" placeholder="0" />
+      <span matTextPrefix>$&nbsp;</span>
+      <span matTextSuffix>.00</span>
+    </mat-form-field>
+    <mat-form-field floatLabel="always">
+      <mat-label>Max</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.max" placeholder="0" />
+      <span matTextPrefix>$&nbsp;</span>
+      <span matTextSuffix>.00</span>
+    </mat-form-field>
+  </ng-container>
+  <ng-container *ngSwitchCase="'hrs'">
+    <mat-form-field floatLabel="always">
+      <mat-label>Current</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.current" placeholder="0" />
+      <span matTextSuffix>&nbsp;hrs</span>
+    </mat-form-field>
+    <mat-form-field floatLabel="always">
+      <mat-label>Target</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.target" placeholder="0" />
+      <span matTextSuffix>&nbsp;hrs</span>
+    </mat-form-field>
+    <mat-form-field floatLabel="always">
+      <mat-label>Max</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.max" placeholder="0" />
+      <span matTextSuffix>&nbsp;hrs</span>
+    </mat-form-field>
+  </ng-container>
+  <ng-container *ngSwitchCase="'percent'">
+    <mat-form-field floatLabel="always">
+      <mat-label>Current</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.current" placeholder="0" max=100 min=0 />
+      <span matTextSuffix>&nbsp;%</span>
+    </mat-form-field>
+    <mat-form-field floatLabel="always">
+      <mat-label>Target</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.target" placeholder="0" max=100 min=0 />
+      <span matTextSuffix>&nbsp;%</span>
+    </mat-form-field>
+    <mat-form-field floatLabel="always">
+      <mat-label>Max</mat-label>
+      <input matInput type="number" class="example-right-align" [(ngModel)]="data.max" placeholder="0" max=100 min=0 />
+      <span matTextSuffix>&nbsp;%</span>
+    </mat-form-field>
+  </ng-container>
+  <ng-container *ngSwitchDefault>
+    <mat-form-field>
+      <mat-label>Current</mat-label>
+      <input matInput [(ngModel)]="data.current" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Target</mat-label>
+      <input matInput [(ngModel)]="data.target" />
+    </mat-form-field>
+    <mat-form-field>
+      <mat-label>Max</mat-label>
+      <input matInput [(ngModel)]="data.max" />
+    </mat-form-field>
+  </ng-container>
+</ng-container>
 </mat-dialog-content>
 <mat-dialog-actions>
   <button mat-button (click)="onNoClick()">Close</button>
@@ -159,20 +247,23 @@ export class CopilotValueModelingComponent implements OnInit {
     mat-form-field {
       width: 100%;
     }
+    .example-right-align {
+      text-align: right;
+    }
+
+    input.example-right-align::-webkit-outer-spin-button,
+    input.example-right-align::-webkit-inner-spin-button {
+      display: none;
+    }
+
+    input.example-right-align {
+      -moz-appearance: textfield;
+    }
   `],
-  imports: [
-    MatFormFieldModule,
-    MatInputModule,
-    FormsModule,
-    MatButtonModule,
-    MatDialogTitle,
-    MatDialogContent,
-    MatDialogActions
-  ],
 })
 export class EditTargetDialogComponent {
   readonly dialogRef = inject(MatDialogRef<EditTargetDialogComponent>);
-  readonly data = inject<TableTarget>(MAT_DIALOG_DATA);
+  data = inject<TableTarget>(MAT_DIALOG_DATA);
 
   onNoClick(): void {
     this.dialogRef.close();
