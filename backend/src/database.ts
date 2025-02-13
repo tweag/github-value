@@ -333,31 +333,36 @@ class Database {
       timestamps: true
     }));
 
-    const TargetsDetailSchema = new mongoose.Schema({
-      seats: Number,
-      adoptedDevs: Number,
-      monthlyDevsReportingTimeSavings: Number,
-      percentSeatsReportingTimeSavings: Number,
-      percentSeatsAdopted: Number,
-      percentMaxAdopted: Number,
-      dailySuggestions: Number,
-      dailyAcceptances: Number,
-      dailyChatTurns: Number,
-      dailyDotComChats: Number,
-      weeklyPRSummaries: Number,
-      weeklyTimeSaved: Number,
-      monthlyTimeSavings: Number,
-      annualTimeSavingsDollars: Number,
-      productivityBoost: Number,
-      asOfDate: Number
+    const TargetSchema = new mongoose.Schema({
+      current: Number,
+      target: Number,
+      max: Number
     });
-
+    
     const TargetsSchema = new mongoose.Schema({
-      current: TargetsDetailSchema,
-      target: TargetsDetailSchema,
-      max: TargetsDetailSchema
+      org: {
+        seats: TargetSchema,
+        adoptedDevs: TargetSchema,
+        monthlyDevsReportingTimeSavings: TargetSchema,
+        percentOfSeatsReportingTimeSavings: TargetSchema,
+        percentOfSeatsAdopted: TargetSchema,
+        percentOfMaxAdopted: TargetSchema
+      },
+      user: {
+        dailySuggestions: TargetSchema,
+        dailyAcceptances: TargetSchema,
+        dailyChatTurns: TargetSchema,
+        dailyDotComChats: TargetSchema,
+        weeklyPRSummaries: TargetSchema,
+        weeklyTimeSavedHrs: TargetSchema
+      },
+      impact: {
+        monthlyTimeSavingsHrs: TargetSchema,
+        annualTimeSavingsAsDollars: TargetSchema,
+        productivityOrThroughputBoostPercent: TargetSchema
+      }
     });
-
+    
     mongoose.model('Targets', TargetsSchema);
 
     const CounterSchema = new mongoose.Schema({

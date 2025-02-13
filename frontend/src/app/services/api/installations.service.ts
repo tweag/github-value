@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy, OnInit } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, of, Subject, tap } from 'rxjs';
 import { serverUrl } from '../server.service';
 import { Endpoints } from '@octokit/types';

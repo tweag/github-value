@@ -12,6 +12,7 @@ import GitHub from './github.js';
 import SettingsService from './services/settings.service.js';
 import apiRoutes from "./routes/index.js"
 import WebhookService from './services/smee.js';
+import TargetValuesService from './services/target.service.js';
 
 class App {
   e: Express;
@@ -83,6 +84,9 @@ class App {
         logger.info('GitHub App starting...');
         await this.github.connect();
         logger.info('GitHub App connected');
+
+        await TargetValuesService.initialize();
+        logger.info('Targets initialized');
       }
 
       return this.e;

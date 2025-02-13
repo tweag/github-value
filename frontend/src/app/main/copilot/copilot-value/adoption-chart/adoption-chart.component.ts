@@ -4,7 +4,7 @@ import { HighchartsChartModule } from 'highcharts-angular';
 import { ActivityResponse } from '../../../../services/api/seat.service';
 import { HighchartsService } from '../../../../services/highcharts.service';
 import { DatePipe } from '@angular/common';
-import { TargetsGridType } from '../../../../services/api/targets.service';
+import { Targets } from '../../../../services/api/targets.service';
 
 @Component({
   selector: 'app-adoption-chart',
@@ -23,7 +23,7 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
   updateFlag = false;
   totalUsers = 500;
   @Input() data?: ActivityResponse;
-  @Input() targets?: TargetsGridType;
+  @Input() targets?: Targets;
   @Input() chartOptions?: Highcharts.Options;
   _chartOptions: Highcharts.Options = {
     yAxis: {
@@ -101,8 +101,8 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
       };
     }
     if (changes['targets'] && this.targets) {
-      if (this.targets?.target.adoptedDevs) {
-        const target = (+this.targets.target.adoptedDevs / this.targets.max.seats) * 100;
+      if (this.targets.org.adoptedDevs && this.targets.org.seats.max) {
+        const target = (this.targets.org.adoptedDevs.target / this.targets.org.seats.max) * 100;
         const yAxis = this._chartOptions.yAxis as Highcharts.YAxisOptions;
         if (yAxis?.plotLines?.[0]) {
           yAxis.plotLines[0].value = target;
