@@ -153,6 +153,8 @@ Ensure that the webhook URL is sending requests to the path `/api/github/webhook
 
 Example: `https://5950-2601-589-4885-e850-b1eb-a754-b856-6038.ngrok-free.app/api/github/webhooks`
 
+![image](https://github.com/user-attachments/assets/baed5eb7-4007-4881-bd99-53eba1636246)
+
 ------------
 
 ### Development
