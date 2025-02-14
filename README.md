@@ -144,7 +144,7 @@ Set permissions for the app as described in [github-manifest.json](./backend/git
 
 <details>
   <summary>Webhooks</summary>
-  github-value uses webhooks to receive events from GitHub. We automatically create the webhook for you using smee.io. You can also use your own webhook URL by setting the `WEBHOOK_PROXY_URL` environment variable or by changing the setting Webhook URL on the settings page.
+  github-value uses webhooks to receive events from GitHub. We automatically create the webhook for you using [smee.io](https://smee.io/). You can also use your own webhook URL by setting the `WEBHOOK_PROXY_URL` environment variable or by changing the setting Webhook URL on the settings page.
 
   ```bash
   WEBHOOK_PROXY_URL=https://5950-2601-589-4885-e850-b1eb-a754-b856-6038.ngrok-free.app
