@@ -142,18 +142,20 @@ Set permissions for the app as described in [github-manifest.json](./backend/git
   You can create an organization app directly from github-value. On your first launch when you visit the website it will take you through setup. Simply click register and follow the instructions. You can also optionally use an existing app.
 </details>
 
-#### Webhooks
-github-value uses webhooks to receive events from GitHub. We automatically create the webhook for you using smee.io. You can also use your own webhook URL by setting the `WEBHOOK_PROXY_URL` environment variable or by changing the setting Webhook URL on the settings page.
+<details>
+  <summary>Webhooks</summary>
+  github-value uses webhooks to receive events from GitHub. We automatically create the webhook for you using smee.io. You can also use your own webhook URL by setting the `WEBHOOK_PROXY_URL` environment variable or by changing the setting Webhook URL on the settings page.
 
-```bash
-WEBHOOK_PROXY_URL=https://5950-2601-589-4885-e850-b1eb-a754-b856-6038.ngrok-free.app
-```
+  ```bash
+  WEBHOOK_PROXY_URL=https://5950-2601-589-4885-e850-b1eb-a754-b856-6038.ngrok-free.app
+  ```
 
-Ensure that the webhook URL is sending requests to the path `/api/github/webhooks`.
+  Ensure that the webhook URL is sending requests to the path `/api/github/webhooks`.
 
-Example: `https://5950-2601-589-4885-e850-b1eb-a754-b856-6038.ngrok-free.app/api/github/webhooks`
+  Example: `https://5950-2601-589-4885-e850-b1eb-a754-b856-6038.ngrok-free.app/api/github/webhooks`
 
-![image](https://github.com/user-attachments/assets/baed5eb7-4007-4881-bd99-53eba1636246)
+  ![image](https://github.com/user-attachments/assets/baed5eb7-4007-4881-bd99-53eba1636246)
+</details>
 
 ------------
 
