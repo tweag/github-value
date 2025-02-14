@@ -111,7 +111,7 @@ export class AdoptionChartComponent implements OnInit, OnChanges {
       this.updateFlag = true;
       setTimeout(() => {
         (this.chart?.yAxis[0] as any).plotLinesAndBands[0].render();
-      }, 5000)
+      }, 2000)
     }
   }
 

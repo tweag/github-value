@@ -53,7 +53,7 @@ class App {
     )
     this.settingsService = new SettingsService({
       baseUrl: this.baseUrl,
-      webhookProxyUrl: process.env.GITHUB_WEBHOOK_PROXY_URL,
+      webhookProxyUrl: process.env.WEBHOOK_PROXY_URL,
       webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
       metricsCronExpression: process.env.CRON || '0 * * * *',
       devCostPerYear: '100000',
@@ -136,7 +136,7 @@ class App {
     return this.settingsService.initialize()
       .then(async (settings) => {
         if (settings.webhookProxyUrl) {
-          this.github.smee.options.url = settings.webhookProxyUrl
+          this.github.webhookService.options.url = settings.webhookProxyUrl
         }
         if (settings.webhookSecret) {
           this.github.setInput({
@@ -154,7 +154,7 @@ class App {
       })
       .finally(async () => {
         await this.settingsService.updateSetting('webhookSecret', this.github.input.webhooks?.secret || '', false);
-        await this.settingsService.updateSetting('webhookProxyUrl', this.github.smee.options.url!, false);
+        await this.settingsService.updateSetting('webhookProxyUrl', this.github.webhookService.options.url!, false);
         await this.settingsService.updateSetting('metricsCronExpression', this.github.cronExpression!, false);
       })
   }

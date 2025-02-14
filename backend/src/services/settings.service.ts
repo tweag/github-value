@@ -99,10 +99,10 @@ class SettingsService {
               });
               break;
             case 'webhookProxyUrl':
-              app.github.smee.connect({
+              app.github.webhookService.connect({
                 url: setting.value
               });
-              app.github.smee.options.url = setting.value;
+              app.github.webhookService.options.url = setting.value;
               break;
           }
         }

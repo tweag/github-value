@@ -6,6 +6,11 @@ import teamsService from '../services/teams.service.js';
 import { Endpoints } from '@octokit/types';
 
 export const setupWebhookListeners = (github: App) => {
+  github.webhooks.onAny(async ({ id, name, payload }) => {
+    logger.debug(`GitHub Webhook event`, { id, name, payload });
+    logger.info(`GitHub Webhook event`, { id, name });
+  });
+
   github.webhooks.on(["pull_request.opened"], async ({ octokit, payload }) => {
     try {
       if (payload.pull_request.user.type === 'Bot') {

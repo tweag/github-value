@@ -51,7 +51,7 @@ class GitHub {
   constructor(
     input: GitHubInput,
     expressApp: Express,
-    public smee: WebhookService,
+    public webhookService: WebhookService,
     private baseUrl: string
   ) {
     this.input = input;
@@ -81,22 +81,22 @@ class GitHub {
     if (this.input.webhooks?.secret) await updateDotenv({ GITHUB_WEBHOOK_SECRET: this.input.webhooks.secret })
 
     try {
-      await this.smee.connect();
+      await this.webhookService.connect();
     } catch {
       logger.error('Failed to connect to webhook Smee');
     }
 
-    if (this.smee.options.url) {
+    if (this.webhookService.options.url) {
       try {
         await this.app.octokit.request('PATCH /app/hook/config', {
-          url: this.smee.options.url,
+          url: this.webhookService.options.url,
           secret: this.input.webhooks?.secret
         });
-        logger.info('Webhook config updated for app', this.smee.options.url, this.input.webhooks?.secret?.replace(/\S/, '*'));
+        logger.info('Webhook config updated for app', this.webhookService.options.url, this.input.webhooks?.secret?.replace(/\S/, '*'));
       } catch (error) {
         logger.error('Failed to update webhook config for app', error);
       }
-      app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
+      app.settingsService.updateSetting('webhookProxyUrl', this.webhookService.options.url, false);
     }
 
     try {
@@ -142,9 +142,9 @@ class GitHub {
     manifest.url = base.href;
     manifest.setup_url = new URL('/api/setup/install/complete', base).href;
     manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;
-    if (this.smee.options.url) {
-      manifest.hook_attributes.url = this.smee.options.url;
-      app.settingsService.updateSetting('webhookProxyUrl', this.smee.options.url, false);
+    if (this.webhookService.options.url) {
+      manifest.hook_attributes.url = this.webhookService.options.url;
+      app.settingsService.updateSetting('webhookProxyUrl', this.webhookService.options.url, false);
     }
     return manifest;
   };
