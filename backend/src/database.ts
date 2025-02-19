@@ -361,6 +361,8 @@ class Database {
         annualTimeSavingsAsDollars: TargetSchema,
         productivityOrThroughputBoostPercent: TargetSchema
       }
+    }, {
+      timestamps: true
     });
     
     mongoose.model('Targets', TargetsSchema);

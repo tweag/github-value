@@ -96,6 +96,12 @@ export class AdoptionService {
   async getAllAdoptions2(params: {
     filter: mongoose.RootFilterQuery<AdoptionType>;
     projection: mongoose.ProjectionType<AdoptionType>;
+  } = {
+    filter: {},
+    projection: {
+      _id: 0,
+      __v: 0,
+    },
   }): Promise<AdoptionType[]> {
     const adoptionModel = mongoose.model<AdoptionType>('Adoption');
 

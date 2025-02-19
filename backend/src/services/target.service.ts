@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import adoptionService, { AdoptionService } from './adoption.service.js';
 
 interface Target {
   current: number;
@@ -55,15 +56,43 @@ class TargetValuesService {
     try {
       const Targets = mongoose.model('Targets');
       const existingTargets = await Targets.findOne();
-      if (!existingTargets) {
+
+      if (1 || !existingTargets) {
+        const adoptions = await adoptionService.getAllAdoptions2({
+          filter: { enterprise: 'enterprise' },
+          projection: {}
+        });
+
+        const topCount = 10;
+        const topAdoptions = adoptions
+          .sort((a, b) => b.totalActive - a.totalActive)
+          .slice(0, topCount);
+
+          console.log('topAdoptions', topAdoptions.map(o => o.totalActive));
+
+        const averages = topAdoptions.reduce((acc, curr) => {
+          return {
+            totalSeats: acc.totalSeats + curr.totalSeats,
+            totalActive: acc.totalActive + curr.totalActive,
+            totalInactive: acc.totalInactive + curr.totalInactive
+          };
+        }, { totalSeats: 0, totalActive: 0, totalInactive: 0 });
+
+        const avgTotalSeats = Math.round(averages.totalSeats / topCount);
+        const avgTotalActive = Math.round(averages.totalActive / topCount);
+
         const initialData: Targets = {
           org: {
-            seats: { current: 0, target: 0, max: 0 },
-            adoptedDevs: { current: 0, target: 0, max: 0 },
-            monthlyDevsReportingTimeSavings: { current: 0, target: 0, max: 0 },
-            percentOfSeatsReportingTimeSavings: { current: 0, target: 0, max: 0 },
-            percentOfSeatsAdopted: { current: 0, target: 0, max: 0 },
-            percentOfMaxAdopted: { current: 0, target: 0, max: 0 },
+            seats: { current: avgTotalSeats, target: avgTotalSeats, max: avgTotalSeats },
+            adoptedDevs: { current: avgTotalActive, target: avgTotalActive, max: avgTotalSeats },
+            monthlyDevsReportingTimeSavings: { current: 0, target: 0, max: avgTotalSeats },
+            percentOfSeatsReportingTimeSavings: { current: 0, target: 0, max: 100 },
+            percentOfSeatsAdopted: {
+              current: Math.round((avgTotalActive / avgTotalSeats) * 100),
+              target: Math.round((avgTotalActive / avgTotalSeats) * 100),
+              max: 100
+            },
+            percentOfMaxAdopted: { current: 0, target: 0, max: 100 },
           },
           user: {
             dailySuggestions: { current: 0, target: 0, max: 0 },

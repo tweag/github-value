@@ -50,6 +50,7 @@ export class MainComponent {
     map(result => result.matches),
     shareReplay()
   );
+  title?: string;
 
   constructor(
     public themeService: ThemeService,
@@ -57,7 +58,7 @@ export class MainComponent {
     private router: Router,
     private confettiService: ConfettiService,
     public setupService: SetupService,
-    public installationsService: InstallationsService
+    public installationsService: InstallationsService,
   ) {
     this.hideNavText = localStorage.getItem('hideNavText') === 'true';
     this.route.queryParams.subscribe(params => {
@@ -68,6 +69,7 @@ export class MainComponent {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
+      this.title = this.route.snapshot.data['title'] ? this.route.snapshot.data['title'] : this.title = undefined;
       this.closeSidenav();
     });
   }
