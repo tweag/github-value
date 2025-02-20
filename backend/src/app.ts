@@ -82,11 +82,16 @@ class App {
         logger.info('Settings initialized');
   
         logger.info('GitHub App starting...');
-        await this.github.connect();
-        logger.info('GitHub App connected');
+        try {
+          await this.github.connect();
+          logger.info('GitHub App connected');
+          logger.info('Targets initializing...');
+          await TargetValuesService.initialize();
+          logger.info('Targets initialized');
+        } catch (error) {
+          logger.warn('GitHub App failed to connect', (error as any)?.message || error);
+        }
 
-        await TargetValuesService.initialize();
-        logger.info('Targets initialized');
       }
 
       return this.e;
@@ -135,13 +140,10 @@ class App {
   private initializeSettings() {
     return this.settingsService.initialize()
       .then(async (settings) => {
-        if (settings.webhookProxyUrl) {
-          this.github.webhookService.options.url = settings.webhookProxyUrl
-        }
         if (settings.webhookSecret) {
           this.github.setInput({
             webhooks: {
-              secret: settings.webhookSecret
+              secret: process.env.GITHUB_WEBHOOK_SECRET || settings.webhookSecret
             }
           });
         }
@@ -154,7 +156,7 @@ class App {
       })
       .finally(async () => {
         await this.settingsService.updateSetting('webhookSecret', this.github.input.webhooks?.secret || '', false);
-        await this.settingsService.updateSetting('webhookProxyUrl', this.github.webhookService.options.url!, false);
+        await this.settingsService.updateSetting('webhookProxyUrl', this.github.webhookService.url!, false);
         await this.settingsService.updateSetting('metricsCronExpression', this.github.cronExpression!, false);
       })
   }

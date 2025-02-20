@@ -32,7 +32,7 @@ class SettingsService {
         }
       } catch {
         if (value) {
-          await this.updateSetting(name as keyof SettingsType, value);
+          await this.updateSetting(name as keyof SettingsType, value, false);
         }
       }
     }
@@ -102,7 +102,6 @@ class SettingsService {
               app.github.webhookService.connect({
                 url: setting.value
               });
-              app.github.webhookService.options.url = setting.value;
               break;
           }
         }

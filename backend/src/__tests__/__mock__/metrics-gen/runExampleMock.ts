@@ -95,7 +95,6 @@ const database = new Database(process.env.MONGODB_URI);
 
     const exampleData: MetricDailyResponseType[] = generateExampleData(); // Generate the data
     await metricsService.insertMetrics("octodemo", exampleData, null);
-    console.log(JSON.stringify(exampleData, null, 2));
   } catch (error) {
     console.error('Test failed:', error);
   } finally {

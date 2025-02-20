@@ -88,7 +88,6 @@ export class CopilotValueModelingComponent implements OnInit {
     ).subscribe(installation => {
       try {
         this.targetsService.getTargets().subscribe(targets => {
-          console.log(targets);
           this.orgDataSource = this.transformTargets(targets.org);
           this.userDataSource = this.transformTargets(targets.user);
           this.impactDataSource = this.transformTargets(targets.impact);

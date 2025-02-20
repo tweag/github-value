@@ -10,11 +10,15 @@ export interface WebhookServiceOptions {
 
 class WebhookService {
   eventSource?: EventSource;
-  options: WebhookServiceOptions;
+  private options: WebhookServiceOptions;
   smee?: Client;
 
   constructor(options: WebhookServiceOptions) {
     this.options = options;
+  }
+
+  get url() {
+    return this.options.url;
   }
 
   public async connect(options?: Partial<WebhookServiceOptions>) {
@@ -25,7 +29,7 @@ class WebhookService {
       }
     }
 
-    if (!this.options.url) {
+    if (!this.options.url && this.options.url !== '') {
       this.options.url = await this.createSmeeWebhookUrl();
     }
 

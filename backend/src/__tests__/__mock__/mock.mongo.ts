@@ -48,7 +48,6 @@ describe('settings.service.spec.ts test', () => {
     await settingsService.updateSettings(newSettings);
 
     const updatedSettings = await settingsService.getAllSettings();
-    console.log(updatedSettings);
     const baseUrlSetting = updatedSettings.find((setting: SettingsType) => setting.name === 'baseUrl');
     expect(baseUrlSetting?.value).toEqual(newSettings.baseUrl);
     const webhookProxyUrlSetting = updatedSettings.find((setting: SettingsType) => setting.name === 'webhookProxyUrl');

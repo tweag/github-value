@@ -82,22 +82,22 @@ class GitHub {
 
     try {
       await this.webhookService.connect();
-    } catch {
-      logger.error('Failed to connect to webhook Smee');
+    } catch (error) {
+      logger.error('Failed to connect to webhook Smee', error);
     }
 
-    if (this.webhookService.options.url) {
-      try {
-        await this.app.octokit.request('PATCH /app/hook/config', {
-          url: this.webhookService.options.url,
-          secret: this.input.webhooks?.secret
-        });
-        logger.info('Webhook config updated for app', this.webhookService.options.url, this.input.webhooks?.secret?.replace(/\S/, '*'));
-      } catch (error) {
-        logger.error('Failed to update webhook config for app', error);
-      }
-      app.settingsService.updateSetting('webhookProxyUrl', this.webhookService.options.url, false);
-    }
+    // if (this.webhookService.url) {
+    //   try {
+    //     await this.app.octokit.request('PATCH /app/hook/config', {
+    //       url: this.webhookService.url,
+    //       secret: this.input.webhooks?.secret
+    //     });
+    //     logger.info('Webhook config updated for app', this.webhookService.url, this.input.webhooks?.secret?.replace(/\S/, '*'));
+    //   } catch (error) {
+    //     logger.warn('Failed to update webhook config for app', error);
+    //   }
+    //   app.settingsService.updateSetting('webhookProxyUrl', this.webhookService.url, false);
+    // }
 
     try {
       if (!this.app) throw new Error('GitHub App is not initialized')
@@ -142,10 +142,8 @@ class GitHub {
     manifest.url = base.href;
     manifest.setup_url = new URL('/api/setup/install/complete', base).href;
     manifest.redirect_url = new URL('/api/setup/registration/complete', base).href;
-    if (this.webhookService.options.url) {
-      manifest.hook_attributes.url = this.webhookService.options.url;
-      app.settingsService.updateSetting('webhookProxyUrl', this.webhookService.options.url, false);
-    }
+    manifest.hook_attributes.url = this.webhookService.url;
+    if (!manifest.hook_attributes.url) manifest.hook_attributes.url = 'https://example.com/github/events';
     return manifest;
   };
 

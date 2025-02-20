@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import adoptionService, { AdoptionService } from './adoption.service.js';
+import adoptionService from './adoption.service.js';
+import app from 'index.js';
 
 interface Target {
   current: number;
@@ -57,18 +58,31 @@ class TargetValuesService {
       const Targets = mongoose.model('Targets');
       const existingTargets = await Targets.findOne();
 
-      if (1 || !existingTargets) {
+      if (!existingTargets) {
+        const {
+          devCostPerYear = 100000,
+          percentCoding,
+          percentTimeSaved,
+          developerCount,
+          hoursPerYear
+        } = await app.settingsService.getAllSettings();
+
+        console.log('tmp', {
+          devCostPerYear,
+          percentCoding,
+          percentTimeSaved,
+          developerCount,
+          hoursPerYear
+        });
+
         const adoptions = await adoptionService.getAllAdoptions2({
           filter: { enterprise: 'enterprise' },
           projection: {}
         });
 
-        const topCount = 10;
         const topAdoptions = adoptions
           .sort((a, b) => b.totalActive - a.totalActive)
-          .slice(0, topCount);
-
-          console.log('topAdoptions', topAdoptions.map(o => o.totalActive));
+          .slice(0, 10);
 
         const averages = topAdoptions.reduce((acc, curr) => {
           return {
@@ -78,8 +92,8 @@ class TargetValuesService {
           };
         }, { totalSeats: 0, totalActive: 0, totalInactive: 0 });
 
-        const avgTotalSeats = Math.round(averages.totalSeats / topCount);
-        const avgTotalActive = Math.round(averages.totalActive / topCount);
+        const avgTotalSeats = Math.round(averages.totalSeats / topAdoptions.length);
+        const avgTotalActive = Math.round(averages.totalActive / topAdoptions.length);
 
         const initialData: Targets = {
           org: {
