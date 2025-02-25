@@ -39,7 +39,7 @@ class SettingsService {
     return this.settings;
   }
 
-  async getAllSettings() {
+  async getAllSettings(): Promise<SettingsType> {
     try {
       const Setting = mongoose.model('Settings');
       const settingsArray = await Setting.find<{

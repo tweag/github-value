@@ -4,7 +4,7 @@ import logger from './logger.js';
 import { SeatEntry } from './seats.service.js';
 import { SeatType } from 'models/seats.model.js';
 
-type AdoptionType = {
+export type AdoptionType = {
   _id?: string;
   enterprise: string | null;
   org: string | null;
