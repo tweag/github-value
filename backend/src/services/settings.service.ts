@@ -103,6 +103,9 @@ class SettingsService {
                 url: setting.value
               });
               break;
+            case 'baseUrl':
+              app.baseUrl = setting.value;
+              break;
           }
         }
         return true;
