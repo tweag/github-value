@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 import adoptionService, { AdoptionType } from './adoption.service.js';
-import app from 'index.js';
+import app from '../index.js';
 import { SettingsType } from './settings.service.js';
 
 interface Target {
