@@ -33,7 +33,9 @@ class WebhookService {
       this.options.url = await this.createSmeeWebhookUrl();
     }
 
-    if (this.options.url.includes('smee.io')) {
+    const parsedUrl = new URL(this.options.url);
+    const allowedHosts = ['smee.io', 'www.smee.io'];
+    if (allowedHosts.includes(parsedUrl.host)) {
       logger.info(`Using Smee to receive webhooks ${this.options.url}`);
       try {
         const SmeeClient = (await import("smee-client")).default;
