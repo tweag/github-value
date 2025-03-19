@@ -127,9 +127,8 @@ class App {
     }));
     this.e.use('/api', apiRoutes);
 
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = dirname(__filename);
-    const frontendPath = path.resolve(__dirname, '../../frontend/dist/github-value/browser');
+    const __dirname = path.resolve();
+    const frontendPath = path.resolve(__dirname, '../frontend/dist/github-value/browser');
     this.e.use(express.static(frontendPath));
     this.e.get('*', (_, res) => res.sendFile(path.join(frontendPath, 'index.html')));
 

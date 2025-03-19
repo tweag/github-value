@@ -55,9 +55,6 @@ class TargetValuesService {
   }
 
   calculateTargets(settings: SettingsType, adoptions: AdoptionType[]): Targets {
-
-    console.log('tmp', settings);
-
     const topAdoptions = adoptions
       .sort((a, b) => b.totalActive - a.totalActive)
       .slice(0, 10);

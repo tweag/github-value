@@ -39,6 +39,7 @@ class GitHub {
   app?: App;
   queryService?: QueryService;
   webhooks?: Express;
+  webhookPingReceived = false;
   input: GitHubInput;
   expressApp: Express;
   installations = [] as {
