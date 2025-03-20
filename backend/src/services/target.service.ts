@@ -67,8 +67,8 @@ class TargetValuesService {
       };
     }, { totalSeats: 0, totalActive: 0, totalInactive: 0 });
 
-    const avgTotalSeats = Math.round(averages.totalSeats / topAdoptions.length);
-    const avgTotalActive = Math.round(averages.totalActive / topAdoptions.length);
+    const avgTotalSeats = Math.round(averages.totalSeats / topAdoptions.length) || 0;
+    const avgTotalActive = Math.round(averages.totalActive / topAdoptions.length) || 0;
 
     return {
       org: {
@@ -77,24 +77,24 @@ class TargetValuesService {
         monthlyDevsReportingTimeSavings: { current: 0, target: 0, max: avgTotalSeats },
         percentOfSeatsReportingTimeSavings: { current: 0, target: 0, max: 100 },
         percentOfSeatsAdopted: {
-          current: Math.round((avgTotalActive / avgTotalSeats) * 100),
-          target: Math.round((avgTotalActive / avgTotalSeats) * 100),
+          current: avgTotalActive ? Math.round((avgTotalActive / avgTotalSeats) * 100) : 0,
+          target: avgTotalSeats ? Math.round((avgTotalActive / avgTotalSeats) * 100) : 0,
           max: 100
         },
         percentOfMaxAdopted: { current: 0, target: 0, max: 100 },
       },
       user: {
-        dailySuggestions: { current: 0, target: 0, max: 0 },
-        dailyAcceptances: { current: 0, target: 0, max: 0 },
-        dailyChatTurns: { current: 0, target: 0, max: 0 },
-        dailyDotComChats: { current: 0, target: 0, max: 0 },
-        weeklyPRSummaries: { current: 0, target: 0, max: 0 },
-        weeklyTimeSavedHrs: { current: 0, target: 0, max: 0 },
+        dailySuggestions: { current: 0, target: 0, max: 100 },
+        dailyAcceptances: { current: 0, target: 0, max: 100 },
+        dailyChatTurns: { current: 0, target: 0, max: 100 },
+        dailyDotComChats: { current: 0, target: 0, max: 100 },
+        weeklyPRSummaries: { current: 0, target: 0, max: 100 },
+        weeklyTimeSavedHrs: { current: 0, target: 0, max: 100 },
       },
       impact: {
-        monthlyTimeSavingsHrs: { current: 0, target: 0, max: 0 },
-        annualTimeSavingsAsDollars: { current: 0, target: 0, max: 0 },
-        productivityOrThroughputBoostPercent: { current: 0, target: 0, max: 100 },
+        monthlyTimeSavingsHrs: { current: 0, target: 0, max: 80 * avgTotalSeats },
+        annualTimeSavingsAsDollars: { current: 0, target: 0, max: 80 * avgTotalSeats * 50 },
+        productivityOrThroughputBoostPercent: { current: 0, target: 0, max: 25 },
       },
     };
   }
