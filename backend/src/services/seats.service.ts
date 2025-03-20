@@ -5,6 +5,7 @@ import mongoose from 'mongoose';
 import { MemberActivityType, MemberType } from 'models/teams.model.js';
 import fs from 'fs';
 import adoptionService from './adoption.service.js';
+import logger from './logger.js';
 
 type _Seat = NonNullable<Endpoints["GET /orgs/{org}/copilot/billing/seats"]["response"]["data"]["seats"]>[0];
 export interface SeatEntry extends _Seat {
@@ -90,6 +91,8 @@ class SeatsService {
     const Seats = mongoose.model('Seats');
     const ActivityTotals = mongoose.model('ActivityTotals');
 
+    logger.info(`Inserting ${data.length} seat assignments for ${org}`);
+
     const memberUpdates = data.map(seat => ({
       updateOne: {
         filter: { org, id: seat.assignee.id },
@@ -120,6 +123,7 @@ class SeatsService {
         upsert: true,
       }
     }));
+    logger.debug(`Writing ${memberUpdates.length} members`);
     await Members.bulkWrite(memberUpdates);
 
     const updatedMembers = await Members.find({
@@ -136,6 +140,7 @@ class SeatsService {
       assignee_login: seat.assignee.login,
       assignee: updatedMembers.find(m => m.id === seat.assignee.id)?._id
     }));
+    logger.debug(`Writing ${seatsData.length} seats`);
     const seatResults = await Seats.insertMany(seatsData);
 
     // Add member seat updates
@@ -147,6 +152,7 @@ class SeatsService {
         }
       }
     }));
+    logger.debug(`Writing ${memberSeatUpdates.length} member seat updates`);
     await Members.bulkWrite(memberSeatUpdates);
 
     const adoptionData = {
@@ -164,6 +170,7 @@ class SeatsService {
       }))
     }
 
+    logger.debug(`Writing ${adoptionData.seats.length} adoption data`);
     await adoptionService.createAdoption(adoptionData);
 
     const today = new Date(queryAt);
@@ -221,6 +228,7 @@ class SeatsService {
     })).filter(update => update !== null);
 
     if (activityUpdates.length > 0) {
+      logger.debug(`Writing ${activityUpdates.length} activity updates`);
       await ActivityTotals.bulkWrite(activityUpdates);
     }
 

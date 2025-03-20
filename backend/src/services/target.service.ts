@@ -104,7 +104,7 @@ class TargetValuesService {
       const Targets = mongoose.model('Targets');
       const existingTargets = await Targets.findOne();
 
-      if (1 || !existingTargets) {
+      if (!existingTargets) {
         const settings = await app.settingsService.getAllSettings();
         const adoptions = await adoptionService.getAllAdoptions2({
           filter: { enterprise: 'enterprise' },
