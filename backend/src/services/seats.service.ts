@@ -49,7 +49,7 @@ class SeatsService {
   async getAssignee(id: number) {
     const Seats = mongoose.model('Seats');
     const Member = mongoose.model('Member');
-    const member = await Member.findOne({id}).sort({org: -1}); //this temporarily resolves a bug where one org fails but the other one succeeds
+    const member = await Member.findOne({ id }).sort({ org: -1 }); //this temporarily resolves a bug where one org fails but the other one succeeds
 
     if (!member) {
       throw `Member with id ${id} not found`
@@ -91,6 +91,38 @@ class SeatsService {
     const Seats = mongoose.model('Seats');
     const ActivityTotals = mongoose.model('ActivityTotals');
 
+    // fill the data to 10,000 entries for testing
+    // data = new Array(10000).fill(0).map((entry, index) => {
+    //   const seat = data[index % data.length];
+    //   return {
+    //     ...seat,
+    //     plan_type: seat.plan_type || 'unknown',
+    //     assignee: {
+    //       ...seat.assignee,
+    //       id: seat.assignee.id + index,
+    //       login: seat.assignee.login ||
+    //         `test-login-${index}`,
+    //       node_id: seat.assignee.node_id || `test-node-id-${index}`,
+    //       avatar_url: seat.assignee.avatar_url ||
+    //         `https://avatars.githubusercontent.com/u/${index}?v=4`,
+    //       gravatar_id: seat.assignee.gravatar_id || `test-gravatar-id-${index}`,
+    //       url: seat.assignee.url || `https://api.github.com/users/test-login-${index}`,
+    //       html_url: seat.assignee.html_url || ``,
+    //       followers_url: seat.assignee.followers_url || `https://api.github.com/users/test-login-${index}/followers`,
+    //       following_url: seat.assignee.following_url || `https://api.github.com/users/test-login-${index}/following{/other_user}`,
+    //       gists_url: seat.assignee.gists_url || `https://api.github.com/users/test-login-${index}/gists{/gist_id}`,
+    //       starred_url: seat.assignee.starred_url || `https://api.github.com/users/test-login-${index}/starred{/owner}{/repo}`,
+    //       subscriptions_url: seat.assignee.subscriptions_url || `https://api.github.com/users/test-login-${index}/subscriptions`,
+    //       organizations_url: seat.assignee.organizations_url || `https://api.github.com/users/test-login-${index}/orgs`,
+    //       repos_url: seat.assignee.repos_url || `https://api.github.com/users/test-login-${index}/repos`,
+    //       events_url: seat.assignee.events_url || `https://api.github.com/users/test-login-${index}/events{/privacy}`,
+    //       received_events_url: seat.assignee.received_events_url || `https://api.github.com/users/test-login-${index}/received_events`,
+    //       type: seat.assignee.type || `User`,
+    //       site_admin: seat.assignee.site_admin || false
+    //     }
+    //   }
+    // });
+
     logger.info(`Inserting ${data.length} seat assignments for ${org}`);
 
     const memberUpdates = data.map(seat => ({
@@ -123,6 +155,7 @@ class SeatsService {
         upsert: true,
       }
     }));
+
     logger.debug(`Writing ${memberUpdates.length} members`);
     await Members.bulkWrite(memberUpdates);
 
