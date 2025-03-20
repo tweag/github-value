@@ -141,9 +141,20 @@ class SeatsService {
       assignee: updatedMembers.find(m => m.id === seat.assignee.id)?._id
     }));
     logger.debug(`Writing ${seatsData.length} seats`);
-    const seatResults = await Seats.insertMany(seatsData);
 
-    // Add member seat updates
+    const seatInsertOperations = seatsData.map(seat => ({
+      insertOne: {
+        document: seat
+      }
+    }));
+    const bulkWriteResult = await Seats.bulkWrite(seatInsertOperations, { ordered: false });
+    logger.debug(`Inserted ${bulkWriteResult.insertedCount} seats`);
+    const seatResults = await Seats.find({
+      queryAt,
+      org,
+      assignee_id: { $in: data.map(seat => seat.assignee.id) }
+    }).sort({ createdAt: -1 }).limit(seatsData.length);
+
     const memberSeatUpdates = seatResults.map(seat => ({
       updateOne: {
         filter: { org, id: seat.assignee_id },
@@ -169,7 +180,6 @@ class SeatsService {
         _seat: seat._id,
       }))
     }
-
     logger.debug(`Writing ${adoptionData.seats.length} adoption data`);
     await adoptionService.createAdoption(adoptionData);
 
