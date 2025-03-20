@@ -34,11 +34,14 @@ class QueryService {
       ...options
     }
     this.cronJob = CronJob.from(_options);
-    this.task();
   }
 
   delete() {
     this.cronJob.stop();
+  }
+
+  start() {
+    return this.task();
   }
 
   private async task() {
@@ -76,7 +79,7 @@ class QueryService {
       seats: uniqueSeatsArray
     }
 
-    adoptionService.createAdoption(enterpriseAdoptionData);
+    await adoptionService.createAdoption(enterpriseAdoptionData);
   }
 
   private async orgTask(octokit: Octokit, queryAt: Date, org: string) {

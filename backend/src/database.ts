@@ -218,6 +218,7 @@ class Database {
     });
     memberSchema.index({ org: 1, login: 1, id: 1 }, { unique: true });
     memberSchema.index({ seat: 1 });
+    memberSchema.index({ updatedAt: -1 });
     memberSchema.virtual('seats', {
       ref: 'Seats',
       localField: '_id',
