@@ -13,9 +13,9 @@ class Database {
     logger.info('Connecting to the database', mongodbUri);
     try {
       this.mongoose = await mongoose.connect(mongodbUri, {
-        socketTimeoutMS: 90000,
-        connectTimeoutMS: 60000,
-        serverSelectionTimeoutMS: 30000,
+        socketTimeoutMS: 360000,
+        connectTimeoutMS: 360000,
+        serverSelectionTimeoutMS: 60000,
         retryWrites: true,
         readPreference: 'primaryPreferred',
         retryReads: true,
