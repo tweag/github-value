@@ -13,6 +13,10 @@ import { SeatService } from '../../../services/api/seat.service';
 import { MembersService } from '../../../services/api/members.service';
 import { CommonModule } from '@angular/common';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+import { DashboardCardLineChartComponent } from '../copilot-dashboard/dashboard-card/dashboard-card-line-chart/dashboard-card-line-chart.component';
+import { HighchartsChartModule } from 'highcharts-angular';
+import * as Highcharts from 'highcharts';
+import { HighchartsService } from '../../../services/highcharts.service';
 
 @Component({
   selector: 'app-metrics',
@@ -26,6 +30,8 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
     ActiveUsersChartComponent,
     CommonModule,
     LoadingSpinnerComponent,
+    HighchartsChartModule,
+    DashboardCardLineChartComponent
   ],
   templateUrl: './copilot-metrics.component.html',
   styleUrls: [
@@ -42,13 +48,16 @@ export class CopilotMetricsComponent implements OnInit {
   subscriptions: Subscription[] = [];
   private readonly _destroy$ = new Subject<void>();
   range?: { start: Date, end: Date };
+  Highcharts: typeof Highcharts = Highcharts;
+  languageTrendsChartOptions?: Highcharts.Options;
 
   constructor(
     private metricsService: MetricsService,
     private installationsService: InstallationsService,
     private seatService: SeatService,
     private cdr: ChangeDetectorRef,
-    private membersService: MembersService
+    private membersService: MembersService,
+    private highchartsService: HighchartsService
   ) { }
 
   ngOnInit() {
