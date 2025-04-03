@@ -79,6 +79,7 @@ class QueryService {
     }
 
     await adoptionService.createAdoption(enterpriseAdoptionData);
+    logger.info(`Task finished. Last ran at `, this.cronJob.lastDate());
   }
 
   private async orgTask(octokit: Octokit, queryAt: Date, org: string) {
