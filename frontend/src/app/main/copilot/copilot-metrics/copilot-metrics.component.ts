@@ -12,6 +12,7 @@ import { SeatService } from '../../../services/api/seat.service';
 import { MembersService } from '../../../services/api/members.service';
 import { CommonModule } from '@angular/common';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
+import { DashboardCardLineChartComponent } from '../copilot-dashboard/dashboard-card/dashboard-card-line-chart/dashboard-card-line-chart.component';
 
 @Component({
   selector: 'app-metrics',
@@ -25,6 +26,7 @@ import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading
     ActiveUsersChartComponent,
     CommonModule,
     LoadingSpinnerComponent,
+    DashboardCardLineChartComponent
   ],
   templateUrl: './copilot-metrics.component.html',
   styleUrls: [
