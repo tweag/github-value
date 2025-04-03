@@ -11,7 +11,7 @@ import adoptionController from '../controllers/adoption.controller.js';
 const router = Router();
 
 router.get('/', (req: Request, res: Response) => {
-  res.send('Hello World!');
+  res.send('Hello github-value!');
 });
 
 router.get('/survey', surveyController.getAllSurveys);
