@@ -5,8 +5,7 @@ import { CopilotMetrics } from '../../../services/api/metrics.service.interfaces
 import { CopilotMetricsPieChartComponent } from './copilot-metrics-pie-chart/copilot-metrics-pie-chart.component';
 import { MatCardModule } from '@angular/material/card';
 import { Installation, InstallationsService } from '../../../services/api/installations.service';
-import { forkJoin, Subject, Subscription, takeUntil } from 'rxjs';
-import { DashboardCardBarsComponent } from '../copilot-dashboard/dashboard-card/dashboard-card-bars/dashboard-card-bars.component';
+import { Subject, Subscription, takeUntil } from 'rxjs';
 import { DashboardCardDrilldownBarChartComponent } from '../copilot-dashboard/dashboard-card/dashboard-card-drilldown-bar-chart/dashboard-card-drilldown-bar-chart.component';
 import { ActiveUsersChartComponent } from '../copilot-dashboard/dashboard-card/active-users-chart/active-users-chart.component';
 import { SeatService } from '../../../services/api/seat.service';
@@ -14,9 +13,6 @@ import { MembersService } from '../../../services/api/members.service';
 import { CommonModule } from '@angular/common';
 import { LoadingSpinnerComponent } from '../../../shared/loading-spinner/loading-spinner.component';
 import { DashboardCardLineChartComponent } from '../copilot-dashboard/dashboard-card/dashboard-card-line-chart/dashboard-card-line-chart.component';
-import { HighchartsChartModule } from 'highcharts-angular';
-import * as Highcharts from 'highcharts';
-import { HighchartsService } from '../../../services/highcharts.service';
 
 @Component({
   selector: 'app-metrics',
@@ -30,7 +26,6 @@ import { HighchartsService } from '../../../services/highcharts.service';
     ActiveUsersChartComponent,
     CommonModule,
     LoadingSpinnerComponent,
-    HighchartsChartModule,
     DashboardCardLineChartComponent
   ],
   templateUrl: './copilot-metrics.component.html',
@@ -48,16 +43,13 @@ export class CopilotMetricsComponent implements OnInit {
   subscriptions: Subscription[] = [];
   private readonly _destroy$ = new Subject<void>();
   range?: { start: Date, end: Date };
-  Highcharts: typeof Highcharts = Highcharts;
-  languageTrendsChartOptions?: Highcharts.Options;
 
   constructor(
     private metricsService: MetricsService,
     private installationsService: InstallationsService,
     private seatService: SeatService,
     private cdr: ChangeDetectorRef,
-    private membersService: MembersService,
-    private highchartsService: HighchartsService
+    private membersService: MembersService
   ) { }
 
   ngOnInit() {
