@@ -412,7 +412,7 @@ export class HighchartsService {
       }
     };
   }
-  
+
   getLanguageTrendsChart(metrics: CopilotMetrics[]): Highcharts.Options {
     const dailyData: Record<string, Record<string, { accepted: number, suggested: number }>> = {};
     const languageTotals: Record<string, number> = {};
@@ -445,9 +445,10 @@ export class HighchartsService {
       .slice(0, 5)
       .map(([lang]) => lang);
 
-    const series: Highcharts.SeriesLineOptions[] = topLanguages.map((lang: string) => ({
+    const series: Highcharts.SeriesSplineOptions[] = topLanguages.map((lang: string) => ({
       name: lang,
-      type: 'line',
+      type: 'spline',
+      color: this.getLanguageColor(lang),
       data: Object.entries(dailyData).map(([date, langs]) => {
         const accepted = langs[lang]?.accepted || 0;
         const suggested = langs[lang]?.suggested || 0;
@@ -462,9 +463,8 @@ export class HighchartsService {
     }));
 
     return {
-      chart: { type: 'line' },
-      title: { text: 'Daily Code Acceptance % (Top Languages)' },
-      xAxis: { type: 'datetime', title: { text: 'Date' } },
+      chart: { type: 'spline' },
+      xAxis: { type: 'datetime' },
       yAxis: {
         min: 0,
         max: 100,
