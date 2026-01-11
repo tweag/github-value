@@ -29,7 +29,7 @@
     "octokit": "4.1",
     "smee-client": "^2.0.4",
     "update-dotenv": "^1.1.1",
-    "validator": "^13.12.0",
+    "validator": "^13.15.23",
     "why-is-node-running": "^3.2.1"
   },
   "devDependencies": {
